@@ -1,0 +1,3 @@
+RewriteEngine On
+# Check if there's a rule converting .php to .html and comment it out
+

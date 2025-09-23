@@ -1,0 +1,15 @@
+# Local secrets and environment files
+secrets.php
+.env
+.env.local
+.env.*.local
+
+# OS / editor files
+Thumbs.db
+*.log
+.vscode/
+.idea/
+*.swp
+*.swo
+
+
