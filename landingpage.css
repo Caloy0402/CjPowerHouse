@@ -1,0 +1,630 @@
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+    margin: 0;
+}
+
+section {
+    padding: 60px 20px;
+    text-align: center;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #232F3E;
+    color: #fff;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    font-size: 35px;
+    font-weight: 600;
+    box-sizing: border-box;
+}
+
+.logo-img {
+    width: 80px;
+    height: 80px;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+
+.navbar span {
+    color: #FF9900;
+    box-sizing: border-box;
+}
+
+.navbar nav a {
+    margin: 0 15px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.navbar nav a:hover {
+    color: #FF9900;
+    box-sizing: border-box;
+}
+
+/* Auth Buttons */
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.btn {
+    background-color: #FF9900;
+    padding: 10px 20px;
+    color: #fff;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    background-color: #FF5722;
+    box-sizing: border-box;
+}
+
+/* Hero Section */
+.hero {
+    background-image: url('../Image/hero-bg-motor.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    background-blend-mode: overlay;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+}
+
+.hero-content p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+/* Info Section */
+.info {
+    background-color: #fff;
+    padding: 60px 20px;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.info h2 {
+    margin-bottom: 30px;
+    font-size: 32px;
+    color: #232F3E;
+    box-sizing: border-box;
+}
+
+.steps {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+.step {
+    background-color: #FF9900;
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 220px;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+
+.step:hover {
+    box-sizing: border-box;
+}
+
+/* Featured Items */
+.items {
+    background-color: #f4f4f4;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.items h2 {
+    margin-bottom: 30px;
+    font-size: 32px;
+    color: #232F3E;
+    box-sizing: border-box;
+}
+
+.item-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+.item {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+
+.item:hover {
+    box-sizing: border-box;
+}
+
+.item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+/* Contact Section */
+.contact {
+    background-color: #232F3E;
+    color: #fff;
+    padding: 60px 20px;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.contact h2 {
+    margin-bottom: 20px;
+    font-size: 32px;
+    box-sizing: border-box;
+}
+
+.contact p {
+    margin-bottom: 10px;
+    font-size: 18px;
+    box-sizing: border-box;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #1a252f;
+    color: #fff;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+/* Shop Section */
+.shop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    opacity: 0.4;
+    box-sizing: border-box;
+}
+
+.shop-gallery {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.shop-item img {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    box-sizing: border-box;
+}
+
+/* Responsive Design - Mobile Specific */
+@media (max-width: 768px) {
+    .navbar {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .navbar .logo {
+        margin-bottom: 0;
+        font-size: 28px;
+        box-sizing: border-box;
+    }
+
+    .navbar nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 10px;
+    }
+
+    .navbar nav a {
+        margin: 0 5px;
+        padding: 5px;
+        text-align: center;
+        width: auto;
+        box-sizing: border-box;
+        text-decoration: underline;
+    }
+
+    .auth-buttons {
+        display: flex;
+        justify-content: center;
+    }
+
+    .hero {
+        height: auto;
+        min-height: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .hero-content h1 {
+        font-size: 24px;
+        box-sizing: border-box;
+    }
+
+    .hero-content p {
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .hero-content .center-logo {
+        width: 80%;
+        max-width: 300px;
+        height: auto;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+    }
+
+    section {
+        padding: 40px 10px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+}
+
+.left-image,
+.right-image {
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.center-logo {
+    width: 450px;
+    height: auto;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+/*Custom Styles for Button with Yellow Curve */
+.hero .button {
+    background-color: #FF9900;
+    /* Yellow-Orange */
+    border: 3px solid #fff;
+    /* Thicker White Border */
+    color: #fff;
+    font-size: 1.5em;
+    /* Larger Font */
+    padding: 15px 35px;
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+    /* To position the glow */
+    overflow: hidden;
+    /* Clip the glow within */
+    box-shadow: 0 0 15px rgba(255, 153, 0, 0.7);
+    /* yellow Glow */
+}
+
+/* Add glowing and pulsating effect */
+.hero .button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 153, 0, 0.8), transparent);
+    /* Yellow-Orange gradient */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hero .button:hover::before {
+    opacity: 1;
+    animation: pulse 1.5s infinite;
+}
+
+/* Animate the glowing effect */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+.modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    /* Required for positioning the close button */
+    padding: 15px;
+}
+/* Center  Modal inside Logo*/
+.modal-header .modal-logo {
+    width: 150px;
+    /* Adjust Logo Size */
+    height: auto;
+    margin-bottom: 15px;
+    /* Space below logo */
+}
+
+/* Style top Corner To be at Top Right Corner*/
+.modal-header .btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* Reveal on scroll Styling */
+/* Initially hide the elements */
+.reveal {
+  position: relative;
+  transform: translateY(150px); /* Move elements 150px down */
+  opacity: 0;
+  transition: 1s all ease; /* Add a transition for smooth appearance */
+}
+
+/* Class to reveal elements */
+.reveal.active {
+  transform: translateY(0); /* Return elements to their original position */
+  opacity: 1; /* Make elements visible */
+}
+
+/* Mobile Modal Fixes for Overflow */
+@media (max-width: 768px) {
+    /* Ensure modals fit within viewport */
+    .modal-dialog {
+        margin: 0.5rem auto;
+        max-height: calc(100vh - 1rem);
+        max-width: calc(100vw - 1rem);
+    }
+    
+    .modal-content {
+        max-height: calc(100vh - 1rem);
+        overflow-y: auto;
+    }
+    
+    .modal-dialog-centered {
+        justify-content: center;
+        min-height: calc(100vh - 1rem);
+        align-items: flex-start;
+        padding-top: 0.5rem;
+    }
+    
+    /* Adjust login modal specifically for mobile */
+    #loginModal .modal-content {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    /* Make modal header more compact on mobile */
+    #loginModal .modal-header {
+        padding: 10px 15px 5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    #loginModal .modal-logo {
+        width: 80px !important;
+        height: auto;
+        margin-bottom: 5px;
+    }
+    
+    /* Compact modal body for mobile */
+    #loginModal .modal-body {
+        padding: 15px;
+        max-height: calc(80vh - 100px);
+        overflow-y: auto;
+    }
+    
+    /* Adjust form elements for mobile */
+    #loginModal .form-floating {
+        margin-bottom: 15px;
+    }
+    
+    #loginModal .input-group {
+        margin-bottom: 15px;
+    }
+    
+    #loginModal .btn {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    /* Ensure footer doesn't push content up */
+    #loginModal .modal-footer {
+        padding: 10px 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Signup modal adjustments for tablet mobile */
+    #signupModal .modal-body {
+        padding: 12px;
+        max-height: calc(80vh - 90px);
+    }
+    
+    #signupModal .modal-header {
+        padding: 8px 15px 4px;
+    }
+    
+    #signupModal h5 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+    
+    #signupModal .mb-3 {
+        margin-bottom: 15px !important;
+    }
+    
+    #signupModal .row.g-2 {
+        margin-bottom: 15px !important;
+    }
+    
+    /* Scroll indication for long modals */
+    .modal-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .modal-content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    .modal-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 153, 0, 0.5);
+        border-radius: 3px;
+    }
+}
+
+/* Ultra-small screens (phones in portrait) */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.25rem auto;
+        max-height: calc(100vh - 0.5rem);
+        max-width: calc(100vw - 0.5rem);
+    }
+    
+    .modal-content {
+        max-height: calc(100vh - 0.5rem);
+    }
+    
+    .modal-dialog-centered {
+        min-height: calc(100vh - 0.5rem);
+        padding-top: 0.25rem;
+    }
+    
+    /* Even more compact styling for very small screens */
+    #loginModal .modal-body {
+        padding: 10px;
+        max-height: calc(85vh - 80px);
+    }
+    
+    #loginModal .modal-header {
+        padding: 8px 15px 3px;
+    }
+    
+    #loginModal .modal-logo {
+        width: 60px !important;
+        margin-bottom: 3px;
+    }
+    
+    /* Adjust text sizes for small screens */
+    #loginModal h5 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+    
+    #loginModal .form-floating {
+        margin-bottom: 12px;
+    }
+    
+    /* Signup modal adjustments for mobile */
+    #signupModal .modal-body {
+        padding: 8px;
+        max-height: calc(85vh - 70px);
+    }
+    
+    #signupModal .modal-header {
+        padding: 5px 15px 2px;
+    }
+    
+    #signupModal h5 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    
+    #signupModal .mb-3 {
+        margin-bottom: 12px !important;
+    }
+    
+    #signupModal .row.g-2 {
+        margin-bottom: 12px !important;
+    }
+}
+

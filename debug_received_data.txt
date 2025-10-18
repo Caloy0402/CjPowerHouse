@@ -1,0 +1,20 @@
+Array
+(
+    [products] => Array
+        (
+            [0] => Array
+                (
+                    [product_id] => 56
+                    [product_name] => LED Bulb 4Lens
+                    [category] => Electrical Components
+                    [brand] => THAI 
+                    [motor_type] => Any
+                    [quantity] => 25
+                    [price] => 250.00
+                    [Weight] => 0.10
+                )
+
+        )
+
+)
+Product ID: 56, ImagePath: bulb.jpg

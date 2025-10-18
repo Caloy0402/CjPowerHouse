@@ -1,0 +1,355 @@
+:root {
+    --primary: #ed1616;
+    --secondary: #191c24;
+    --light: #6c7293;
+    --dark: #000000;
+}
+
+/* Spinner */
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Button */
+.btn {
+    transition: 5s;
+}
+
+.btn-square {
+    width: 38px;
+    height: 38px;
+}
+
+.btn-sm-square {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-lg-square {
+    width: 48px;
+    height: 48px;
+}
+
+.btn-square,
+.btn-sm-square,
+.btn-lg-square {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50px;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    height: 100%;
+    overflow-y: auto;
+    background: var(--secondary);
+    transition: 0.5s;
+    z-index: 999;
+}
+
+.content {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: var(--dark);
+    transition: 0.5s;
+}
+@media (min-width: 992px) 
+{
+    .sidebar {
+        margin-left: 0; /* Hide sidebar by default on small screens */
+    }
+    .sidebar.open {
+        margin-left:-250px; /* Show sidebar when open */
+    }
+    .content {
+        width: calc(100% - 250px);
+    } 
+    .content.open {
+        width: 100%; /* Full width when sidebar is hidden */
+        margin-left: 0;
+    }
+}
+@media (max-width: 991.98px)
+ {
+    .sidebar {
+        margin-left: -250px; /* Hide sidebar by default on small screens */
+    }
+    .sidebar.open {
+        margin-left:0; /* Show sidebar when open */
+    }
+    .content {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+.sidebar .navbar .navbar-nav .nav-link {
+    padding: 7px 20px;
+    color: var(--light);
+    font-weight: 500;
+    border-left: 3px solid var(--secondary); /* Fixed typo */
+    border-radius: 0 30px 30px 0;
+    outline: none;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover,
+.sidebar .navbar .navbar-nav .nav-link:active 
+{
+    color: var(--primary);
+    background: var(--dark);
+    border-color: var(--primary);
+}
+
+
+.sidebar .navbar .navbar-nav .nav-link i 
+{
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dark);
+    border-radius: 40px; 
+}
+/* On hover or active state */
+.sidebar .navbar .navbar-nav .nav-link:hover i,
+.sidebar .navbar .navbar-nav .nav-link:active i
+{
+    background: var(--secondary);
+}
+.sidebar .navbar .dropdown-toggle::after 
+{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;  
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    transition: .5s;
+}
+.sidebar .navbar .dropdown-toggle[aria-expanded=true]::after 
+{
+    transform: rotate(-180deg);
+}
+.sidebar .navbar .dropdown-item
+{
+    padding-left: 25px;
+    border-radius: 0 30px 30px 0;
+    color: var(--light);
+}
+.sidebar .navbar .dropdown-item:hover,
+.sidebar .navbar .dropdown-item:active
+{
+    background: var(--dark);
+}
+
+/* Navbar */
+.content .navbar .navbar-nav .nav-link 
+{
+    margin-left: 25px;
+    padding: 12px 0;    
+    color: var(--light);
+    outline: none;
+}
+.content .navbar .navbar-nav .nav-link:hover,
+.content .navbar .navbar-nav .nav-link:active
+{
+    color: var(--primary-);
+}
+
+.content .navbar .sidebar-toggler 
+.content .navbar .navbar-nav .nav-link i 
+{
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dark); /* Background color of the icons */
+    border-radius: 40px; /* Rounded corners */
+}
+.content .navbar .dropdown-item {
+    color: var(--light);
+}
+.content .navbar .dropdown-item:hover,
+.content .navbar .dropdown-item:active {
+    background: var(--dark);
+}
+.content .navbar .dropdown-toggle::after 
+{
+    margin: 6px;
+    vertical-align: middle;
+    border: none;
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    transition: .5s;
+}
+
+.content .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+/* Responsive Styles */
+@media (max-width: 575.98px) {
+    .content .navbar .navbar-nav .nav-link {
+        margin-left: 15px;
+}
+}
+/* Date Time Picker */
+.bootstrap-datetimepicker-widget.bottom {
+    top: auto !important;
+}
+.bootstrap-datetimepicker-widget .table * {
+    border-bottom-width: 0px;
+}
+.bootstrap-datetimepicker-widget .table th {
+    font-weight: 500;
+}
+.bootstrap-datetimepicker-widget.dropdown-menu {
+    padding: 10px;
+    border-radius: 2px;
+}
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+    background: var(--primary);
+}
+.bootstrap-datetimepicker-widget table td.today::before {
+    border-bottom-color: var(--primary);
+}
+
+/* User Status */
+.status {
+    font-weight: bold;
+}
+
+.online {
+    color: #00FF00; /* Green text for online */
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00; /* Green glow effect */
+}
+
+.offline {
+    color: #ed1616; /* Red text for offline */
+    text-shadow: 0 0 10px #ed1616, 0 0 20px #ed1616, 0 0 30px #ed1616; /* Red glow effect */
+}
+@keyframes glow {
+    0% { box-shadow: 0 0 5px #ed1616, 0 0 10px #ed1616; }
+    50% { box-shadow: 0 0 10px #ed1616, 0 0 20px #ed1616; }
+    100% { box-shadow: 0 0 5px #ed1616, 0 0 10px #ed1616; }
+}
+
+.status {
+    transition: all 0.3s ease-in-out; /* Add smooth transition for status change */
+}
+
+/*Order Status*/
+
+.status {
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.status.success {
+    color: #00FF00; /* Solid green for Success */
+}
+
+.status.shipping {
+    color: orange; /* Solid orange for Shipping */
+}
+
+.status.canceled {
+    color: #ed1616; /* Solid red for Canceled */
+}
+
+/*Payment Status*/
+.status {
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.status.paid {
+    color: #00FF00; /* Green for Paid */
+}
+
+.status.unpaid {
+    color: orange; /* Orange for Unpaid */
+}
+
+/* Custom CSS for better spacing */
+.bg-secondary.rounded {
+    margin-bottom: 1rem; /* Adds space between containers */
+}
+
+#product-overview {
+    height: 300px; /* Adjust chart height */
+}
+ /* Center the modal */
+ .modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fade-in transition */
+.fade {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal.show {
+    opacity: 1 !important;
+}
+
+.modal.fade .modal-dialog {
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+    opacity: 1;
+}
+.hidden-column {
+    display: none;
+}
+/* Style for the Rider Contact Info input */
+.rider-contact-info {
+    background-color: #ffffff; /* White background */
+    color: #333333; /* Dark text color */
+    border: 1px solid #ccc; /* Optional: Light border around the input */
+}
+
+.bg-orange {
+    background-color: orange !important;
+
+}
+
+
+
+
+
+
+
+
+
