@@ -213,18 +213,6 @@ if ($category_quantity_result && $category_quantity_result->num_rows > 0) {
     }
 }
 
-// 🐛 DEBUG: Check chart data (REMOVE THIS LINE AFTER DEBUGGING)
-dd([
-    'Database Connected' => isset($conn) && $conn->ping(),
-    'Category Query Result' => $category_quantity_result ? 'Success' : 'Failed',
-    'Category Labels Count' => count($category_labels),
-    'Category Labels' => $category_labels,
-    'Category Quantities' => $category_quantities,
-    'Weekly Data Available' => isset($weeklyData) ? 'Not yet loaded' : 'Not loaded',
-    'Session User ID' => $_SESSION['user_id'] ?? 'Not set',
-    'Session Role' => $_SESSION['role'] ?? 'Not set'
-]);
-
 // Get recent orders for the table
 $recent_orders_query = "SELECT 
     o.id,
@@ -413,6 +401,32 @@ try {
     error_log("Low stock query failed: " . $e->getMessage());
     $lowStockItems = [];
 }
+
+// 🐛 DEBUG: Check ALL chart data (REMOVE THIS AFTER DEBUGGING)
+dd([
+    '=== DATABASE STATUS ===' => '',
+    'Database Connected' => isset($conn) && $conn->ping(),
+    
+    '=== CATEGORY CHART DATA (PIE) ===' => '',
+    'Category Labels Count' => count($category_labels),
+    'Category Labels' => $category_labels,
+    'Category Quantities' => $category_quantities,
+    'Empty Categories?' => empty($category_labels) ? 'YES - NO DATA!' : 'NO - Data exists',
+    
+    '=== WEEKLY CHART DATA (BAR) ===' => '',
+    'Weekly Data Loaded' => isset($weeklyData) ? 'YES' : 'NO',
+    'Weekly Data Count' => isset($weeklyData) ? count($weeklyData) : 0,
+    'Weekly Data JSON' => isset($weeklyDataJson) ? 'Generated' : 'Missing',
+    'Weekly Data Sample' => isset($weeklyData) && !empty($weeklyData) ? $weeklyData[0] : 'No data',
+    'Weekly Data Full' => $weeklyData ?? 'Not set',
+    
+    '=== SESSION DATA ===' => '',
+    'Session User ID' => $_SESSION['user_id'] ?? 'Not set',
+    'Session Role' => $_SESSION['role'] ?? 'Not set',
+    
+    '=== LOW STOCK DATA ===' => '',
+    'Low Stock Items Count' => count($lowStockItems),
+]);
 
 // CRITICAL FIX: Close database connection before HTML output
 // This prevents hanging queries from blocking the page
