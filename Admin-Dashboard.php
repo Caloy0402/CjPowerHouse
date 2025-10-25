@@ -361,6 +361,9 @@ $stmt3->close();
     <!--Template Stylesheet-->
     <link href="css/style.css" rel="stylesheet">
 
+    <!-- Load Chart.js early from CDN (more reliable than local file) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
     <!-- Custom CSS for responsive dashboard -->
     <style>
         /* Ensure full width containers */
@@ -666,14 +669,6 @@ $stmt3->close();
             color: #00ff00;
         }
     </style>
-    <script src="lib/chart/Chart.min.js"></script>
-    <script src="js/notification-sound.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 </head>
 
 <body>
@@ -1123,6 +1118,25 @@ $stmt3->close();
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Verify Chart.js loaded successfully -->
+    <script>
+        if (typeof Chart === 'undefined') {
+            console.error('❌ Chart.js failed to load!');
+            alert('Chart library not loaded. Charts will not display.');
+        } else {
+            console.log('✅ Chart.js loaded successfully, version:', Chart.version);
+        }
+    </script>
+    
+    <!-- Other required libraries -->
+    <script src="js/notification-sound.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
 
     <!-- Calendar Initialization -->
@@ -1161,6 +1175,14 @@ $stmt3->close();
     <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+    <script>
+        // Verify AmCharts loaded
+        if (typeof am4core === 'undefined') {
+            console.error('❌ AmCharts failed to load!');
+        } else {
+            console.log('✅ AmCharts loaded successfully');
+        }
+    </script>
 
 
 
@@ -3154,18 +3176,46 @@ $stmt3->close();
         let weeklyOrdersChart = null;
 
         function initWeeklyOrdersChart() {
-            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
+            console.log('📊 Initializing weekly orders chart...');
+            
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('❌ Chart.js not available!');
+                return;
+            }
+            
+            const dataElement = document.getElementById('weeklyOrdersData');
+            if (!dataElement) {
+                console.error('❌ weeklyOrdersData element not found!');
+                return;
+            }
+            
+            const chartData = JSON.parse(dataElement.textContent);
+            console.log('✅ Chart data parsed:', chartData);
             createWeeklyChart(chartData);
         }
 
         function createWeeklyChart(data) {
-            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
+            console.log('📊 Creating weekly chart...');
+            
+            const canvas = document.getElementById('weeklyOrdersChart');
+            if (!canvas) {
+                console.error('❌ Canvas not found!');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('❌ Could not get canvas context!');
+                return;
+            }
 
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
 
-            weeklyOrdersChart = new Chart(ctx, {
+            try {
+                weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3270,6 +3320,10 @@ $stmt3->close();
                     }
                 }
             });
+            console.log('✅ Weekly chart created successfully!');
+            } catch (error) {
+                console.error('❌ Error creating chart:', error);
+            }
         }
 
         function refreshWeeklyChart() {
