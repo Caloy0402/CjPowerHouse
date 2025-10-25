@@ -3133,6 +3133,14 @@ $stmt3->close();
                     .then(data => updateDashboardMetrics(data))
                     .catch(error => console.error('Fallback update failed:', error));
             }, 15000);
+
+            // Hide spinner after page loads
+            setTimeout(() => {
+                const spinner = document.getElementById("spinner");
+                if (spinner) {
+                    spinner.classList.remove("show");
+                }
+            }, 500);
         });
 
         // Weekly Orders Chart Functions
@@ -3681,6 +3689,16 @@ $stmt3->close();
             if (helpRequestsEventSource) {
                 helpRequestsEventSource.close();
             }
+        });
+
+        // Fallback: Hide spinner when window fully loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const spinner = document.getElementById("spinner");
+                if (spinner) {
+                    spinner.classList.remove("show");
+                }
+            }, 100);
         });
     </script>
     <script src="js/script.js"></script>
