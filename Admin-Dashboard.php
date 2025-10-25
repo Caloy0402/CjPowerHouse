@@ -835,9 +835,9 @@ $stmt3->close();
                             Messages</a>
                     </div>
                 </div>
-                <?php include 'admin_notifications.php'; ?>
-                <?php include 'admin_rescue_notifications.php'; ?>
-                <?php include 'admin_user_notifications.php'; ?>
+                <--?php include 'admin_notifications.php'; ?>
+                <--?php include 'admin_rescue_notifications.php'; ?>
+                <--?php include 'admin_user_notifications.php'; ?>
                 <div class="nav-item dropdown">
                     <a href="" class="nav-link dropdown-toggle"
                         data-bs-toggle="dropdown">
