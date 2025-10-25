@@ -286,3 +286,47 @@ function initRescueNotificationSoundControls() {
 }
 </script>
 
+<style>
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+}
+
+.notification-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #495057;
+}
+
+.notification-item:hover {
+    background-color: #495057;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item h6 {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.notification-item p {
+    font-size: 0.8rem;
+    margin-bottom: 0;
+    color: #adb5bd;
+}
+
+.notification-item .badge {
+    font-size: 0.7rem;
+}
+</style>
