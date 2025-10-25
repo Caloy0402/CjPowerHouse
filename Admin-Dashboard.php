@@ -677,6 +677,22 @@ $stmt3->close();
             <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
         </div>
 
+        <script>
+            (function() {
+                // Hide spinner immediately - no waiting
+                var spinner = document.getElementById('spinner');
+                if (spinner) {
+                    spinner.classList.remove('show');
+                    console.log('✓ Spinner hidden inline');
+                }
+            })();
+        </script>
+        <?php
+        // Flush output buffer to send HTML to browser immediately
+        if (ob_get_level()) ob_flush();
+        flush();
+        ?>
+
         <!-- Spinner End -->
 
         <!-- Sidebar Start -->
@@ -3701,21 +3717,7 @@ $stmt3->close();
         });
     </script>
     <!-- IMMEDIATE Spinner Hide - Runs as soon as this script is parsed -->
-    <script>
-        (function() {
-            // Hide spinner immediately - no waiting
-            var spinner = document.getElementById('spinner');
-            if (spinner) {
-                spinner.classList.remove('show');
-                console.log('✓ Spinner hidden inline');
-            }
-        })();
-    </script>
-    <?php
-    // Flush output buffer to send HTML to browser immediately
-    if (ob_get_level()) ob_flush();
-    flush();
-    ?>
+
 </body>
 
 </html>
