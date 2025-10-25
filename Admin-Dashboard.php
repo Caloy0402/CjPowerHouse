@@ -3237,29 +3237,43 @@ $stmt3->close();
         }
 
         function createWeeklyChart(data) {
-            console.log('Creating weekly chart with data:', data);
+            console.log('📊 Creating weekly chart with data:', data);
+            
+            // CRITICAL: Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('❌ FATAL: Chart.js is NOT available when trying to create chart!');
+                const container = document.getElementById('weeklyOrdersChart').parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p class="mb-0">Chart.js library not loaded</p><small>Check console for errors</small></div>';
+                }
+                return;
+            }
+            console.log('✅ Chart.js is available, version:', Chart.version);
             
             // Check if data is valid
             if (!data || data.length === 0) {
-                console.warn('No data available for weekly chart');
+                console.warn('⚠️ No data available for weekly chart');
                 const container = document.getElementById('weeklyOrdersChart').parentElement;
                 if (container) {
                     container.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-bar fa-3x mb-3"></i><p class="mb-0">No weekly data available</p></div>';
                 }
                 return;
             }
+            console.log('✅ Data is valid, has', data.length, 'days');
             
             const canvas = document.getElementById('weeklyOrdersChart');
             if (!canvas) {
-                console.error('Canvas element not found!');
+                console.error('❌ Canvas element not found!');
                 return;
             }
+            console.log('✅ Canvas element found:', canvas);
             
             const ctx = canvas.getContext('2d');
             if (!ctx) {
-                console.error('Could not get 2D context from canvas!');
+                console.error('❌ Could not get 2D context from canvas!');
                 return;
             }
+            console.log('✅ 2D context obtained');
 
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
