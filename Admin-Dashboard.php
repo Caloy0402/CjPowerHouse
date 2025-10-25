@@ -675,9 +675,9 @@ $stmt3->close();
     <div class="container-fluid position-relative d-flex p-0">
 
         <!-- Spinner Start -->
-        <!-- <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
-        </div> -->
+        </div>
         <!-- Spinner End -->
 
         <!-- Sidebar Start -->
