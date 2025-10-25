@@ -332,7 +332,7 @@ $stmt3->close();
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Admin Dashboard</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <link rel="icon" type="image/png" href="image/logo.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
