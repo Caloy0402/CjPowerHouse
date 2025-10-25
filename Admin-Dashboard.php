@@ -160,7 +160,7 @@ if ($category_quantity_result && $category_quantity_result->num_rows > 0) {
     
     $colorIndex = 0;
     while ($row = $category_quantity_result->fetch_assoc()) {
-        $category_labels[] = $row['Category'];
+        $category_labels[] = $row['category'];
         $category_quantities[] = (int)$row['total_quantity'];
         $category_colors[] = $colors[$colorIndex % count($colors)][0];
         $category_hover_colors[] = $colors[$colorIndex % count($colors)][1];
