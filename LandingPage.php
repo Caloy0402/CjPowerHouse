@@ -268,7 +268,7 @@ $query_barangay = "SELECT id, barangay_name FROM barangays ORDER BY barangay_nam
 $barangayResult = $conn->query($query_barangay);
 if ($barangayResult === false) { error_log("Error fetching barangays: " . $conn->error); }
 
-$productQuery = " SELECT ProductID, ProductName, Price, ImagePath, Category FROM products";
+$productQuery = " SELECT ProductID, ProductName, Price, ImagePath, Category From products";
 $productResult = $conn->query($productQuery);
 $products = [];
 if ($productResult && $productResult->num_rows > 0) {

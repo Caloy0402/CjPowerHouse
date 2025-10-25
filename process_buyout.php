@@ -17,7 +17,7 @@ if (isset($data['products']) && is_array($data['products'])) {
     }
 
     // Prepare SQL statement to delete the product from the products table
-    $deleteStmt = $conn->prepare("DELETE FROM products WHERE ProductID = ?");
+    $deleteStmt = $conn->prepare("DELETE From products WHERE ProductID = ?");
 
     if (!$deleteStmt) {
         die(json_encode(['success' => false, 'message' => 'SQL prepare failed: ' . $conn->error]));
@@ -44,7 +44,7 @@ if (isset($data['products']) && is_array($data['products'])) {
             exit;
         }
 
-        // Delete from products
+        // Delete From products
         $deleteStmt->bind_param("i", $product['id']);
         if (!$deleteStmt->execute()) {
             echo json_encode(['success' => false, 'message' => 'Delete failed: ' . $deleteStmt->error]);

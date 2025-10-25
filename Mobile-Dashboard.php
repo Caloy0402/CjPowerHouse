@@ -81,7 +81,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // Fetch products from the database
-$sql = "SELECT ProductID, ProductName, Quantity, Price, category, ImagePath FROM products";
+$sql = "SELECT ProductID, ProductName, Quantity, Price, category, ImagePath From products";
 $result = $conn->query($sql);
 
 $products = [];
