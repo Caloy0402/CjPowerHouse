@@ -72,9 +72,14 @@ try {
         
         try {
             // Get current active staff logs (excluding customers and admins)
+            // Note: cjusers table only has email, role, profile_image (no first_name/last_name)
             $sql = "SELECT l.id, l.staff_id, l.role, l.time_in, l.time_out, l.duty_duration_minutes,
-                           COALESCE(r.first_name, m.first_name, cj.first_name, '') AS first_name,
-                           COALESCE(r.last_name, m.last_name, cj.last_name, '') AS last_name,
+                           COALESCE(r.first_name, m.first_name, '') AS first_name,
+                           COALESCE(r.last_name, m.last_name, '') AS last_name,
+                           CASE 
+                               WHEN l.role = 'Cashier' THEN cj.email
+                               ELSE ''
+                           END AS cashier_email,
                            COALESCE(r.ImagePath, m.ImagePath, cj.profile_image, '') AS image_path
                     FROM staff_logs l
                     LEFT JOIN riders r ON l.role='Rider' AND r.id=l.staff_id
@@ -88,7 +93,13 @@ try {
             
             if ($result) {
                 while ($row = $result->fetch_assoc()) {
-                    $staffName = trim(($row['first_name'] ?? '').' '.($row['last_name'] ?? '')) ?: ('#'.$row['staff_id']);
+                    // Handle name based on role (Cashiers use email, others use first_name + last_name)
+                    if ($row['role'] === 'Cashier') {
+                        $staffName = !empty($row['cashier_email']) ? $row['cashier_email'] : ('Cashier #'.$row['staff_id']);
+                    } else {
+                        $staffName = trim(($row['first_name'] ?? '').' '.($row['last_name'] ?? '')) ?: ($row['role'].' #'.$row['staff_id']);
+                    }
+                    
                     $current_staff_logs[] = [
                         'id' => $row['id'],
                         'staff_id' => $row['staff_id'],
