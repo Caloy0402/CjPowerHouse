@@ -588,29 +588,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         });
 
         // Resume session button
-        document.getElementById('yesMeBtn').addEventListener('click', function() {
-            if (window.sessionData && window.userData) {
-                fetch('handle_user_session.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=continue_existing&user_id=${window.userData.id}&existing_session_id=${window.sessionData.session_id}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        showInlineError(data.message || 'Failed to continue session');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showInlineError('An error occurred while continuing session');
-                });
-            }
-        });
+        // document.getElementById('yesMeBtn').addEventListener('click', function() {
+        //     if (window.sessionData && window.userData) {
+        //         fetch('handle_user_session.php', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/x-www-form-urlencoded',
+        //             },
+        //             body: `action=continue_existing&user_id=${window.userData.id}&existing_session_id=${window.sessionData.session_id}`
+        //         })
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.status === 'success') {
+        //                 window.location.href = data.redirectUrl;
+        //             } else {
+        //                 showInlineError(data.message || 'Failed to continue session');
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //             showInlineError('An error occurred while continuing session');
+        //         });
+        //     }
+        // });
 
         // Start new session button
         document.getElementById('notMeBtn').addEventListener('click', function() {
