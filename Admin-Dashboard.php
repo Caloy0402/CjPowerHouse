@@ -1137,17 +1137,16 @@ try {
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     
-    <!-- IMMEDIATE Spinner Hide - Runs as soon as jQuery loads -->
+    <!-- IMMEDIATE Spinner Hide - Vanilla JS (Reliable) -->
     <script>
-        (function() {
-            // Hide spinner immediately - don't wait for anything
-            setTimeout(function() {
-                if ($('#spinner').length > 0) {
-                    $('#spinner').removeClass('show');
-                    console.log('✓ Spinner hidden immediately via jQuery');
-                }
-            }, 1);
-        })();
+        // Hide spinner when page loads - same approach as signin.php
+        window.addEventListener('load', function() {
+            var spinner = document.getElementById("spinner");
+            if (spinner) {
+                spinner.classList.remove("show");
+                console.log('✓ Spinner hidden on page load');
+            }
+        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -3804,14 +3803,7 @@ try {
             }
         });
 
-        // Fallback: Ensure spinner is hidden when window fully loads
-        window.addEventListener('load', function() {
-            console.log('Window load event fired - double checking spinner');
-            if ($('#spinner').hasClass('show')) {
-                $('#spinner').removeClass('show');
-                console.log('✓ Spinner hidden via window.load fallback');
-            }
-        });
+        // Fallback removed - using reliable vanilla JS spinner hide at top of page
     </script>
     <script src="js/script.js"></script>
 
