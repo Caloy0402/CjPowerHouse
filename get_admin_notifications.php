@@ -42,7 +42,7 @@ function getAdminNotifications($conn) {
                 'color' => 'text-warning'
             ],
             [
-                'sql' => "SELECT COUNT(*) as count From Products WHERE Quantity <= 10",
+                'sql' => "SELECT COUNT(*) as count From products WHERE Quantity <= 10",
                 'type' => 'low_stock',
                 'title' => 'Low Stock Alert',
                 'icon' => 'fa-exclamation-triangle',
@@ -88,7 +88,7 @@ function getTotalNotificationCount($conn) {
     try {
         $queries = [
             "SELECT COUNT(*) as count FROM orders WHERE order_status = 'pending'",
-            "SELECT COUNT(*) as count From Products WHERE Quantity <= 10",
+            "SELECT COUNT(*) as count From products WHERE Quantity <= 10",
             "SELECT COUNT(*) as count FROM orders WHERE payment_method = 'COD' AND order_status = 'Pending'"
         ];
         

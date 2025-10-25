@@ -20,7 +20,7 @@ try {
             Quantity,
             Price,
             ImagePath
-        From Products 
+        From products 
         WHERE Category = ? 
         ORDER BY Quantity DESC
     ");

@@ -94,7 +94,7 @@ $total_revenue_data = $total_revenue_result->fetch_assoc();
 $total_revenue = number_format($total_revenue_data['total_revenue'] ?? 0, 2);
 
 // All Products Value (total inventory worth)
-$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value From Products";
+$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value From products";
 $total_products_value_result = $conn->query($total_products_value_query);
 $total_products_value_data = $total_products_value_result->fetch_assoc();
 $total_products_value = number_format($total_products_value_data['total_value'] ?? 0, 2);
@@ -112,7 +112,7 @@ $stock_counts_sql = "
         SUM(CASE WHEN Quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
         SUM(CASE WHEN Quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
         SUM(CASE WHEN Quantity <= 1 THEN 1 ELSE 0 END) AS out_count
-    From Products
+    From products
 ";
 $stock_counts_res = $conn->query($stock_counts_sql);
 $good_count = 0;
@@ -135,7 +135,7 @@ $category_quantity_query = "SELECT
     Category,
     SUM(Quantity) as total_quantity,
     COUNT(*) as product_count
-From Products 
+From products 
 WHERE Category IS NOT NULL AND Category != ''
 GROUP BY Category 
 ORDER BY total_quantity DESC";
@@ -271,7 +271,7 @@ $last_month_low_stock_sql = "
     SELECT AVG(low_stock_count) as avg_low_stock 
     FROM (
         SELECT COUNT(*) as low_stock_count 
-        From Products 
+        From products 
         WHERE Quantity BETWEEN 10 AND 20 
         AND DATE_FORMAT(NOW(), '%Y-%m') = ?
         GROUP BY DATE(NOW())
@@ -1069,7 +1069,7 @@ $stmt3->close();
                         // Fetch top 8 lowest-stock products
                         $lowStockItems = [];
                         if (isset($conn) && $conn instanceof mysqli) {
-                            $lowSql = "SELECT ProductID, ProductName, Quantity From Products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
+                            $lowSql = "SELECT ProductID, ProductName, Quantity From products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
                             if ($lowRes = $conn->query($lowSql)) {
                                 while ($row = $lowRes->fetch_assoc()) {
                                     $lowStockItems[] = $row;

@@ -51,7 +51,7 @@ function getDashboardMetrics($conn) {
     $total_shoppers = $total_shoppers_data['total_shoppers'] ?? 0;
     
     // Low Stock Items
-    $low_stock_query = "SELECT COUNT(*) as low_count From Products WHERE Quantity BETWEEN 10 AND 20";
+    $low_stock_query = "SELECT COUNT(*) as low_count From products WHERE Quantity BETWEEN 10 AND 20";
     $low_stock_result = $conn->query($low_stock_query);
     $low_stock_data = $low_stock_result->fetch_assoc();
     $low_count = $low_stock_data['low_count'] ?? 0;
@@ -60,7 +60,7 @@ function getDashboardMetrics($conn) {
     $low_stock_trend = 0; // For fallback, we'll keep it simple
     
     // All Products Value (total inventory worth)
-    $total_products_value_query = "SELECT SUM(Price * Quantity) as total_value From Products";
+    $total_products_value_query = "SELECT SUM(Price * Quantity) as total_value From products";
     $total_products_value_result = $conn->query($total_products_value_query);
     $total_products_value_data = $total_products_value_result->fetch_assoc();
     $total_products_value = $total_products_value_data['total_value'] ?? 0;

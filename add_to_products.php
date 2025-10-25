@@ -46,7 +46,7 @@ if (isset($data['products']) && is_array($data['products'])) {
         file_put_contents('debug_received_data.txt', "Product ID: {$product['product_id']}, ImagePath: $imagePath\n", FILE_APPEND);
 
         // Check if the product already exists
-        $checkStmt = $conn->prepare("SELECT Quantity From Products WHERE ProductID = ?");
+        $checkStmt = $conn->prepare("SELECT Quantity From products WHERE ProductID = ?");
         $checkStmt->bind_param("i", $product['product_id']);
         $checkStmt->execute();
         $checkStmt->store_result();

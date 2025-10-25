@@ -46,7 +46,7 @@ while ($counter < 100) { // Limit to prevent infinite loops
         // Safe queries with error handling
         $queries = [
             "SELECT COUNT(*) as count FROM orders WHERE order_status = 'pending'",
-            "SELECT COUNT(*) as count From Products WHERE Quantity <= 10",
+            "SELECT COUNT(*) as count From products WHERE Quantity <= 10",
             "SELECT COUNT(*) as count FROM orders WHERE payment_method = 'COD' AND order_status = 'Pending'"
         ];
         
