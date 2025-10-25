@@ -13,6 +13,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
 // Include database connection
 require_once 'dbconn.php';
 
+// Set query timeout to prevent page hanging
+@$conn->query("SET SESSION wait_timeout = 10");
+@$conn->query("SET SESSION interactive_timeout = 10");
+@$conn->query("SET SESSION MAX_EXECUTION_TIME = 10000"); // 10 seconds per query
+ini_set('max_execution_time', '30'); // Limit page execution to 30 seconds
+
 // Get user data for profile image/name (cjusers typically has email/role/profile_image only)
 $user_id = $_SESSION['user_id'];
 $user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
@@ -945,8 +951,28 @@ $stmt3->close();
                         <!-- Hidden data for JavaScript -->
                         <div id="weeklyOrdersData" style="display: none;">
                             <?php
-                            $weeklyData = getWeeklyOrdersData($conn);
-                            echo htmlspecialchars(json_encode($weeklyData));
+                            try {
+                                // Add timeout protection
+                                $conn->query("SET SESSION MAX_EXECUTION_TIME=5000");
+                                $weeklyData = getWeeklyOrdersData($conn);
+                                echo htmlspecialchars(json_encode($weeklyData));
+                            } catch (Exception $e) {
+                                // Fallback to empty data if query fails
+                                error_log("Weekly data query failed: " . $e->getMessage());
+                                $emptyWeekData = [];
+                                $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                                foreach ($days as $day) {
+                                    $emptyWeekData[] = [
+                                        'day' => $day,
+                                        'date' => date('Y-m-d'),
+                                        'completed_count' => 0,
+                                        'completed_amount' => 0,
+                                        'returned_count' => 0,
+                                        'returned_amount' => 0
+                                    ];
+                                }
+                                echo htmlspecialchars(json_encode($emptyWeekData));
+                            }
                             ?>
                         </div>
                     </div>
