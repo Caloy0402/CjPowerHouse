@@ -121,9 +121,9 @@ $user_data = $user_result->fetch_assoc();
                         </a>
 
                         <div class="navbar-nav align-items-center ms-auto">
-                <--?php include 'admin_notifications.php'; ?>
-                <--?php include 'admin_rescue_notifications.php'; ?>
-                <--?php include 'admin_user_notifications.php'; ?>
+                <?php include 'admin_notifications.php'; ?>
+                <?php include 'admin_rescue_notifications.php'; ?>
+                <?php include 'admin_user_notifications.php'; ?>
                             <div class="nav-item dropdown">
                         <div class="dropdown-menu dropdown-menu-end bg-secondary 
                         border-0 rounded-0 rounded-bottom m-0">
@@ -244,12 +244,36 @@ $user_data = $user_result->fetch_assoc();
         $totalUsers = ($countRes && ($row = $countRes->fetch_assoc())) ? (int)$row['c'] : 0;
         $totalPages = max(1, (int)ceil($totalUsers / $perPage));
 
-        // Ensure required columns exist first
-        $conn->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS cod_suspended TINYINT(1) DEFAULT 0");
-        $conn->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS cod_suspended_until DATETIME NULL");
-        $conn->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS cod_failed_attempts INT DEFAULT 0");
-        $conn->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at DATETIME NULL");
-        $conn->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_logout_at DATETIME NULL");
+        // Ensure required columns exist first (MySQL compatible way)
+        // Check and add cod_suspended column
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'cod_suspended'");
+        if ($result->num_rows == 0) {
+            $conn->query("ALTER TABLE users ADD COLUMN cod_suspended TINYINT(1) DEFAULT 0");
+        }
+        
+        // Check and add cod_suspended_until column
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'cod_suspended_until'");
+        if ($result->num_rows == 0) {
+            $conn->query("ALTER TABLE users ADD COLUMN cod_suspended_until DATETIME NULL");
+        }
+        
+        // Check and add cod_failed_attempts column
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'cod_failed_attempts'");
+        if ($result->num_rows == 0) {
+            $conn->query("ALTER TABLE users ADD COLUMN cod_failed_attempts INT DEFAULT 0");
+        }
+        
+        // Check and add last_login_at column
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'last_login_at'");
+        if ($result->num_rows == 0) {
+            $conn->query("ALTER TABLE users ADD COLUMN last_login_at DATETIME NULL");
+        }
+        
+        // Check and add last_logout_at column
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'last_logout_at'");
+        if ($result->num_rows == 0) {
+            $conn->query("ALTER TABLE users ADD COLUMN last_logout_at DATETIME NULL");
+        }
         
         // Ensure staff_logs table exists
         $conn->query("CREATE TABLE IF NOT EXISTS staff_logs (
