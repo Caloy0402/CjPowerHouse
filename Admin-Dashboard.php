@@ -32,9 +32,9 @@ if ($user_data) {
 // Resolve profile image with sensible defaults
 $profile_image = 'img/jandi.jpg';
 if ($user_data && !empty($user_data['profile_image'])) {
-    $profile_image = (strpos($user_data['profile_image'], '/uploads/') === 0)
+    $profile_image = (strpos($user_data['profile_image'], 'uploads/') === 0)
         ? $user_data['profile_image']
-        : '/uploads/' . $user_data['profile_image'];
+        : 'uploads/' . $user_data['profile_image'];
 }
 
 // Fetch sales and revenue data from orders table
@@ -351,8 +351,8 @@ $stmt3->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
     <!--libraries stylesheet-->
-    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
     <!--customized Bootstrap Stylesheet-->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -1098,14 +1098,14 @@ $stmt3->close();
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/lib/chart/chart.min.js"></script>
-    <script src="/js/notification-sound.js"></script>
-    <script src="/lib/easing/easing.min.js"></script>
-    <script src="/lib/waypoints/waypoints.min.js"></script>
-    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="/lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="lib/chart/chart.min.js"></script>
+    <script src="js/notification-sound.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
     <!-- AmCharts 4 Resources -->
     <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
@@ -1114,10 +1114,10 @@ $stmt3->close();
 
 
     <!-- Template Javascript -->
-    <script src="/js/main.js">
+    <script src="js/main.js">
     </script>
-    
-    <script src="/js/script.js"></script>
+
+    <script src="js/script.js"></script>
 
     <!-- Calendar Initialization -->
     <script>
@@ -1159,20 +1159,20 @@ $stmt3->close();
         function getProductImage(productName, category) {
             // Fallback to category-based images when database doesn't have ImagePath
             var categoryImages = {
-                'Bolts': '/uploads/hexagon.jpg',
-                'Oil': '/uploads/oil.jfif',
-                'Motor Chains': '/uploads/RK.jpg',
-                'Accessories': '/uploads/HandGrip.png',
-                'Fuel Components': '/uploads/Gasket.jpg',
-                'Electrical Components': '/uploads/Digital Speedometer.jpg',
-                'Batteries': '/uploads/Motolite.jpg',
-                'Tires': '/uploads/tire.webp',
-                'Brakes': '/uploads/brake-pad.jpg',
-                'Engine Components': '/uploads/XRM 125 cylinder Head.jpg',
-                'Exhaust': '/uploads/Exhaust.png'
+                'Bolts': 'uploads/hexagon.jpg',
+                'Oil': 'uploads/oil.jfif',
+                'Motor Chains': 'uploads/RK.jpg',
+                'Accessories': 'uploads/HandGrip.png',
+                'Fuel Components': 'uploads/Gasket.jpg',
+                'Electrical Components': 'uploads/Digital Speedometer.jpg',
+                'Batteries': 'uploads/Motolite.jpg',
+                'Tires': 'uploads/tire.webp',
+                'Brakes': 'uploads/brake-pad.jpg',
+                'Engine Components': 'uploads/XRM 125 cylinder Head.jpg',
+                'Exhaust': 'uploads/Exhaust.png'
             };
 
-            return categoryImages[category] || '/uploads/product/default.png';
+            return categoryImages[category] || 'uploads/product/default.png';
         }
 
         // AmCharts 4 3D Pie Chart for Products Quantity by Category
@@ -2521,7 +2521,7 @@ $stmt3->close();
                         product: product.ProductName,
                         quantity: parseInt(product.Quantity),
                         color: am4core.color(colors[index % colors.length]),
-                        imagePath: product.ImagePath ? '/uploads/' + product.ImagePath : getProductImage(product.ProductName, category)
+                        imagePath: product.ImagePath ? 'uploads/' + product.ImagePath : getProductImage(product.ProductName, category)
                     });
                 });
 
@@ -2578,7 +2578,7 @@ $stmt3->close();
                     var productImage = productDataItem ? productDataItem.imagePath : getProductImage(product, category);
 
                     return '<div style="padding: 12px; text-align: center; min-width: 200px;">' +
-                        '<img src="' + productImage + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; border: 2px solid #4b5563;" onerror="this.src=\'/uploads/product/default.png\'">' +
+                        '<img src="' + productImage + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; border: 2px solid #4b5563;" onerror="this.src=\'uploads/product/default.png\'">' +
                         '<div style="color: #f3f4f6; font-size: 14px; font-weight: bold;">📦 ' + product + '</div>' +
                         '<div style="color: #d1d5db; font-size: 12px; margin-top: 4px;">Quantity: ' + quantity.toLocaleString() + ' items</div>' +
                         '<div style="color: #d1d5db; font-size: 12px;">Share: ' + percentage + '% of ' + category + '</div>' +
@@ -3104,7 +3104,7 @@ $stmt3->close();
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize notification sound
             notificationSound = new NotificationSound({
-                soundFile: '/uploads/NofiticationCash.mp3',
+                soundFile: 'uploads/NofiticationCash.mp3',
                 volume: 1.0,
                 enableMute: true,
                 enableTest: true,
