@@ -229,7 +229,6 @@ $user_data = $user_result->fetch_assoc();
             </button>
         </div>
         <?php
-        require_once 'dbconn.php';
         
         // Set a timeout to prevent hanging
         set_time_limit(30);
