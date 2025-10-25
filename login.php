@@ -102,9 +102,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script>
         function showSpinner() {
-            document.getElementById("loading-spinner").style.display = "block"; // Show spinner
-            document.getElementById("login-btn").disabled = true; // Disable login button
+            document.getElementById("loading-spinner").style.display = "block"; 
+            document.getElementById("login-btn").disabled = true; 
         }
+
+        function hideSpinner() {
+            document.getElementById("loading-spinner").style.display = "none"; 
+            document.getElementById("login-btn").disabled = false; 
+        }
+        
+      
+        window.onload = function() {
+            hideSpinner();
+        };
     </script>
 </body>
 </html>

@@ -582,6 +582,14 @@ if (!$recent_orders_result) {
 
     <!-- Custom JavaScript for Order Logs -->
     <script>
+          // Hide spinner when page loads
+          window.onload = function() {
+            const spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.remove('show');
+            }
+        };
+
         // Modal handling for order details
         document.addEventListener('DOMContentLoaded', function() {
             const orderDetailsModal = document.getElementById('orderDetailsModal');
