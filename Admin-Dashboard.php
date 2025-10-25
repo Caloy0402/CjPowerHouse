@@ -413,8 +413,8 @@ try {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
     <!--libraries stylesheet-->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
     <!--customized Bootstrap Stylesheet-->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -1178,7 +1178,7 @@ try {
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/chart/chart.min.js"></script>
+    <script src="/lib/chart/chart.min.js"></script>
     <script>
         // Verify Chart.js loaded
         if (typeof Chart === 'undefined') {
@@ -1187,13 +1187,13 @@ try {
             console.log('Chart.js loaded successfully, version:', Chart.version);
         }
     </script>
-    <script src="js/notification-sound.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="/js/notification-sound.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/lib/tempusdominus/js/moment.min.js"></script>
+    <script src="/lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Calendar Initialization -->
     <script>
@@ -1243,7 +1243,7 @@ try {
 
 
     <!-- Template Javascript -->
-    <script src="js/main.js">
+    <script src="/js/main.js">
     </script>
 
     <!-- Custom JavaScript for Dashboard -->
@@ -3865,7 +3865,7 @@ try {
 
         // Fallback removed - using reliable vanilla JS spinner hide at top of page
     </script>
-    <script src="js/script.js"></script>
+    <script src="/js/script.js"></script>
 
     <!-- Force logout to work properly -->
     <script>
