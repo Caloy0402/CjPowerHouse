@@ -1127,6 +1127,20 @@ $stmt3->close();
 
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    
+    <!-- IMMEDIATE Spinner Hide - Runs as soon as jQuery loads -->
+    <script>
+        (function() {
+            // Hide spinner immediately - don't wait for anything
+            setTimeout(function() {
+                if ($('#spinner').length > 0) {
+                    $('#spinner').removeClass('show');
+                    console.log('✓ Spinner hidden immediately via jQuery');
+                }
+            }, 1);
+        })();
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/chart/Chart.min.js"></script>
     <script src="js/notification-sound.js"></script>
@@ -3131,15 +3145,6 @@ $stmt3->close();
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded fired - initializing dashboard...');
             
-            // HIDE SPINNER FIRST - Move to top to ensure it always executes
-            setTimeout(() => {
-                const spinner = document.getElementById("spinner");
-                if (spinner) {
-                    spinner.classList.remove("show");
-                    console.log('Spinner hidden successfully');
-                }
-            }, 100);
-            
             // Initialize notification sound with error handling
             try {
                 notificationSound = new NotificationSound({
@@ -3740,13 +3745,12 @@ $stmt3->close();
             }
         });
 
-        // Fallback: Hide spinner when window fully loads - IMMEDIATE
+        // Fallback: Ensure spinner is hidden when window fully loads
         window.addEventListener('load', function() {
-            console.log('Window load event fired');
-            const spinner = document.getElementById("spinner");
-            if (spinner && spinner.classList.contains('show')) {
-                spinner.classList.remove("show");
-                console.log('Spinner hidden via window.load fallback');
+            console.log('Window load event fired - double checking spinner');
+            if ($('#spinner').hasClass('show')) {
+                $('#spinner').removeClass('show');
+                console.log('✓ Spinner hidden via window.load fallback');
             }
         });
     </script>
