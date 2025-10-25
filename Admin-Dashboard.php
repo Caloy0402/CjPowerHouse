@@ -361,8 +361,8 @@ $stmt3->close();
     <!--Template Stylesheet-->
     <link href="css/style.css" rel="stylesheet">
 
-    <!-- Load Chart.js early from CDN (more reliable than local file) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Load Chart.js from local file -->
+    <script src="lib/chart/chart.min.js"></script>
     
     <!-- Custom CSS for responsive dashboard -->
     <style>
