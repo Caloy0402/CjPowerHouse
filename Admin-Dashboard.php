@@ -16,6 +16,29 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
 // Include database connection
 require_once 'dbconn.php';
 
+// Debug function (like Laravel's dd())
+function dd(...$vars) {
+    echo '<pre style="background: #1a1a1a; color: #00ff00; padding: 20px; font-family: monospace; font-size: 14px; border: 3px solid #00ff00; margin: 20px; overflow: auto; max-height: 90vh;">';
+    echo '<h2 style="color: #00ff00; margin-top: 0;">🐛 DEBUG OUTPUT (dd)</h2>';
+    echo '<hr style="border-color: #00ff00;">';
+    foreach ($vars as $index => $var) {
+        echo '<div style="margin-bottom: 20px;">';
+        echo '<strong style="color: #ffff00;">Variable #' . ($index + 1) . ':</strong><br>';
+        if (is_bool($var)) {
+            echo '<span style="color: #ff00ff;">' . ($var ? 'TRUE' : 'FALSE') . '</span>';
+        } elseif (is_null($var)) {
+            echo '<span style="color: #ff00ff;">NULL</span>';
+        } elseif (is_array($var) || is_object($var)) {
+            print_r($var);
+        } else {
+            var_dump($var);
+        }
+        echo '</div>';
+    }
+    echo '</pre>';
+    die();
+}
+
 // Set query timeout to prevent page hanging
 @$conn->query("SET SESSION wait_timeout = 10");
 @$conn->query("SET SESSION interactive_timeout = 10");
@@ -189,6 +212,18 @@ if ($category_quantity_result && $category_quantity_result->num_rows > 0) {
         $colorIndex++;
     }
 }
+
+// 🐛 DEBUG: Check chart data (REMOVE THIS LINE AFTER DEBUGGING)
+dd([
+    'Database Connected' => isset($conn) && $conn->ping(),
+    'Category Query Result' => $category_quantity_result ? 'Success' : 'Failed',
+    'Category Labels Count' => count($category_labels),
+    'Category Labels' => $category_labels,
+    'Category Quantities' => $category_quantities,
+    'Weekly Data Available' => isset($weeklyData) ? 'Not yet loaded' : 'Not loaded',
+    'Session User ID' => $_SESSION['user_id'] ?? 'Not set',
+    'Session Role' => $_SESSION['role'] ?? 'Not set'
+]);
 
 // Get recent orders for the table
 $recent_orders_query = "SELECT 
