@@ -161,7 +161,7 @@ $conn->close();
     <meta content="" name="description">
 
     <!-- Favicons -->
-    <link href="image/logo.png" rel="icon">
+    <link href="Image/logo.png" rel="icon">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>

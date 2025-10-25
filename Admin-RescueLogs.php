@@ -146,7 +146,7 @@ $stats = $stats_result->fetch_assoc();
     <meta content="" name="description">
 
     <!-- Favicon -->
-    <link href="image/logo.png" rel="icon">
+    <link href="Image/logo.png" rel="icon">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
