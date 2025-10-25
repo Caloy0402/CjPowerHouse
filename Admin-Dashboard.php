@@ -8,10 +8,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
     exit();
 }
 
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'];
-$path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-$baseURL = $protocol . '://' . $host . $path . '/';
+
+$baseURL = '/';
 
 // Include database connection
 require_once 'dbconn.php';
