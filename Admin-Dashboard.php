@@ -1178,7 +1178,15 @@ try {
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/chart/Chart.min.js"></script>
+    <script src="lib/chart/chart.min.js"></script>
+    <script>
+        // Verify Chart.js loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js failed to load!');
+        } else {
+            console.log('Chart.js loaded successfully, version:', Chart.version);
+        }
+    </script>
     <script src="js/notification-sound.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/waypoints/waypoints.min.js"></script>
@@ -1223,6 +1231,14 @@ try {
     <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+    <script>
+        // Verify AmCharts loaded
+        if (typeof am4core === 'undefined') {
+            console.error('AmCharts core failed to load!');
+        } else {
+            console.log('AmCharts loaded successfully');
+        }
+    </script>
 
 
 
@@ -1254,7 +1270,9 @@ try {
 
         // AmCharts 4 3D Pie Chart for Products Quantity by Category
         <?php if (!empty($category_labels)): ?>
+            console.log('AmCharts initialization starting...');
             am4core.ready(function() {
+                console.log('AmCharts core ready');
                 try {
                     // Themes begin
                     am4core.useTheme(am4themes_animated);
@@ -3255,8 +3273,22 @@ try {
         let weeklyOrdersChart = null;
 
         function initWeeklyOrdersChart() {
-            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
-            createWeeklyChart(chartData);
+            console.log('Initializing weekly orders chart...');
+            const dataElement = document.getElementById('weeklyOrdersData');
+            console.log('Data element found:', dataElement);
+            if (!dataElement) {
+                console.error('weeklyOrdersData element not found!');
+                return;
+            }
+            const chartDataText = dataElement.textContent;
+            console.log('Chart data text:', chartDataText);
+            try {
+                const chartData = JSON.parse(chartDataText);
+                console.log('Parsed chart data:', chartData);
+                createWeeklyChart(chartData);
+            } catch (e) {
+                console.error('Error parsing weekly chart data:', e);
+            }
         }
 
         function createWeeklyChart(data) {
