@@ -403,30 +403,30 @@ try {
 }
 
 // 🐛 DEBUG: Check ALL chart data (REMOVE THIS AFTER DEBUGGING)
-dd([
-    '=== DATABASE STATUS ===' => '',
-    'Database Connected' => isset($conn) && $conn->ping(),
+// dd([
+//     '=== DATABASE STATUS ===' => '',
+//     'Database Connected' => isset($conn) && $conn->ping(),
     
-    '=== CATEGORY CHART DATA (PIE) ===' => '',
-    'Category Labels Count' => count($category_labels),
-    'Category Labels' => $category_labels,
-    'Category Quantities' => $category_quantities,
-    'Empty Categories?' => empty($category_labels) ? 'YES - NO DATA!' : 'NO - Data exists',
+//     '=== CATEGORY CHART DATA (PIE) ===' => '',
+//     'Category Labels Count' => count($category_labels),
+//     'Category Labels' => $category_labels,
+//     'Category Quantities' => $category_quantities,
+//     'Empty Categories?' => empty($category_labels) ? 'YES - NO DATA!' : 'NO - Data exists',
     
-    '=== WEEKLY CHART DATA (BAR) ===' => '',
-    'Weekly Data Loaded' => isset($weeklyData) ? 'YES' : 'NO',
-    'Weekly Data Count' => isset($weeklyData) ? count($weeklyData) : 0,
-    'Weekly Data JSON' => isset($weeklyDataJson) ? 'Generated' : 'Missing',
-    'Weekly Data Sample' => isset($weeklyData) && !empty($weeklyData) ? $weeklyData[0] : 'No data',
-    'Weekly Data Full' => $weeklyData ?? 'Not set',
+//     '=== WEEKLY CHART DATA (BAR) ===' => '',
+//     'Weekly Data Loaded' => isset($weeklyData) ? 'YES' : 'NO',
+//     'Weekly Data Count' => isset($weeklyData) ? count($weeklyData) : 0,
+//     'Weekly Data JSON' => isset($weeklyDataJson) ? 'Generated' : 'Missing',
+//     'Weekly Data Sample' => isset($weeklyData) && !empty($weeklyData) ? $weeklyData[0] : 'No data',
+//     'Weekly Data Full' => $weeklyData ?? 'Not set',
     
-    '=== SESSION DATA ===' => '',
-    'Session User ID' => $_SESSION['user_id'] ?? 'Not set',
-    'Session Role' => $_SESSION['role'] ?? 'Not set',
+//     '=== SESSION DATA ===' => '',
+//     'Session User ID' => $_SESSION['user_id'] ?? 'Not set',
+//     'Session Role' => $_SESSION['role'] ?? 'Not set',
     
-    '=== LOW STOCK DATA ===' => '',
-    'Low Stock Items Count' => count($lowStockItems),
-]);
+//     '=== LOW STOCK DATA ===' => '',
+//     'Low Stock Items Count' => count($lowStockItems),
+// ]);
 
 // CRITICAL FIX: Close database connection before HTML output
 // This prevents hanging queries from blocking the page
