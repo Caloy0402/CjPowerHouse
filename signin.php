@@ -612,30 +612,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         //     }
         // });
 
-        // Start new session button
-        document.getElementById('notMeBtn').addEventListener('click', function() {
-            if (window.sessionData && window.userData) {
-                fetch('handle_user_session.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=start_new&user_id=${window.userData.id}&existing_session_id=${window.sessionData.session_id}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        showInlineError(data.message || 'Failed to start new session');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showInlineError('An error occurred while starting new session');
-                });
-            }
-        });
+        // // Start new session button
+        // document.getElementById('notMeBtn').addEventListener('click', function() {
+        //     if (window.sessionData && window.userData) {
+        //         fetch('handle_user_session.php', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/x-www-form-urlencoded',
+        //             },
+        //             body: `action=start_new&user_id=${window.userData.id}&existing_session_id=${window.sessionData.session_id}`
+        //         })
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.status === 'success') {
+        //                 window.location.href = data.redirectUrl;
+        //             } else {
+        //                 showInlineError(data.message || 'Failed to start new session');
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //             showInlineError('An error occurred while starting new session');
+        //         });
+        //     }
+        // });
 
         function proceedWithLogin(email, password) {
             // Submit the form normally
