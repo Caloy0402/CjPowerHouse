@@ -367,10 +367,7 @@ $conn->close();
             </div>
         </div>
 
-        <button class="logout-button" onclick="logout()">
-    <span class="material-icons">logout</span>
-    <span>Logout</span>
-</button>
+   
         </div>
     </div>
 

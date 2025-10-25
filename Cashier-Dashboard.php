@@ -315,26 +315,29 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
         }
 
         .notification-item {
-            padding: 10px;
+            padding: 8px;
             background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 5px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
         }
 
         .notification-item h6 {
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            font-size: 14px;
         }
 
         .notification-item p {
-            margin: 5px 0;
-            font-size: 14px;
+            margin: 2px 0;
+            font-size: 12px;
             color: #666;
+            line-height: 1.3;
         }
 
         .notification-item small {
             color: #999;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         /* Banner notification styles */
@@ -402,8 +405,9 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
         }
 
         .dropdown-menu {
-            min-width: 300px;
-            max-height: 400px;
+            min-width: 280px;
+            max-width: 320px;
+            max-height: 350px;
             overflow-y: auto;
         }
 
@@ -1414,19 +1418,11 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
                             const orderIdLabel = (notification.order_id || '');
                             item.innerHTML = `
                                 <div class="notification-item">
-                                    ${orderIdLabel ? `<h6 class=\"fw-normal mb-0\">Order #${orderIdLabel}</h6>` : ''}
-                                    <p><strong>Items:</strong> ${notification.items}</p>
-                                    <p><strong>Subtotal:</strong> ₱${notification.total_price}</p>
-                                    <p><strong>Delivery Fee:</strong> ₱${notification.delivery_fee}</p>
-                                    <p><strong>Total Amount:</strong> ₱${notification.total_with_delivery}</p>
-                                    <p><strong>Payment Method:</strong> ${notification.payment_method}</p>
-                                    <p><strong>Delivery Method:</strong> ${notification.delivery_method}</p>
-                                    ${notification.rider_name ? `
-                                        <p><strong>Rider:</strong> ${notification.rider_name}</p>
-                                        <p><strong>Vehicle:</strong> ${notification.rider_motor_type} (${notification.rider_plate_number})</p>
-                                    ` : ''}
-                                    <p><strong>Status:</strong> ${notification.order_status}</p>
-                                    <small>${notification.order_date}</small>
+                                    ${orderIdLabel ? `<h6 class="fw-normal mb-1">Order #${orderIdLabel}</h6>` : ''}
+                                    <p class="mb-1"><strong>Total:</strong> ₱${notification.total_with_delivery}</p>
+                                    <p class="mb-1"><strong>Method:</strong> ${notification.payment_method} • ${notification.delivery_method}</p>
+                                    <p class="mb-1"><strong>Status:</strong> ${notification.order_status}</p>
+                                    <small class="text-muted">${notification.order_date}</small>
                                 </div>
                                 <hr class="dropdown-divider">
                             `;
@@ -1995,19 +1991,11 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
                             const orderIdLabel = (notification.order_id || '');
                             item.innerHTML = `
                                 <div class="notification-item">
-                                    ${orderIdLabel ? `<h6 class="fw-normal mb-0">Order #${orderIdLabel}</h6>` : ''}
-                                    <p><strong>Items:</strong> ${notification.items}</p>
-                                    <p><strong>Subtotal:</strong> ₱${notification.total_price}</p>
-                                    <p><strong>Delivery Fee:</strong> ₱${notification.delivery_fee}</p>
-                                    <p><strong>Total Amount:</strong> ₱${notification.total_with_delivery}</p>
-                                    <p><strong>Payment Method:</strong> ${notification.payment_method}</p>
-                                    <p><strong>Delivery Method:</strong> ${notification.delivery_method}</p>
-                                    ${notification.rider_name ? `
-                                        <p><strong>Rider:</strong> ${notification.rider_name}</p>
-                                        <p><strong>Vehicle:</strong> ${notification.rider_motor_type} (${notification.rider_plate_number})</p>
-                                    ` : ''}
-                                    <p><strong>Status:</strong> ${notification.order_status}</p>
-                                    <small>${notification.order_date}</small>
+                                    ${orderIdLabel ? `<h6 class="fw-normal mb-1">Order #${orderIdLabel}</h6>` : ''}
+                                    <p class="mb-1"><strong>Total:</strong> ₱${notification.total_with_delivery}</p>
+                                    <p class="mb-1"><strong>Method:</strong> ${notification.payment_method} • ${notification.delivery_method}</p>
+                                    <p class="mb-1"><strong>Status:</strong> ${notification.order_status}</p>
+                                    <small class="text-muted">${notification.order_date}</small>
                                 </div>
                                 <hr class="dropdown-divider">
                             `;

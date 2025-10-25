@@ -2967,8 +2967,14 @@ $stmt3->close();
                         if (hasNewNotifications && !isInitialLoad && notificationSound &&
                             (currentTime - lastSoundPlayTime) > SOUND_DEBOUNCE_TIME && isPageVisible) {
                             console.log('Admin Dashboard: Playing notification sound - new notification detected');
-                            notificationSound.play();
-                            lastSoundPlayTime = currentTime;
+                            
+                            // Check if audio is ready before playing
+                            if (notificationSound.isAudioReady()) {
+                                notificationSound.play();
+                                lastSoundPlayTime = currentTime;
+                            } else {
+                                console.log('Audio not ready - user interaction required to unlock');
+                            }
                         }
 
                         // Update tracking
@@ -3098,6 +3104,7 @@ $stmt3->close();
         let lastNotificationCount = 0;
         let isInitialLoad = true;
         let lastSoundPlayTime = 0;
+        let audioUnlockAttempted = false;
         const SOUND_DEBOUNCE_TIME = 2000; // 2 seconds between sounds
 
         // Initialize real-time updates when page loads
@@ -3110,6 +3117,17 @@ $stmt3->close();
                 enableTest: true,
                 storageKey: 'adminNotificationSoundSettings'
             });
+            
+            // Add click listener to unlock audio on first user interaction
+            document.addEventListener('click', function unlockAudioOnClick() {
+                if (notificationSound && !notificationSound.getAudioUnlocked() && !audioUnlockAttempted) {
+                    audioUnlockAttempted = true;
+                    notificationSound.unlockAudioManually();
+                    console.log('Audio unlock attempted on user click');
+                }
+                // Remove listener after first attempt
+                document.removeEventListener('click', unlockAudioOnClick);
+            }, { once: true });
 
             // Reset tracking on page load
             lastNotificationCount = 0;
@@ -3494,10 +3512,14 @@ $stmt3->close();
 
         function pulseRevenueStatus() {
             const statusBadge = document.getElementById('revenueStatus');
-            statusBadge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                statusBadge.style.animation = '';
-            }, 1000);
+            if (statusBadge) {
+                statusBadge.style.animation = 'pulse 1s ease-in-out';
+                setTimeout(() => {
+                    statusBadge.style.animation = '';
+                }, 1000);
+            } else {
+                console.log('Revenue status badge not found - element may not exist');
+            }
         }
 
         // Add CSS animation for pulse effect
@@ -3552,10 +3574,16 @@ $stmt3->close();
 
                 helpRequestsEventSource.onmessage = function(event) {
                     try {
+                        if (!event.data || event.data.trim() === '') {
+                            console.log('Empty SSE message received');
+                            return;
+                        }
+                        
                         const data = JSON.parse(event.data);
                         handleHelpRequestsSSE(data);
                     } catch (error) {
                         console.error('Error parsing help requests SSE message:', error);
+                        console.log('Raw event data:', event.data);
                     }
                 };
 
@@ -3577,14 +3605,23 @@ $stmt3->close();
         }
 
         function handleHelpRequestsSSE(data) {
+            if (!data || typeof data !== 'object') {
+                console.log('Invalid SSE data received:', data);
+                return;
+            }
+
             switch (data.type) {
                 case 'connection':
                     console.log('Help Requests SSE connected:', data.message);
                     break;
 
                 case 'update':
-                    updateHelpRequestsDisplay(data.help_requests, data.stats);
-                    pulseRescueStatus();
+                    if (data.help_requests && data.stats) {
+                        updateHelpRequestsDisplay(data.help_requests, data.stats);
+                        pulseRescueStatus();
+                    } else {
+                        console.log('Update message missing required data:', data);
+                    }
                     break;
 
                 case 'heartbeat':
@@ -3603,14 +3640,23 @@ $stmt3->close();
         function updateHelpRequestsDisplay(helpRequests, stats) {
             // Update statistics
             if (stats) {
-                document.getElementById('pendingCount').textContent = stats.pending_count || 0;
-                document.getElementById('inProgressCount').textContent = stats.in_progress_count || 0;
-                document.getElementById('completedCount').textContent = stats.completed_count || 0;
+                const pendingCount = document.getElementById('pendingCount');
+                const inProgressCount = document.getElementById('inProgressCount');
+                const completedCount = document.getElementById('completedCount');
+                
+                if (pendingCount) pendingCount.textContent = stats.pending_count || 0;
+                if (inProgressCount) inProgressCount.textContent = stats.in_progress_count || 0;
+                if (completedCount) completedCount.textContent = stats.completed_count || 0;
             }
 
             // Update help requests list
             const container = document.getElementById('helpRequestsList');
             const noRequestsMessage = document.getElementById('noRequestsMessage');
+
+            if (!container || !noRequestsMessage) {
+                console.log('Help requests container elements not found');
+                return;
+            }
 
             if (!helpRequests || helpRequests.length === 0) {
                 container.style.display = 'none';
@@ -3670,10 +3716,14 @@ $stmt3->close();
 
         function pulseRescueStatus() {
             const statusBadge = document.getElementById('rescueStatus');
-            statusBadge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                statusBadge.style.animation = '';
-            }, 1000);
+            if (statusBadge) {
+                statusBadge.style.animation = 'pulse 1s ease-in-out';
+                setTimeout(() => {
+                    statusBadge.style.animation = '';
+                }, 1000);
+            } else {
+                console.log('Rescue status badge not found - element may not exist');
+            }
         }
 
         // Cleanup SSE connection when page unloads

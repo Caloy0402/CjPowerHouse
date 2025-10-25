@@ -105,7 +105,11 @@ class NotificationSound {
             if (AudioContext) {
                 this.audioContext = new AudioContext();
                 if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
+                    this.audioContext.resume().then(() => {
+                        console.log('AudioContext resumed successfully');
+                    }).catch(error => {
+                        console.log('AudioContext resume failed:', error);
+                    });
                 }
             }
             
@@ -119,10 +123,13 @@ class NotificationSound {
                     console.log('Notification sound unlocked successfully');
                 }).catch(error => {
                     console.log('Audio unlock failed:', error);
+                    // Don't give up - try again on next user interaction
+                    this.audioUnlocked = false;
                 });
             }
         } catch (error) {
             console.log('Audio unlock error:', error);
+            this.audioUnlocked = false;
         }
     }
     
@@ -134,6 +141,17 @@ class NotificationSound {
         try {
             // Reset audio to beginning
             this.audioElement.currentTime = 0;
+            
+            // Check if audio is unlocked, if not try to unlock first
+            if (!this.audioUnlocked) {
+                console.log('Audio not unlocked, attempting to unlock...');
+                this.unlockAudio();
+                // If still not unlocked, we can't play
+                if (!this.audioUnlocked) {
+                    console.log('Cannot play sound - audio not unlocked. User interaction required.');
+                    return false;
+                }
+            }
             
             // Play the sound
             const playPromise = this.audioElement.play();
@@ -160,6 +178,11 @@ class NotificationSound {
         // Try to unlock audio for next time
         if (!this.audioUnlocked) {
             this.unlockAudio();
+        }
+        
+        // Show user-friendly message for autoplay policy
+        if (error.name === 'NotAllowedError') {
+            this.showToast('Click anywhere on the page to enable notification sounds', 'info');
         }
     }
     
@@ -261,6 +284,18 @@ class NotificationSound {
     
     getAudioUnlocked() {
         return this.audioUnlocked;
+    }
+    
+    // Manual unlock method for user interaction
+    unlockAudioManually() {
+        console.log('Manual audio unlock requested');
+        this.unlockAudio();
+        return this.audioUnlocked;
+    }
+    
+    // Check if audio is ready to play
+    isAudioReady() {
+        return this.audioElement && this.audioElement.readyState >= 2 && this.audioUnlocked;
     }
     
     destroy() {
