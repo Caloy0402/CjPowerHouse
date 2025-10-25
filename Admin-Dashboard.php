@@ -1,4 +1,7 @@
 <?php
+// Disable output buffering to allow immediate page rendering
+if (ob_get_level()) ob_end_clean();
+
 // Start session and check admin access
 session_start();
 
@@ -21,11 +24,19 @@ ini_set('max_execution_time', '30'); // Limit page execution to 30 seconds
 
 // Get user data for profile image/name (cjusers typically has email/role/profile_image only)
 $user_id = $_SESSION['user_id'];
-$user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
-$user_query->bind_param("i", $user_id);
-$user_query->execute();
-$user_result = $user_query->get_result();
-$user_data = $user_result ? $user_result->fetch_assoc() : null;
+$user_data = null;
+try {
+    $user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
+    if ($user_query) {
+        $user_query->bind_param("i", $user_id);
+        $user_query->execute();
+        $user_result = $user_query->get_result();
+        $user_data = $user_result ? $user_result->fetch_assoc() : null;
+        $user_query->close();
+    }
+} catch (Exception $e) {
+    error_log("User query error: " . $e->getMessage());
+}
 
 // Compute safe display values to avoid undefined columns on some deployments
 $display_name = 'Admin';
@@ -727,6 +738,23 @@ try {
             <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
         </div>
         <!-- Spinner End -->
+        
+        <!-- IMMEDIATE Spinner Hide - Runs as soon as this script is parsed -->
+        <script>
+            (function() {
+                // Hide spinner immediately - no waiting
+                var spinner = document.getElementById('spinner');
+                if (spinner) {
+                    spinner.classList.remove('show');
+                    console.log('✓ Spinner hidden inline');
+                }
+            })();
+        </script>
+        <?php 
+        // Flush output buffer to send HTML to browser immediately
+        if (ob_get_level()) ob_flush();
+        flush();
+        ?>
 
         <!-- Sidebar Start -->
         <!-- Sidebar Start -->
