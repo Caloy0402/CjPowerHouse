@@ -1,7 +1,4 @@
 <?php
-// Disable output buffering to allow immediate page rendering
-if (ob_get_level()) ob_end_clean();
-
 // Start session and check admin access
 session_start();
 
@@ -11,26 +8,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
     exit();
 }
 
-
-
 // Include database connection
 require_once 'dbconn.php';
 
 // Get user data for profile image/name (cjusers typically has email/role/profile_image only)
 $user_id = $_SESSION['user_id'];
-$user_data = null;
-try {
-    $user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
-    if ($user_query) {
-        $user_query->bind_param("i", $user_id);
-        $user_query->execute();
-        $user_result = $user_query->get_result();
-        $user_data = $user_result ? $user_result->fetch_assoc() : null;
-        $user_query->close();
-    }
-} catch (Exception $e) {
-    error_log("User query error: " . $e->getMessage());
-}
+$user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
+$user_query->bind_param("i", $user_id);
+$user_query->execute();
+$user_result = $user_query->get_result();
+$user_data = $user_result ? $user_result->fetch_assoc() : null;
 
 // Compute safe display values to avoid undefined columns on some deployments
 $display_name = 'Admin';
@@ -107,7 +94,7 @@ $total_revenue_data = $total_revenue_result->fetch_assoc();
 $total_revenue = number_format($total_revenue_data['total_revenue'] ?? 0, 2);
 
 // All Products Value (total inventory worth)
-$total_products_value_query = "SELECT SUM(Price * quantity) as total_value FROM products";
+$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value FROM Products";
 $total_products_value_result = $conn->query($total_products_value_query);
 $total_products_value_data = $total_products_value_result->fetch_assoc();
 $total_products_value = number_format($total_products_value_data['total_value'] ?? 0, 2);
@@ -121,11 +108,11 @@ $total_earned = number_format($total_earned_data['total_earned'] ?? 0, 2);
 // Compute stock level counts (Good, Low, Critical, Out of Stock)
 $stock_counts_sql = "
     SELECT 
-        SUM(CASE WHEN quantity >= 21 THEN 1 ELSE 0 END) AS good_count,
-        SUM(CASE WHEN quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
-        SUM(CASE WHEN quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
-        SUM(CASE WHEN quantity <= 1 THEN 1 ELSE 0 END) AS out_count
-    FROM products
+        SUM(CASE WHEN Quantity >= 21 THEN 1 ELSE 0 END) AS good_count,
+        SUM(CASE WHEN Quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
+        SUM(CASE WHEN Quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
+        SUM(CASE WHEN Quantity <= 1 THEN 1 ELSE 0 END) AS out_count
+    FROM Products
 ";
 $stock_counts_res = $conn->query($stock_counts_sql);
 $good_count = 0;
@@ -145,12 +132,12 @@ $last_month = date("Y-m", strtotime("-1 month"));
 
 // Get products quantity by category for pie chart
 $category_quantity_query = "SELECT 
-    category,
-    SUM(quantity) as total_quantity,
+    Category,
+    SUM(Quantity) as total_quantity,
     COUNT(*) as product_count
-FROM products 
-WHERE category IS NOT NULL AND category != ''
-GROUP BY category 
+FROM Products 
+WHERE Category IS NOT NULL AND Category != ''
+GROUP BY Category 
 ORDER BY total_quantity DESC";
 
 $category_quantity_result = $conn->query($category_quantity_query);
@@ -176,7 +163,7 @@ if ($category_quantity_result && $category_quantity_result->num_rows > 0) {
 
     $colorIndex = 0;
     while ($row = $category_quantity_result->fetch_assoc()) {
-        $category_labels[] = $row['category'];
+        $category_labels[] = $row['Category'];
         $category_quantities[] = (int)$row['total_quantity'];
         $category_colors[] = $colors[$colorIndex % count($colors)][0];
         $category_hover_colors[] = $colors[$colorIndex % count($colors)][1];
@@ -284,8 +271,8 @@ $last_month_low_stock_sql = "
     SELECT AVG(low_stock_count) as avg_low_stock 
     FROM (
         SELECT COUNT(*) as low_stock_count 
-        FROM products 
-        WHERE quantity BETWEEN 10 AND 20 
+        FROM Products 
+        WHERE Quantity BETWEEN 10 AND 20 
         AND DATE_FORMAT(NOW(), '%Y-%m') = ?
         GROUP BY DATE(NOW())
     ) as daily_counts
@@ -347,7 +334,7 @@ $stmt3->close();
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Admin Dashboard</title>
-    <link rel="icon" type="image/png" href="image/logo.png">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -365,14 +352,14 @@ $stmt3->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
     <!--libraries stylesheet-->
-    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
     <!--customized Bootstrap Stylesheet-->
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <!--Template Stylesheet-->
-    <link href="/css/style.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
 
     <!-- Custom CSS for responsive dashboard -->
     <style>
@@ -689,24 +676,8 @@ $stmt3->close();
         <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
         </div>
+
         <!-- Spinner End -->
-        
-        <!-- IMMEDIATE Spinner Hide - Runs as soon as this script is parsed -->
-        <script>
-            (function() {
-                // Hide spinner immediately - no waiting
-                var spinner = document.getElementById('spinner');
-                if (spinner) {
-                    spinner.classList.remove('show');
-                    console.log('✓ Spinner hidden inline');
-                }
-            })();
-        </script>
-        <?php 
-        // Flush output buffer to send HTML to browser immediately
-        if (ob_get_level()) ob_flush();
-        flush();
-        ?>
 
         <!-- Sidebar Start -->
         <!-- Sidebar Start -->
@@ -966,8 +937,8 @@ $stmt3->close();
                                 <i class="fas fa-sync-alt me-1"></i>Refresh
                             </button>
                         </div>
-                        <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
-                            <canvas id="weeklyOrdersChart" style="display: block; width: 100%; height: 100%;"></canvas>
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="weeklyOrdersChart"></canvas>
                         </div>
                         <!-- Hidden data for JavaScript -->
                         <div id="weeklyOrdersData" style="display: none;">
@@ -1054,7 +1025,7 @@ $stmt3->close();
                         // Fetch top 8 lowest-stock products
                         $lowStockItems = [];
                         if (isset($conn) && $conn instanceof mysqli) {
-                            $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
+                            $lowSql = "SELECT ProductID, ProductName, Quantity FROM Products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
                             if ($lowRes = $conn->query($lowSql)) {
                                 while ($row = $lowRes->fetch_assoc()) {
                                     $lowStockItems[] = $row;
@@ -1070,7 +1041,7 @@ $stmt3->close();
                         <?php else: ?>
                             <div class="low-stock-list" style="max-height: 320px; overflow: auto;">
                                 <?php foreach ($lowStockItems as $item):
-                                    $qty = (int)$item['quantity'];
+                                    $qty = (int)$item['Quantity'];
                                     $badge = 'bg-success';
                                     if ($qty <= 1) {
                                         $badge = 'bg-danger';
@@ -1128,38 +1099,15 @@ $stmt3->close();
 
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    
-    <!-- IMMEDIATE Spinner Hide - Vanilla JS (Reliable) -->
-    <script>
-        // Hide spinner when page loads - same approach as signin.php
-        window.addEventListener('load', function() {
-            var spinner = document.getElementById("spinner");
-            if (spinner) {
-                spinner.classList.remove("show");
-                console.log('✓ Spinner hidden on page load');
-            }
-        });
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Chart.js from CDN (reliable and always available) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script>
-        // Verify Chart.js loaded
-        if (typeof Chart === 'undefined') {
-            console.error('❌ Chart.js failed to load from CDN!');
-            alert('Chart library failed to load. Charts will not be displayed.');
-        } else {
-            console.log('✅ Chart.js loaded successfully from CDN, version:', Chart.version);
-        }
-    </script>
-    <script src="/js/notification-sound.js"></script>
-    <script src="/lib/easing/easing.min.js"></script>
-    <script src="/lib/waypoints/waypoints.min.js"></script>
-    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="/lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="lib/chart/Chart.min.js"></script>
+    <script src="js/notification-sound.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Calendar Initialization -->
     <script>
@@ -1197,19 +1145,11 @@ $stmt3->close();
     <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
-    <script>
-        // Verify AmCharts loaded
-        if (typeof am4core === 'undefined') {
-            console.error('AmCharts core failed to load!');
-        } else {
-            console.log('AmCharts loaded successfully');
-        }
-    </script>
 
 
 
     <!-- Template Javascript -->
-    <script src="/js/main.js">
+    <script src="js/main.js">
     </script>
 
     <!-- Custom JavaScript for Dashboard -->
@@ -1236,9 +1176,7 @@ $stmt3->close();
 
         // AmCharts 4 3D Pie Chart for Products Quantity by Category
         <?php if (!empty($category_labels)): ?>
-            console.log('AmCharts initialization starting...');
             am4core.ready(function() {
-                console.log('AmCharts core ready');
                 try {
                     // Themes begin
                     am4core.useTheme(am4themes_animated);
@@ -3028,14 +2966,8 @@ $stmt3->close();
                         if (hasNewNotifications && !isInitialLoad && notificationSound &&
                             (currentTime - lastSoundPlayTime) > SOUND_DEBOUNCE_TIME && isPageVisible) {
                             console.log('Admin Dashboard: Playing notification sound - new notification detected');
-                            
-                            // Check if audio is ready before playing
-                            if (notificationSound.isAudioReady()) {
-                                notificationSound.play();
-                                lastSoundPlayTime = currentTime;
-                            } else {
-                                console.log('Audio not ready - user interaction required to unlock');
-                            }
+                            notificationSound.play();
+                            lastSoundPlayTime = currentTime;
                         }
 
                         // Update tracking
@@ -3165,7 +3097,6 @@ $stmt3->close();
         let lastNotificationCount = 0;
         let isInitialLoad = true;
         let lastSoundPlayTime = 0;
-        let audioUnlockAttempted = false;
         const SOUND_DEBOUNCE_TIME = 2000; // 2 seconds between sounds
 
         // Initialize real-time updates when page loads
@@ -3178,17 +3109,6 @@ $stmt3->close();
                 enableTest: true,
                 storageKey: 'adminNotificationSoundSettings'
             });
-            
-            // Add click listener to unlock audio on first user interaction
-            document.addEventListener('click', function unlockAudioOnClick() {
-                if (notificationSound && !notificationSound.getAudioUnlocked() && !audioUnlockAttempted) {
-                    audioUnlockAttempted = true;
-                    notificationSound.unlockAudioManually();
-                    console.log('Audio unlock attempted on user click');
-                }
-                // Remove listener after first attempt
-                document.removeEventListener('click', unlockAudioOnClick);
-            }, { once: true });
 
             // Reset tracking on page load
             lastNotificationCount = 0;
@@ -3218,69 +3138,18 @@ $stmt3->close();
         let weeklyOrdersChart = null;
 
         function initWeeklyOrdersChart() {
-            console.log('Initializing weekly orders chart...');
-            const dataElement = document.getElementById('weeklyOrdersData');
-            console.log('Data element found:', dataElement);
-            if (!dataElement) {
-                console.error('weeklyOrdersData element not found!');
-                return;
-            }
-            const chartDataText = dataElement.textContent;
-            console.log('Chart data text:', chartDataText);
-            try {
-                const chartData = JSON.parse(chartDataText);
-                console.log('Parsed chart data:', chartData);
-                createWeeklyChart(chartData);
-            } catch (e) {
-                console.error('Error parsing weekly chart data:', e);
-            }
+            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
+            createWeeklyChart(chartData);
         }
 
         function createWeeklyChart(data) {
-            console.log('📊 Creating weekly chart with data:', data);
-            
-            // CRITICAL: Check if Chart.js is available
-            if (typeof Chart === 'undefined') {
-                console.error('❌ FATAL: Chart.js is NOT available when trying to create chart!');
-                const container = document.getElementById('weeklyOrdersChart').parentElement;
-                if (container) {
-                    container.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p class="mb-0">Chart.js library not loaded</p><small>Check console for errors</small></div>';
-                }
-                return;
-            }
-            console.log('✅ Chart.js is available, version:', Chart.version);
-            
-            // Check if data is valid
-            if (!data || data.length === 0) {
-                console.warn('⚠️ No data available for weekly chart');
-                const container = document.getElementById('weeklyOrdersChart').parentElement;
-                if (container) {
-                    container.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-bar fa-3x mb-3"></i><p class="mb-0">No weekly data available</p></div>';
-                }
-                return;
-            }
-            console.log('✅ Data is valid, has', data.length, 'days');
-            
-            const canvas = document.getElementById('weeklyOrdersChart');
-            if (!canvas) {
-                console.error('❌ Canvas element not found!');
-                return;
-            }
-            console.log('✅ Canvas element found:', canvas);
-            
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                console.error('❌ Could not get 2D context from canvas!');
-                return;
-            }
-            console.log('✅ 2D context obtained');
+            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
 
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
 
-            try {
-                weeklyOrdersChart = new Chart(ctx, {
+            weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3385,15 +3254,6 @@ $stmt3->close();
                     }
                 }
             });
-                console.log('Weekly chart created successfully');
-            } catch (error) {
-                console.error('Error creating weekly chart:', error);
-                // Show error message in chart container
-                const container = document.getElementById('weeklyOrdersChart').parentElement;
-                if (container) {
-                    container.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load chart<br><small>' + error.message + '</small></div>';
-                }
-            }
         }
 
         function refreshWeeklyChart() {
@@ -3633,14 +3493,10 @@ $stmt3->close();
 
         function pulseRevenueStatus() {
             const statusBadge = document.getElementById('revenueStatus');
-            if (statusBadge) {
-                statusBadge.style.animation = 'pulse 1s ease-in-out';
-                setTimeout(() => {
-                    statusBadge.style.animation = '';
-                }, 1000);
-            } else {
-                console.log('Revenue status badge not found - element may not exist');
-            }
+            statusBadge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                statusBadge.style.animation = '';
+            }, 1000);
         }
 
         // Add CSS animation for pulse effect
@@ -3695,16 +3551,10 @@ $stmt3->close();
 
                 helpRequestsEventSource.onmessage = function(event) {
                     try {
-                        if (!event.data || event.data.trim() === '') {
-                            console.log('Empty SSE message received');
-                            return;
-                        }
-                        
                         const data = JSON.parse(event.data);
                         handleHelpRequestsSSE(data);
                     } catch (error) {
                         console.error('Error parsing help requests SSE message:', error);
-                        console.log('Raw event data:', event.data);
                     }
                 };
 
@@ -3726,23 +3576,14 @@ $stmt3->close();
         }
 
         function handleHelpRequestsSSE(data) {
-            if (!data || typeof data !== 'object') {
-                console.log('Invalid SSE data received:', data);
-                return;
-            }
-
             switch (data.type) {
                 case 'connection':
                     console.log('Help Requests SSE connected:', data.message);
                     break;
 
                 case 'update':
-                    if (data.help_requests && data.stats) {
-                        updateHelpRequestsDisplay(data.help_requests, data.stats);
-                        pulseRescueStatus();
-                    } else {
-                        console.log('Update message missing required data:', data);
-                    }
+                    updateHelpRequestsDisplay(data.help_requests, data.stats);
+                    pulseRescueStatus();
                     break;
 
                 case 'heartbeat':
@@ -3761,23 +3602,14 @@ $stmt3->close();
         function updateHelpRequestsDisplay(helpRequests, stats) {
             // Update statistics
             if (stats) {
-                const pendingCount = document.getElementById('pendingCount');
-                const inProgressCount = document.getElementById('inProgressCount');
-                const completedCount = document.getElementById('completedCount');
-                
-                if (pendingCount) pendingCount.textContent = stats.pending_count || 0;
-                if (inProgressCount) inProgressCount.textContent = stats.in_progress_count || 0;
-                if (completedCount) completedCount.textContent = stats.completed_count || 0;
+                document.getElementById('pendingCount').textContent = stats.pending_count || 0;
+                document.getElementById('inProgressCount').textContent = stats.in_progress_count || 0;
+                document.getElementById('completedCount').textContent = stats.completed_count || 0;
             }
 
             // Update help requests list
             const container = document.getElementById('helpRequestsList');
             const noRequestsMessage = document.getElementById('noRequestsMessage');
-
-            if (!container || !noRequestsMessage) {
-                console.log('Help requests container elements not found');
-                return;
-            }
 
             if (!helpRequests || helpRequests.length === 0) {
                 container.style.display = 'none';
@@ -3837,14 +3669,10 @@ $stmt3->close();
 
         function pulseRescueStatus() {
             const statusBadge = document.getElementById('rescueStatus');
-            if (statusBadge) {
-                statusBadge.style.animation = 'pulse 1s ease-in-out';
-                setTimeout(() => {
-                    statusBadge.style.animation = '';
-                }, 1000);
-            } else {
-                console.log('Rescue status badge not found - element may not exist');
-            }
+            statusBadge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                statusBadge.style.animation = '';
+            }, 1000);
         }
 
         // Cleanup SSE connection when page unloads
@@ -3853,10 +3681,8 @@ $stmt3->close();
                 helpRequestsEventSource.close();
             }
         });
-
-        // Fallback removed - using reliable vanilla JS spinner hide at top of page
     </script>
-    <script src="/js/script.js"></script>
+    <script src="js/script.js"></script>
 
     <!-- Force logout to work properly -->
     <script>
@@ -3874,6 +3700,22 @@ $stmt3->close();
             });
         });
     </script>
+    <!-- IMMEDIATE Spinner Hide - Runs as soon as this script is parsed -->
+    <script>
+        (function() {
+            // Hide spinner immediately - no waiting
+            var spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.remove('show');
+                console.log('✓ Spinner hidden inline');
+            }
+        })();
+    </script>
+    <?php
+    // Flush output buffer to send HTML to browser immediately
+    if (ob_get_level()) ob_flush();
+    flush();
+    ?>
 </body>
 
 </html>
