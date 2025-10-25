@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
 }
 
 
-$baseURL = '/';
+$baseURL = 'https://cjpowerhouse.blockfore.online/';
 
 // Include database connection
 require_once 'dbconn.php';
@@ -97,7 +97,7 @@ $total_revenue_data = $total_revenue_result->fetch_assoc();
 $total_revenue = number_format($total_revenue_data['total_revenue'] ?? 0, 2);
 
 // All Products Value (total inventory worth)
-$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value FROM products";
+$total_products_value_query = "SELECT SUM(Price * quantity) as total_value FROM products";
 $total_products_value_result = $conn->query($total_products_value_query);
 $total_products_value_data = $total_products_value_result->fetch_assoc();
 $total_products_value = number_format($total_products_value_data['total_value'] ?? 0, 2);
@@ -1016,7 +1016,7 @@ $stmt3->close();
                 <?php else: ?>
                     <div class="low-stock-list" style="max-height: 320px; overflow: auto;">
                     <?php foreach ($lowStockItems as $item): 
-                        $qty = (int)$item['Quantity'];
+                        $qty = (int)$item['quantity'];
                         $badge = 'bg-success';
                         if ($qty <= 1) { $badge = 'bg-danger'; }
                         elseif ($qty <= 9) { $badge = 'bg-warning text-dark'; }
