@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
 }
 
 
-$baseURL = 'https://cjpowerhouse.blockfore.online/';
 
 // Include database connection
 require_once 'dbconn.php';
@@ -3702,16 +3701,6 @@ $stmt3->close();
             });
         });
     </script>
-    <!-- <script>
-        // Hide spinner when page is fully loaded
-        window.addEventListener("load", function() {
-            const spinner = document.getElementById("spinner");
-            if (spinner) {
-                spinner.classList.remove("show"); // Removes display class
-                spinner.style.display = "none"; // Fully hides it
-            }
-        });
-    </script> -->
 </body>
 
 </html>
