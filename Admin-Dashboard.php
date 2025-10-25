@@ -94,7 +94,7 @@ $total_revenue_data = $total_revenue_result->fetch_assoc();
 $total_revenue = number_format($total_revenue_data['total_revenue'] ?? 0, 2);
 
 // All Products Value (total inventory worth)
-$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value FROM Products";
+$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value FROM products";
 $total_products_value_result = $conn->query($total_products_value_query);
 $total_products_value_data = $total_products_value_result->fetch_assoc();
 $total_products_value = number_format($total_products_value_data['total_value'] ?? 0, 2);
@@ -108,11 +108,11 @@ $total_earned = number_format($total_earned_data['total_earned'] ?? 0, 2);
 // Compute stock level counts (Good, Low, Critical, Out of Stock)
 $stock_counts_sql = "
     SELECT 
-        SUM(CASE WHEN Quantity >= 21 THEN 1 ELSE 0 END) AS good_count,
-        SUM(CASE WHEN Quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
-        SUM(CASE WHEN Quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
-        SUM(CASE WHEN Quantity <= 1 THEN 1 ELSE 0 END) AS out_count
-    FROM Products
+        SUM(CASE WHEN quantity >= 21 THEN 1 ELSE 0 END) AS good_count,
+        SUM(CASE WHEN quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
+        SUM(CASE WHEN quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
+        SUM(CASE WHEN quantity <= 1 THEN 1 ELSE 0 END) AS out_count
+    FROM products
 ";
 $stock_counts_res = $conn->query($stock_counts_sql);
 $good_count = 0; $low_count = 0; $critical_count = 0; $out_count = 0;
@@ -129,12 +129,12 @@ $last_month = date("Y-m", strtotime("-1 month"));
 
 // Get products quantity by category for pie chart
 $category_quantity_query = "SELECT 
-    Category,
-    SUM(Quantity) as total_quantity,
+    category,
+    SUM(quantity) as total_quantity,
     COUNT(*) as product_count
-FROM Products 
-WHERE Category IS NOT NULL AND Category != ''
-GROUP BY Category 
+FROM products 
+WHERE category IS NOT NULL AND category != ''
+GROUP BY category 
 ORDER BY total_quantity DESC";
 
 $category_quantity_result = $conn->query($category_quantity_query);
@@ -267,8 +267,8 @@ $last_month_low_stock_sql = "
     SELECT AVG(low_stock_count) as avg_low_stock 
     FROM (
         SELECT COUNT(*) as low_stock_count 
-        FROM Products 
-        WHERE Quantity BETWEEN 10 AND 20 
+        FROM products 
+        WHERE quantity BETWEEN 10 AND 20 
         AND DATE_FORMAT(NOW(), '%Y-%m') = ?
         GROUP BY DATE(NOW())
     ) as daily_counts
@@ -999,7 +999,7 @@ $stmt3->close();
                 // Fetch top 8 lowest-stock products
                 $lowStockItems = [];
                 if (isset($conn) && $conn instanceof mysqli) {
-                    $lowSql = "SELECT ProductID, ProductName, Quantity FROM Products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
+                    $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
                     if ($lowRes = $conn->query($lowSql)) {
                         while ($row = $lowRes->fetch_assoc()) { $lowStockItems[] = $row; }
                         $lowRes->close();
