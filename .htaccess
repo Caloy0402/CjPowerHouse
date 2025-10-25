@@ -6,4 +6,3 @@ DirectoryIndex LandingPage.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ LandingPage.php [L]
 </IfModule>
-
