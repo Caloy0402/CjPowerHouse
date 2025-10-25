@@ -1,4 +1,7 @@
 <?php
+// Disable output buffering to allow immediate page rendering
+if (ob_get_level()) ob_end_clean();
+
 // Start session and check admin access
 session_start();
 
@@ -15,11 +18,19 @@ require_once 'dbconn.php';
 
 // Get user data for profile image/name (cjusers typically has email/role/profile_image only)
 $user_id = $_SESSION['user_id'];
-$user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
-$user_query->bind_param("i", $user_id);
-$user_query->execute();
-$user_result = $user_query->get_result();
-$user_data = $user_result ? $user_result->fetch_assoc() : null;
+$user_data = null;
+try {
+    $user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
+    if ($user_query) {
+        $user_query->bind_param("i", $user_id);
+        $user_query->execute();
+        $user_result = $user_query->get_result();
+        $user_data = $user_result ? $user_result->fetch_assoc() : null;
+        $user_query->close();
+    }
+} catch (Exception $e) {
+    error_log("User query error: " . $e->getMessage());
+}
 
 // Compute safe display values to avoid undefined columns on some deployments
 $display_name = 'Admin';
@@ -354,14 +365,14 @@ $stmt3->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
     <!--libraries stylesheet-->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
+    <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
     <!--customized Bootstrap Stylesheet-->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!--Template Stylesheet-->
-    <link href="css/style.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 
     <!-- Custom CSS for responsive dashboard -->
     <style>
@@ -679,6 +690,23 @@ $stmt3->close();
             <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
         </div>
         <!-- Spinner End -->
+        
+        <!-- IMMEDIATE Spinner Hide - Runs as soon as this script is parsed -->
+        <script>
+            (function() {
+                // Hide spinner immediately - no waiting
+                var spinner = document.getElementById('spinner');
+                if (spinner) {
+                    spinner.classList.remove('show');
+                    console.log('✓ Spinner hidden inline');
+                }
+            })();
+        </script>
+        <?php 
+        // Flush output buffer to send HTML to browser immediately
+        if (ob_get_level()) ob_flush();
+        flush();
+        ?>
 
         <!-- Sidebar Start -->
         <!-- Sidebar Start -->
@@ -938,8 +966,8 @@ $stmt3->close();
                                 <i class="fas fa-sync-alt me-1"></i>Refresh
                             </button>
                         </div>
-                        <div class="chart-container" style="position: relative; height: 400px;">
-                            <canvas id="weeklyOrdersChart"></canvas>
+                        <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                            <canvas id="weeklyOrdersChart" style="display: block; width: 100%; height: 100%;"></canvas>
                         </div>
                         <!-- Hidden data for JavaScript -->
                         <div id="weeklyOrdersData" style="display: none;">
@@ -1100,15 +1128,35 @@ $stmt3->close();
 
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    
+    <!-- IMMEDIATE Spinner Hide - Vanilla JS (Reliable) -->
+    <script>
+        // Hide spinner when page loads - same approach as signin.php
+        window.addEventListener('load', function() {
+            var spinner = document.getElementById("spinner");
+            if (spinner) {
+                spinner.classList.remove("show");
+                console.log('✓ Spinner hidden on page load');
+            }
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/chart/Chart.min.js"></script>
-    <script src="js/notification-sound.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="/lib/chart/chart.min.js"></script>
+    <script>
+        // Verify Chart.js loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js failed to load!');
+        } else {
+            console.log('Chart.js loaded successfully, version:', Chart.version);
+        }
+    </script>
+    <script src="/js/notification-sound.js"></script>
+    <script src="/lib/easing/easing.min.js"></script>
+    <script src="/lib/waypoints/waypoints.min.js"></script>
+    <script src="/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="/lib/tempusdominus/js/moment.min.js"></script>
+    <script src="/lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Calendar Initialization -->
     <script>
@@ -1146,11 +1194,19 @@ $stmt3->close();
     <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
     <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+    <script>
+        // Verify AmCharts loaded
+        if (typeof am4core === 'undefined') {
+            console.error('AmCharts core failed to load!');
+        } else {
+            console.log('AmCharts loaded successfully');
+        }
+    </script>
 
 
 
     <!-- Template Javascript -->
-    <script src="js/main.js">
+    <script src="/js/main.js">
     </script>
 
     <!-- Custom JavaScript for Dashboard -->
@@ -1177,7 +1233,9 @@ $stmt3->close();
 
         // AmCharts 4 3D Pie Chart for Products Quantity by Category
         <?php if (!empty($category_labels)): ?>
+            console.log('AmCharts initialization starting...');
             am4core.ready(function() {
+                console.log('AmCharts core ready');
                 try {
                     // Themes begin
                     am4core.useTheme(am4themes_animated);
@@ -3157,18 +3215,55 @@ $stmt3->close();
         let weeklyOrdersChart = null;
 
         function initWeeklyOrdersChart() {
-            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
-            createWeeklyChart(chartData);
+            console.log('Initializing weekly orders chart...');
+            const dataElement = document.getElementById('weeklyOrdersData');
+            console.log('Data element found:', dataElement);
+            if (!dataElement) {
+                console.error('weeklyOrdersData element not found!');
+                return;
+            }
+            const chartDataText = dataElement.textContent;
+            console.log('Chart data text:', chartDataText);
+            try {
+                const chartData = JSON.parse(chartDataText);
+                console.log('Parsed chart data:', chartData);
+                createWeeklyChart(chartData);
+            } catch (e) {
+                console.error('Error parsing weekly chart data:', e);
+            }
         }
 
         function createWeeklyChart(data) {
-            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
+            console.log('Creating weekly chart with data:', data);
+            
+            // Check if data is valid
+            if (!data || data.length === 0) {
+                console.warn('No data available for weekly chart');
+                const container = document.getElementById('weeklyOrdersChart').parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-bar fa-3x mb-3"></i><p class="mb-0">No weekly data available</p></div>';
+                }
+                return;
+            }
+            
+            const canvas = document.getElementById('weeklyOrdersChart');
+            if (!canvas) {
+                console.error('Canvas element not found!');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get 2D context from canvas!');
+                return;
+            }
 
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
 
-            weeklyOrdersChart = new Chart(ctx, {
+            try {
+                weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3273,6 +3368,15 @@ $stmt3->close();
                     }
                 }
             });
+                console.log('Weekly chart created successfully');
+            } catch (error) {
+                console.error('Error creating weekly chart:', error);
+                // Show error message in chart container
+                const container = document.getElementById('weeklyOrdersChart').parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load chart<br><small>' + error.message + '</small></div>';
+                }
+            }
         }
 
         function refreshWeeklyChart() {
@@ -3732,8 +3836,10 @@ $stmt3->close();
                 helpRequestsEventSource.close();
             }
         });
+
+        // Fallback removed - using reliable vanilla JS spinner hide at top of page
     </script>
-    <script src="js/script.js"></script>
+    <script src="/js/script.js"></script>
 
     <!-- Force logout to work properly -->
     <script>
