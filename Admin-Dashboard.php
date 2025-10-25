@@ -417,10 +417,10 @@ try {
     <link href="/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
     <!--customized Bootstrap Stylesheet-->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!--Template Stylesheet-->
-    <link href="css/style.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 
     <!-- Custom CSS for responsive dashboard -->
     <style>
@@ -1014,8 +1014,8 @@ try {
                                 <i class="fas fa-sync-alt me-1"></i>Refresh
                             </button>
                         </div>
-                        <div class="chart-container" style="position: relative; height: 400px;">
-                            <canvas id="weeklyOrdersChart"></canvas>
+                        <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                            <canvas id="weeklyOrdersChart" style="display: block; width: 100%; height: 100%;"></canvas>
                         </div>
                         <!-- Hidden data for JavaScript -->
                         <div id="weeklyOrdersData" style="display: none;">
@@ -3292,13 +3292,36 @@ try {
         }
 
         function createWeeklyChart(data) {
-            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
+            console.log('Creating weekly chart with data:', data);
+            
+            // Check if data is valid
+            if (!data || data.length === 0) {
+                console.warn('No data available for weekly chart');
+                const container = document.getElementById('weeklyOrdersChart').parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-bar fa-3x mb-3"></i><p class="mb-0">No weekly data available</p></div>';
+                }
+                return;
+            }
+            
+            const canvas = document.getElementById('weeklyOrdersChart');
+            if (!canvas) {
+                console.error('Canvas element not found!');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get 2D context from canvas!');
+                return;
+            }
 
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
 
-            weeklyOrdersChart = new Chart(ctx, {
+            try {
+                weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3403,6 +3426,15 @@ try {
                     }
                 }
             });
+                console.log('Weekly chart created successfully');
+            } catch (error) {
+                console.error('Error creating weekly chart:', error);
+                // Show error message in chart container
+                const container = document.getElementById('weeklyOrdersChart').parentElement;
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load chart<br><small>' + error.message + '</small></div>';
+                }
+            }
         }
 
         function refreshWeeklyChart() {
