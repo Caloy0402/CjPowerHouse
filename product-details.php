@@ -19,7 +19,7 @@ if (!isset($_GET['ProductID']) || !is_numeric($_GET['ProductID'])) {
 $product_id = (int)$_GET['ProductID']; // Cast to integer for security
 
 // Fetch product details
-$sql = "SELECT ProductID, ProductName, Price, Description, ImagePath FROM products WHERE ProductID = ?"; //Add description in TABLE Products
+$sql = "SELECT ProductID, ProductName, Price, Description, ImagePath From Products WHERE ProductID = ?"; //Add description in TABLE Products
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();

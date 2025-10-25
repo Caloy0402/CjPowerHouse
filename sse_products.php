@@ -24,7 +24,7 @@ if ($conn->connect_error) {
 // Helper to fetch current snapshot of products with quantity and rating
 function fetchProductsSnapshot(mysqli $conn): array {
     $products = [];
-    $sql = "SELECT ProductID, ProductName, Quantity, Price, ImagePath FROM products";
+    $sql = "SELECT ProductID, ProductName, Quantity, Price, ImagePath From Products";
     $res = $conn->query($sql);
     if ($res) {
         while ($row = $res->fetch_assoc()) {

@@ -45,7 +45,7 @@ if ($result->num_rows > 0) {
     $currentQuantity = $row['Quantity'];
 
     // Get the available product quantity from the products table
-    $sql = "SELECT Quantity FROM products WHERE ProductID = ?";
+    $sql = "SELECT Quantity From Products WHERE ProductID = ?";
     $stmt = $conn->prepare($sql);
 
     if ($stmt === false) {
@@ -96,7 +96,7 @@ if ($result->num_rows > 0) {
 } else {
     // Product is not in the cart, add it
     // Get the available product quantity from the products table
-    $sql = "SELECT Quantity FROM products WHERE ProductID = ?";
+    $sql = "SELECT Quantity From Products WHERE ProductID = ?";
     $stmt = $conn->prepare($sql);
 
     if ($stmt === false) {

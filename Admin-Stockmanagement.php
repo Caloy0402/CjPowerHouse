@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addProduct'])) {
         echo "<script>(function(){var msg='" . addslashes($msg) . "';function show(){if(window.Swal){Swal.fire({title:'Incomplete Data',text:msg,icon:'warning',confirmButtonColor:'#0d6efd'});}else{setTimeout(function(){if(window.Swal){Swal.fire({title:'Incomplete Data',text:msg,icon:'warning',confirmButtonColor:'#0d6efd'});}else{alert(msg);}},500);} } if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',show);}else{show();}})();</script>";
     } else {
         // Duplicate check (case-insensitive by product name only)
-        $dupSql = "SELECT COUNT(*) AS cnt FROM Products WHERE LOWER(ProductName)=LOWER(?)";
+        $dupSql = "SELECT COUNT(*) AS cnt From Products WHERE LOWER(ProductName)=LOWER(?)";
         if ($dupStmt = $conn->prepare($dupSql)) {
             $dupStmt->bind_param('s', $productName);
             $dupStmt->execute();
@@ -93,11 +93,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addProduct'])) {
 }
 
 // Fetch total products cost
-$sqlTotalCost = "SELECT SUM(Price * Quantity) AS TotalCost FROM Products";
+$sqlTotalCost = "SELECT SUM(Price * Quantity) AS TotalCost From Products";
 $resultTotalCost = $conn->query($sqlTotalCost);
 $totalCost = $resultTotalCost->fetch_assoc()['TotalCost'] ?? 0;
 
-$sqlTotalProducts = "SELECT SUM(quantity) AS TotalQuantity FROM Products";
+$sqlTotalProducts = "SELECT SUM(quantity) AS TotalQuantity From Products";
 $resultTotalProducts = $conn->query($sqlTotalProducts);
 $totalProducts = $resultTotalProducts->fetch_assoc()['TotalQuantity'] ?? 0;
 
@@ -134,7 +134,7 @@ $sql = "SELECT *,
                 WHEN Quantity BETWEEN 2 AND 9 THEN 'Critical Stock'
                 ELSE 'Out of Stock'
             END AS stock_status
-        FROM Products
+        From Products
         $where
         ORDER BY ProductID DESC";
 $result = $conn->query($sql);
