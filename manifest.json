@@ -1,0 +1,29 @@
+{
+  "name": "CJ PowerHouse App",
+  "short_name": "CJ PowerHouse",
+  "description": "Premium Motorcycle Accessories at Affordable Prices",
+  "start_url": "/Motorshop/LandingPage.php",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "image/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "image/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "automotive"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/Motorshop/"
+}
+
