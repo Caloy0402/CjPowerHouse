@@ -298,13 +298,13 @@ if ($feedbackResult && $feedbackResult->num_rows > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CJ PowerHouse - Premium Motorcycle Accessories</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>Image/logo.png">
     <link rel="manifest" href="<?= $baseURL ?>manifest.json">
     <meta name="theme-color" content="#007bff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CJ PowerHouse">
-    <link rel="apple-touch-icon" href="<?= $baseURL ?>image/logo.png">
+    <link rel="apple-touch-icon" href="<?= $baseURL ?>Image/logo.png">
     <link rel="stylesheet" href="landingpage.css"> <!-- Ensure this CSS file exists -->
     <link href="css/bootstrap.min.css" rel="stylesheet"> <!-- Ensure this CSS file exists -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

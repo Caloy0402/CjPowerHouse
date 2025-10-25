@@ -13,6 +13,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
 // Include database connection
 require_once 'dbconn.php';
 
+// Set query timeout to prevent page hanging
+@$conn->query("SET SESSION wait_timeout = 10");
+@$conn->query("SET SESSION interactive_timeout = 10");
+@$conn->query("SET SESSION MAX_EXECUTION_TIME = 10000"); // 10 seconds per query
+ini_set('max_execution_time', '30'); // Limit page execution to 30 seconds
+
 // Get user data for profile image/name (cjusers typically has email/role/profile_image only)
 $user_id = $_SESSION['user_id'];
 $user_query = $conn->prepare("SELECT email, role, profile_image FROM cjusers WHERE id = ?");
@@ -325,6 +331,47 @@ if ($last_month_users > 0) {
 $stmt->close();
 $stmt2->close();
 $stmt3->close();
+
+// Pre-calculate weekly data before closing connection
+try {
+    $weeklyData = getWeeklyOrdersData($conn);
+    $weeklyDataJson = htmlspecialchars(json_encode($weeklyData));
+} catch (Exception $e) {
+    error_log("Weekly data query failed: " . $e->getMessage());
+    $emptyWeekData = [];
+    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    foreach ($days as $day) {
+        $emptyWeekData[] = [
+            'day' => $day,
+            'date' => date('Y-m-d'),
+            'completed_count' => 0,
+            'completed_amount' => 0,
+            'returned_count' => 0,
+            'returned_amount' => 0
+        ];
+    }
+    $weeklyDataJson = htmlspecialchars(json_encode($emptyWeekData));
+}
+
+// Fetch low stock items before closing connection
+$lowStockItems = [];
+try {
+    $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
+    if ($lowRes = $conn->query($lowSql)) {
+        while ($row = $lowRes->fetch_assoc()) {
+            $lowStockItems[] = $row;
+        }
+        $lowRes->close();
+    }
+} catch (Exception $e) {
+    error_log("Low stock query failed: " . $e->getMessage());
+    $lowStockItems = [];
+}
+
+// CRITICAL FIX: Close database connection before HTML output
+// This prevents hanging queries from blocking the page
+@$conn->close();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -335,8 +382,9 @@ $stmt3->close();
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://www.gstatic.com https://*.amcharts.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: blob: https:; connect-src 'self' https:; frame-src 'self';">
     <title>Admin Dashboard</title>
-    <link rel="icon" type="image/png" href="image/logo.png">
+    <link rel="icon" type="image/png" href="Image/logo.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -943,10 +991,7 @@ $stmt3->close();
                         </div>
                         <!-- Hidden data for JavaScript -->
                         <div id="weeklyOrdersData" style="display: none;">
-                            <?php
-                            $weeklyData = getWeeklyOrdersData($conn);
-                            echo htmlspecialchars(json_encode($weeklyData));
-                            ?>
+                            <?php echo $weeklyDataJson; ?>
                         </div>
                     </div>
                 </div>
@@ -1023,17 +1068,8 @@ $stmt3->close();
                             <h6 class="mb-0">Low Stock Alerts</h6>
                         </div>
                         <?php
-                        // Fetch top 8 lowest-stock products
-                        $lowStockItems = [];
-                        if (isset($conn) && $conn instanceof mysqli) {
-                            $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
-                            if ($lowRes = $conn->query($lowSql)) {
-                                while ($row = $lowRes->fetch_assoc()) {
-                                    $lowStockItems[] = $row;
-                                }
-                                $lowRes->close();
-                            }
-                        }
+                        // Low stock items loaded before connection close (line 356-369)
+                        // $lowStockItems is available here
                         ?>
                         <?php if (empty($lowStockItems)): ?>
                             <div class="text-center text-muted py-3">
@@ -1100,6 +1136,20 @@ $stmt3->close();
 
     <!--javascript Libraries-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    
+    <!-- IMMEDIATE Spinner Hide - Runs as soon as jQuery loads -->
+    <script>
+        (function() {
+            // Hide spinner immediately - don't wait for anything
+            setTimeout(function() {
+                if ($('#spinner').length > 0) {
+                    $('#spinner').removeClass('show');
+                    console.log('✓ Spinner hidden immediately via jQuery');
+                }
+            }, 1);
+        })();
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/chart/Chart.min.js"></script>
     <script src="js/notification-sound.js"></script>
@@ -3109,14 +3159,21 @@ $stmt3->close();
 
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize notification sound
-            notificationSound = new NotificationSound({
-                soundFile: 'uploads/NofiticationCash.mp3',
-                volume: 1.0,
-                enableMute: true,
-                enableTest: true,
-                storageKey: 'adminNotificationSoundSettings'
-            });
+            console.log('DOMContentLoaded fired - initializing dashboard...');
+            
+            // Initialize notification sound with error handling
+            try {
+                notificationSound = new NotificationSound({
+                    soundFile: 'uploads/NofiticationCash.mp3',
+                    volume: 1.0,
+                    enableMute: true,
+                    enableTest: true,
+                    storageKey: 'adminNotificationSoundSettings'
+                });
+                console.log('Notification sound initialized');
+            } catch (error) {
+                console.error('Error initializing notification sound:', error);
+            }
             
             // Add click listener to unlock audio on first user interaction
             document.addEventListener('click', function unlockAudioOnClick() {
@@ -3134,15 +3191,29 @@ $stmt3->close();
             isInitialLoad = true;
             lastSoundPlayTime = 0;
 
-            initDashboardSSE();
+            // Initialize SSE with error handling
+            try {
+                initDashboardSSE();
+                console.log('Dashboard SSE initialized');
+            } catch (error) {
+                console.error('Error initializing Dashboard SSE:', error);
+            }
 
-            // Initialize weekly orders chart
-            initWeeklyOrdersChart();
+            // Initialize weekly orders chart with error handling
+            try {
+                initWeeklyOrdersChart();
+                console.log('Weekly orders chart initialized');
+            } catch (error) {
+                console.error('Error initializing weekly chart:', error);
+            }
 
-            // Real-time revenue removed
-
-            // Initialize real-time help requests
-            initHelpRequestsSSE();
+            // Initialize real-time help requests with error handling
+            try {
+                initHelpRequestsSSE();
+                console.log('Help requests SSE initialized');
+            } catch (error) {
+                console.error('Error initializing help requests SSE:', error);
+            }
 
             // Update every 15 seconds as fallback
             setInterval(() => {
@@ -3730,6 +3801,15 @@ $stmt3->close();
         window.addEventListener('beforeunload', function() {
             if (helpRequestsEventSource) {
                 helpRequestsEventSource.close();
+            }
+        });
+
+        // Fallback: Ensure spinner is hidden when window fully loads
+        window.addEventListener('load', function() {
+            console.log('Window load event fired - double checking spinner');
+            if ($('#spinner').hasClass('show')) {
+                $('#spinner').removeClass('show');
+                console.log('✓ Spinner hidden via window.load fallback');
             }
         });
     </script>

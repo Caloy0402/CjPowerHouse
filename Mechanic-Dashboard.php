@@ -159,7 +159,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mechanic Dashboard</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>Image/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="<?= $baseURL ?>css/mechanic-responsive.css" rel="stylesheet">
@@ -968,7 +968,7 @@ $conn->close();
             position: absolute;
             top: 50%; left: 50%; transform: translate(-50%,-50%);
             width: 76px; height: 76px; border-radius: 50%;
-            background: #fff url('<?= $baseURL ?>image/logo.png') center/70% no-repeat;
+            background: #fff url('<?= $baseURL ?>Image/logo.png') center/70% no-repeat;
             box-shadow: 0 0 0 6px rgba(255,255,255,0.08) inset;
         }
         /* Hide tick ring to remove the pointed wedge effect */
@@ -1029,7 +1029,7 @@ $conn->close();
 
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <img src="<?= $baseURL ?>image/logo.png" alt="Powerhouse Logo" class="sidebar-logo">
+            <img src="<?= $baseURL ?>Image/logo.png" alt="Powerhouse Logo" class="sidebar-logo">
             <button class="close-btn" onclick="toggleSidebar()">×</button>
         </div>
         <ul class="sidebar-links">
@@ -1059,7 +1059,7 @@ $conn->close();
                 <i class="material-icons">notifications</i>
                 <span id="notificationBadge" class="notif-badge" style="<?= $pendingRequestCount > 0 ? '' : 'display: none;' ?>"><?= $pendingRequestCount ?></span>
             </span>
-            <img src="<?= $baseURL ?>image/logo.png" alt="Powerhouse Logo" class="powerhouse-logo app-logo" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'">
+            <img src="<?= $baseURL ?>Image/logo.png" alt="Powerhouse Logo" class="powerhouse-logo app-logo" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'">
         </div>
     </div>
 

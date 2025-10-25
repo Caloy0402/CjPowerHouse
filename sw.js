@@ -4,7 +4,7 @@ const urlsToCache = [
   '/Motorshop/Mobile-Dashboard.php',
   '/Motorshop/css/styles.css',
   '/Motorshop/landingpage.css',
-  '/Motorshop/image/logo.png'
+  '/Motorshop/Image/logo.png'
 ];
 
 self.addEventListener('install', function(event) {

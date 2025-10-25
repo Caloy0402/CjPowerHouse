@@ -234,7 +234,7 @@ $stmt_order_history->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="<?= $baseURL ?>css/rider-styles.css"> <!-- New file for rider styles -->
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>Image/logo.png">
     <style>
         /* Add your custom styles here */
         .header {
@@ -755,7 +755,7 @@ $stmt_order_history->close();
             animation: logoPulse 2s ease-in-out infinite;
         }
         @keyframes logoPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(105,209,255,0.35) } 50% { box-shadow: 0 0 0 12px rgba(105,209,255,0.12) } }
-        .rider-loader .shopLogo { width:94px; height:94px; border-radius:50%; background:#fff url('<?= $baseURL ?>image/logo.png') center/70% no-repeat; box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(255,255,255,0.08) inset; opacity:0; transform: scale(0.8); transition: transform 0.6s ease, opacity 0.6s ease; }
+        .rider-loader .shopLogo { width:94px; height:94px; border-radius:50%; background:#fff url('<?= $baseURL ?>Image/logo.png') center/70% no-repeat; box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(255,255,255,0.08) inset; opacity:0; transform: scale(0.8); transition: transform 0.6s ease, opacity 0.6s ease; }
         .rider-loader.showLogo .shopLogo { opacity:1; transform: scale(1); }
         .rider-loader.showLogo .logoWrap::before { opacity:1; transform: scale(1); }
         .rider-loader.fading .shopLogo { transform: scale(1.2); }

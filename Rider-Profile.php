@@ -95,7 +95,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rider Profile</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>Image/logo.png">
     <link href="<?= $baseURL ?>css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= $baseURL ?>css/styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
