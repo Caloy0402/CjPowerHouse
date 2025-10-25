@@ -61,7 +61,7 @@ function getRescueRequestNotifications($conn) {
     }
     
     // Check for completed rescue requests today
-    $completedQuery = "SELECT COUNT(*) as count FROM help_requests WHERE status = 'Completed' AND DATE(completed_at) = CURDATE()";
+    $completedQuery = "SELECT COUNT(*) as count FROM help_requests WHERE status = 'Completed' AND DATE(updated_at) = CURDATE()";
     $completedResult = $conn->query($completedQuery);
     if ($completedResult) {
         $completedCount = $completedResult->fetch_assoc()['count'];
@@ -80,213 +80,9 @@ function getRescueRequestNotifications($conn) {
     return $notifications;
 }
 
-function getTotalRescueNotificationCount($conn) {
-    $total = 0;
-    
-    // Count pending requests
-    $pendingQuery = "SELECT COUNT(*) as count FROM help_requests WHERE status = 'Pending'";
-    $pendingResult = $conn->query($pendingQuery);
-    if ($pendingResult) {
-        $count = $pendingResult->fetch_assoc()['count'];
-        if ($count > 0) $total += $count;
-    }
-    
-    // Count in-progress requests
-    $inProgressQuery = "SELECT COUNT(*) as count FROM help_requests WHERE status = 'In Progress'";
-    $inProgressResult = $conn->query($inProgressQuery);
-    if ($inProgressResult) {
-        $count = $inProgressResult->fetch_assoc()['count'];
-        if ($count > 0) $total += $count;
-    }
-    
-    // Count today's requests
-    $todayQuery = "SELECT COUNT(*) as count FROM help_requests WHERE DATE(created_at) = CURDATE()";
-    $todayResult = $conn->query($todayQuery);
-    if ($todayResult) {
-        $count = $todayResult->fetch_assoc()['count'];
-        if ($count > 0) $total += $count;
-    }
-    
-    return $total;
-}
-
-// Get current notifications
-$rescueNotifications = getRescueRequestNotifications($conn);
-$totalRescueNotifications = getTotalRescueNotificationCount($conn);
-?>
-
-<!-- Rescue Request Notification System -->
-<div class="nav-item dropdown">
-    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-        <i class="fa fa-tools me-lg-2"></i>
-        <span class="d-none d-lg-inline">Rescue Status</span>
-        <span class="notification-badge" id="rescueNotificationCount" style="display: <?php echo $totalRescueNotifications > 0 ? 'block' : 'none'; ?>;"><?php echo $totalRescueNotifications; ?></span>
-    </a>
-    <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
-        <!-- Notification Sound Controls -->
-        <div class="dropdown-header d-flex justify-content-between align-items-center">
-            <span>Rescue Notifications</span>
-            <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-outline-light btn-sm" id="rescueMuteToggleBtn" title="Toggle notification sound">
-                    <i class="fas fa-volume-up" id="rescueMuteIcon"></i>
-                </button>
-                <button type="button" class="btn btn-outline-light btn-sm" id="rescueTestSoundBtn" title="Test notification sound">
-                    <i class="fas fa-play"></i>
-                </button>
-            </div>
-        </div>
-        <hr class="dropdown-divider">
-        <div class="notification-items" id="rescueNotificationItems">
-            <?php if (empty($rescueNotifications)): ?>
-                <div class="dropdown-item text-center">No rescue notifications</div>
-            <?php else: ?>
-                <?php foreach ($rescueNotifications as $notification): ?>
-                    <div class="dropdown-item notification-item">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas <?php echo $notification['icon']; ?> <?php echo $notification['color']; ?> me-2"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="fw-normal mb-0"><?php echo $notification['title']; ?></h6>
-                                <p class="mb-0 small"><?php echo $notification['message']; ?></p>
-                            </div>
-                            <div class="flex-shrink-0">
-                                <span class="badge bg-primary"><?php echo $notification['count']; ?></span>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
-
-<!-- Rescue Request Notification JavaScript -->
-<script>
-let lastRescueNotificationData = null;
-
-function fetchRescueNotifications() {
-    fetch('get_rescue_notifications.php')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const totalCount = data.total_count;
-            const notifications = data.notifications;
-            const notificationCount = document.getElementById('rescueNotificationCount');
-            const notificationItems = document.getElementById('rescueNotificationItems');
-            
-            // Update notification count
-            notificationCount.textContent = totalCount;
-            notificationCount.style.display = totalCount > 0 ? 'block' : 'none';
-            
-            // Update notification items
-            notificationItems.innerHTML = '';
-            if (notifications.length === 0) {
-                notificationItems.innerHTML = '<div class="dropdown-item text-center">No rescue notifications</div>';
-            } else {
-                notifications.forEach(notification => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item notification-item';
-                    item.innerHTML = `
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas ${notification.icon} ${notification.color} me-2"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="fw-normal mb-0">${notification.title}</h6>
-                                <p class="mb-0 small">${notification.message}</p>
-                            </div>
-                            <div class="flex-shrink-0">
-                                <span class="badge bg-primary">${notification.count}</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Add click handler for navigation
-                    item.addEventListener('click', function() {
-                        navigateToRescuePage(notification.type);
-                    });
-                    
-                    notificationItems.appendChild(item);
-                });
-            }
-            
-            lastRescueNotificationData = data;
-        })
-        .catch(error => {
-            console.error('Error fetching rescue notifications:', error);
-        });
-}
-
-function navigateToRescuePage(notificationType) {
-    const pageMap = {
-        'pending_requests': 'Admin-RescueLogs.php',
-        'in_progress_requests': 'Admin-RescueLogs.php',
-        'today_requests': 'Admin-RescueLogs.php',
-        'completed_today': 'Admin-RescueLogs.php'
-    };
-    
-    if (pageMap[notificationType]) {
-        window.location.href = pageMap[notificationType];
-    }
-}
-
-// Initialize rescue notifications
-document.addEventListener('DOMContentLoaded', function() {
-    fetchRescueNotifications();
-    // Refresh notifications every 10 seconds
-    setInterval(fetchRescueNotifications, 10000);
-    
-    // Initialize notification sound controls
-    initRescueNotificationSoundControls();
-});
-
-// Initialize notification sound controls
-function initRescueNotificationSoundControls() {
-    const muteToggleBtn = document.getElementById('rescueMuteToggleBtn');
-    const testSoundBtn = document.getElementById('rescueTestSoundBtn');
-    const muteIcon = document.getElementById('rescueMuteIcon');
-    
-    if (muteToggleBtn && testSoundBtn) {
-        // Update mute button state
-        function updateMuteButton() {
-            if (typeof notificationSound !== 'undefined' && notificationSound) {
-                const isMuted = notificationSound.getMuted();
-                muteIcon.className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-                muteToggleBtn.title = isMuted ? 'Unmute notification sound' : 'Mute notification sound';
-            }
-        }
-        
-        // Mute toggle functionality
-        muteToggleBtn.addEventListener('click', function() {
-            if (typeof notificationSound !== 'undefined' && notificationSound) {
-                notificationSound.toggleMute();
-                updateMuteButton();
-            } else {
-                console.warn('Notification sound system not initialized');
-            }
-        });
-        
-        // Test sound functionality
-        testSoundBtn.addEventListener('click', function() {
-            if (typeof notificationSound !== 'undefined' && notificationSound) {
-                notificationSound.testSound();
-            } else {
-                console.warn('Notification sound system not initialized');
-            }
-        });
-        
-        // Initial button state
-        updateMuteButton();
-    }
-}
-</script>
-
-<style>
+// Function to output CSS styles for rescue notifications
+function outputRescueNotificationCSS() {
+    echo '<style>
 .notification-badge {
     position: absolute;
     top: -5px;
@@ -329,4 +125,188 @@ function initRescueNotificationSoundControls() {
 .notification-item .badge {
     font-size: 0.7rem;
 }
-</style>
+</style>';
+}
+
+// Function to output JavaScript for rescue notifications
+function outputRescueNotificationJS() {
+    echo '<script>
+let lastRescueNotificationData = null;
+
+function fetchRescueNotifications() {
+    fetch("get_rescue_notifications.php")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const totalCount = data.total_count;
+            const notifications = data.notifications;
+            const notificationCount = document.getElementById("rescueNotificationCount");
+            const notificationItems = document.getElementById("rescueNotificationItems");
+            
+            // Update notification count
+            notificationCount.textContent = totalCount;
+            notificationCount.style.display = totalCount > 0 ? "block" : "none";
+            
+            // Update notification items
+            notificationItems.innerHTML = "";
+            if (notifications.length === 0) {
+                notificationItems.innerHTML = "<div class=\"dropdown-item text-center\">No rescue notifications</div>";
+            } else {
+                notifications.forEach(notification => {
+                    const item = document.createElement("div");
+                    item.className = "dropdown-item notification-item";
+                    item.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas ${notification.icon} ${notification.color} me-2"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-normal mb-0">${notification.title}</h6>
+                                <p class="mb-0 small">${notification.message}</p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary">${notification.count}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add click handler for navigation
+                    item.addEventListener("click", function() {
+                        navigateToRescuePage(notification.type);
+                    });
+                    
+                    notificationItems.appendChild(item);
+                });
+            }
+            
+            lastRescueNotificationData = data;
+        })
+        .catch(error => {
+            console.error("Error fetching rescue notifications:", error);
+        });
+}
+
+function navigateToRescuePage(notificationType) {
+    const pageMap = {
+        "pending_requests": "Admin-RescueLogs.php",
+        "in_progress_requests": "Admin-RescueLogs.php",
+        "today_requests": "Admin-RescueLogs.php",
+        "completed_today": "Admin-RescueLogs.php"
+    };
+    
+    if (pageMap[notificationType]) {
+        window.location.href = pageMap[notificationType];
+    }
+}
+
+// Initialize rescue notifications
+document.addEventListener("DOMContentLoaded", function() {
+    fetchRescueNotifications();
+    // Refresh notifications every 10 seconds
+    setInterval(fetchRescueNotifications, 10000);
+    
+    // Initialize notification sound controls
+    initRescueNotificationSoundControls();
+});
+
+// Initialize notification sound controls
+function initRescueNotificationSoundControls() {
+    const muteToggleBtn = document.getElementById("rescueMuteToggleBtn");
+    const testSoundBtn = document.getElementById("rescueTestSoundBtn");
+    const muteIcon = document.getElementById("rescueMuteIcon");
+    
+    if (muteToggleBtn && testSoundBtn) {
+        // Update mute button state
+        function updateMuteButton() {
+            if (typeof notificationSound !== "undefined" && notificationSound) {
+                const isMuted = notificationSound.getMuted();
+                muteIcon.className = isMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
+                muteToggleBtn.title = isMuted ? "Unmute notification sound" : "Mute notification sound";
+            }
+        }
+        
+        // Mute toggle functionality
+        muteToggleBtn.addEventListener("click", function() {
+            if (typeof notificationSound !== "undefined" && notificationSound) {
+                notificationSound.toggleMute();
+                updateMuteButton();
+            } else {
+                console.warn("Notification sound system not initialized");
+            }
+        });
+        
+        // Test sound functionality
+        testSoundBtn.addEventListener("click", function() {
+            if (typeof notificationSound !== "undefined" && notificationSound) {
+                notificationSound.testSound();
+            } else {
+                console.warn("Notification sound system not initialized");
+            }
+        });
+        
+        // Initial button state
+        updateMuteButton();
+    }
+}
+</script>';
+}
+
+// Get notifications data
+$rescueNotifications = getRescueRequestNotifications($conn);
+$totalRescueCount = array_sum(array_column($rescueNotifications, 'count'));
+?>
+
+<!-- Rescue Request Notification Dropdown -->
+<div class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fas fa-life-ring me-2"></i>
+        <span class="position-relative">
+            Rescue
+            <?php if ($totalRescueCount > 0): ?>
+                <span class="notification-badge" id="rescueNotificationCount"><?php echo $totalRescueCount; ?></span>
+            <?php else: ?>
+                <span class="notification-badge" id="rescueNotificationCount" style="display: none;">0</span>
+            <?php endif; ?>
+        </span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0" style="width: 350px;">
+        <div class="dropdown-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Rescue Notifications</h6>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-warning btn-sm" id="rescueMuteToggleBtn" title="Mute notification sound">
+                    <i class="fas fa-volume-up" id="rescueMuteIcon"></i>
+                </button>
+                <button type="button" class="btn btn-outline-info btn-sm" id="rescueTestSoundBtn" title="Test notification sound">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div id="rescueNotificationItems">
+            <?php if (empty($rescueNotifications)): ?>
+                <div class="dropdown-item text-center">No rescue notifications</div>
+            <?php else: ?>
+                <?php foreach ($rescueNotifications as $notification): ?>
+                    <div class="dropdown-item notification-item" onclick="navigateToRescuePage('<?php echo $notification['type']; ?>')">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas <?php echo $notification['icon']; ?> <?php echo $notification['color']; ?> me-2"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-normal mb-0"><?php echo $notification['title']; ?></h6>
+                                <p class="mb-0 small"><?php echo $notification['message']; ?></p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary"><?php echo $notification['count']; ?></span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

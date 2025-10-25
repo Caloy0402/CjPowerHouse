@@ -249,9 +249,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </a>
 
                         <div class="navbar-nav align-items-center ms-auto">
-                <--?php include 'admin_notifications.php'; ?>
-                <--?php include 'admin_rescue_notifications.php'; ?>
-                <--?php include 'admin_user_notifications.php'; ?>
+                <?php include 'admin_notifications.php'; ?>
+                <?php include 'admin_rescue_notifications.php'; ?>
+                <?php include 'admin_user_notifications.php'; ?>
             <div class="nav-item dropdown">
                 <a href="" class="nav-link dropdown-toggle" 
                 data-bs-toggle="dropdown">

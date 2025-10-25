@@ -183,9 +183,9 @@ $salesTotalPages = max(1, (int)ceil($salesTotalRows / $salesPerPage));
                         </a>
 
                         <div class="navbar-nav align-items-center ms-auto">
-                <--?php include 'admin_notifications.php'; ?>
-                <--?php include 'admin_rescue_notifications.php'; ?>
-                <--?php include 'admin_user_notifications.php'; ?>
+                <?php include 'admin_notifications.php'; ?>
+                <?php include 'admin_rescue_notifications.php'; ?>
+                <?php include 'admin_user_notifications.php'; ?>
                             <div class="nav-item dropdown">
                         <div class="dropdown-menu dropdown-menu-end bg-secondary 
                         border-0 rounded-0 rounded-bottom m-0">

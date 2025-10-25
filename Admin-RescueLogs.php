@@ -352,9 +352,9 @@ $stats = $stats_result->fetch_assoc();
                     <i class="fa fa-bars"></i>
                 </a>
                 <div class="navbar-nav align-items-center ms-auto">
-                    <--?php include 'admin_notifications.php'; ?>
-                    <--?php include 'admin_rescue_notifications.php'; ?>
-                    <--?php include 'admin_user_notifications.php'; ?>
+                    <?php include 'admin_notifications.php'; ?>
+                    <?php include 'admin_rescue_notifications.php'; ?>
+                    <?php include 'admin_user_notifications.php'; ?>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <img class="rounded-circle me-lg-2" src="<?= $user_data['profile_image'] ? (strpos($user_data['profile_image'], 'uploads/') === 0 ? $user_data['profile_image'] : 'uploads/' . $user_data['profile_image']) : 'img/jandi.jpg' ?>" alt="" style="width: 40px; height: 40px;">
