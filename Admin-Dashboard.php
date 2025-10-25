@@ -118,7 +118,10 @@ $stock_counts_sql = "
     FROM products
 ";
 $stock_counts_res = $conn->query($stock_counts_sql);
-$good_count = 0; $low_count = 0; $critical_count = 0; $out_count = 0;
+$good_count = 0;
+$low_count = 0;
+$critical_count = 0;
+$out_count = 0;
 if ($stock_counts_res && $stock_counts_res->num_rows > 0) {
     $row = $stock_counts_res->fetch_assoc();
     $good_count = (int)($row['good_count'] ?? 0);
@@ -160,7 +163,7 @@ if ($category_quantity_result && $category_quantity_result->num_rows > 0) {
         ['rgba(245, 158, 11, 0.9)', 'rgba(245, 158, 11, 1)'],      // Amber
         ['rgba(139, 92, 246, 0.9)', 'rgba(139, 92, 246, 1)']       // Violet
     ];
-    
+
     $colorIndex = 0;
     while ($row = $category_quantity_result->fetch_assoc()) {
         $category_labels[] = $row['category'];
@@ -193,7 +196,7 @@ if ($recent_orders_result && $recent_orders_result->num_rows > 0) {
         if (empty($customerName)) {
             $customerName = 'User ' . $row['user_id'];
         }
-        
+
         $recent_orders[] = [
             'id' => $row['id'],
             'customer_name' => $customerName,
@@ -205,22 +208,23 @@ if ($recent_orders_result && $recent_orders_result->num_rows > 0) {
 }
 
 // Function to get weekly orders data
-function getWeeklyOrdersData($conn) {
+function getWeeklyOrdersData($conn)
+{
     $weekData = [];
     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    
+
     // Get the start of the current week (Monday)
     $monday = date('Y-m-d', strtotime('monday this week'));
-    
+
     foreach ($days as $index => $day) {
         $currentDate = date('Y-m-d', strtotime($monday . ' +' . $index . ' days'));
-        
+
         // Get completed orders for this day
         $sql = "SELECT COUNT(*) as order_count, SUM(o.total_price + o.delivery_fee) as total_amount 
                 FROM orders o
                 JOIN transactions t ON t.order_id = o.id
                 WHERE DATE(t.completed_date_transaction) = ? AND o.order_status = 'completed'";
-        
+
         $stmt = $conn->prepare($sql);
         if ($stmt) {
             $stmt->bind_param('s', $currentDate);
@@ -234,12 +238,12 @@ function getWeeklyOrdersData($conn) {
             $completedCount = 0;
             $completedAmount = 0;
         }
-        
+
         // Get returned orders for this day (from orders table with status 'Returned')
         $sql = "SELECT COUNT(*) as returned_count, SUM(total_price + delivery_fee) as total_returned_amount 
                 FROM orders 
                 WHERE DATE(order_date) = ? AND order_status = 'Returned'";
-        
+
         $stmt = $conn->prepare($sql);
         if ($stmt) {
             $stmt->bind_param('s', $currentDate);
@@ -253,7 +257,7 @@ function getWeeklyOrdersData($conn) {
             $returnedCount = 0;
             $returnedAmount = 0;
         }
-        
+
         $weekData[] = [
             'day' => $day,
             'date' => $currentDate,
@@ -263,7 +267,7 @@ function getWeeklyOrdersData($conn) {
             'returned_amount' => $returnedAmount
         ];
     }
-    
+
     return $weekData;
 }
 $last_month_low_stock_sql = "
@@ -325,6 +329,7 @@ $stmt3->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -346,10 +351,10 @@ $stmt3->close();
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
 
     <!-- icon font Stylesheet -->
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css"> 
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
-     <!--libraries stylesheet-->
+    <!--libraries stylesheet-->
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
     <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
 
@@ -358,7 +363,7 @@ $stmt3->close();
 
     <!--Template Stylesheet-->
     <link href="css/style.css" rel="stylesheet">
-    
+
     <!-- Custom CSS for responsive dashboard -->
     <style>
         /* Ensure full width containers */
@@ -366,64 +371,64 @@ $stmt3->close();
             max-width: none !important;
             width: 100% !important;
         }
-        
+
         /* Chart container responsive height */
         .chart-container {
             min-height: 300px;
         }
-        
+
         @media (min-width: 992px) {
             .chart-container {
                 min-height: 400px;
             }
         }
-        
+
         /* Table responsive behavior */
         .table-responsive {
             max-height: 400px;
             overflow-y: auto;
         }
-        
+
         /* Ensure equal height cards on desktop */
         @media (min-width: 992px) {
             .h-100 {
                 height: 100% !important;
             }
         }
-        
+
         /* Mobile optimizations */
         @media (max-width: 767.98px) {
             .chart-container {
                 min-height: 250px;
             }
-            
+
             .table-responsive {
                 max-height: 300px;
             }
-            
+
             .bg-secondary.rounded {
                 margin-bottom: 1rem;
             }
         }
-        
+
         /* Tablet optimizations */
         @media (min-width: 768px) and (max-width: 991.98px) {
             .chart-container {
                 min-height: 350px;
             }
         }
-        
+
         /* Ensure proper spacing for metric cards */
         .col-sm-6.col-xl-3 {
             margin-bottom: 1rem;
         }
-        
+
         @media (min-width: 992px) {
             .col-sm-6.col-xl-3 {
                 margin-bottom: 0;
             }
         }
-        
+
         /* Force white text in AmCharts legend */
         #chartdiv .amcharts-legend-label,
         #chartdiv .amcharts-legend-value,
@@ -431,12 +436,12 @@ $stmt3->close();
             color: #ffffff !important;
             fill: #ffffff !important;
         }
-        
+
         /* Override any dark text in chart elements */
         #chartdiv text {
             fill: #ffffff !important;
         }
-        
+
         /* Custom scrollable container for Rescue Requests */
         .rescue-requests-scrollable {
             max-height: 400px;
@@ -445,161 +450,181 @@ $stmt3->close();
             padding-right: 8px;
             margin-right: -8px;
         }
-        
+
         /* Custom scrollbar styling */
         .rescue-requests-scrollable::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         .rescue-requests-scrollable::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
-        
+
         .rescue-requests-scrollable::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
             border-radius: 10px;
             transition: background 0.3s ease;
         }
-        
+
         .rescue-requests-scrollable::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #ff8c00 0%, #ffc107 100%);
         }
-        
+
         /* Firefox scrollbar styling */
         .rescue-requests-scrollable {
             scrollbar-width: thin;
             scrollbar-color: #ffc107 rgba(255, 255, 255, 0.1);
         }
-        
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .rescue-requests-scrollable {
                 max-height: 300px;
             }
         }
-        
+
         @media (min-width: 1200px) {
             .rescue-requests-scrollable {
                 max-height: 500px;
             }
         }
-        
+
         /* Calendar styling to match dashboard theme */
         #calendar {
             min-height: 300px;
             background: transparent;
         }
-        
+
         /* Main calendar widget styling */
         .bootstrap-datetimepicker-widget {
-            background-color: #000000 !important; /* black background */
+            background-color: #000000 !important;
+            /* black background */
             border: 1px solid #333333 !important;
             border-radius: 0.375rem !important;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-            color: #dc3545 !important; /* red font color */
+            color: #dc3545 !important;
+            /* red font color */
             font-family: inherit !important;
         }
-        
+
         /* Calendar header styling */
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th {
-            background-color: #000000 !important; /* black background */
-            color: #dc3545 !important; /* red font color */
+            background-color: #000000 !important;
+            /* black background */
+            color: #dc3545 !important;
+            /* red font color */
             border: none !important;
             padding: 0.5rem !important;
             font-weight: 600 !important;
             font-size: 0.875rem !important;
         }
-        
+
         /* Calendar body styling */
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td {
-            color: #dc3545 !important; /* red font color */
+            color: #dc3545 !important;
+            /* red font color */
             border: none !important;
             padding: 0.5rem !important;
             font-size: 0.875rem !important;
             transition: all 0.2s ease !important;
         }
-        
+
         /* Day hover effect - using red background */
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td.day:hover {
-            background-color: #dc3545 !important; /* red background */
+            background-color: #dc3545 !important;
+            /* red background */
             color: #ffffff !important;
             border-radius: 0.25rem !important;
         }
-        
+
         /* Active/selected day - using danger color */
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td.active {
-            background-color: #dc3545 !important; /* Bootstrap danger */
+            background-color: #dc3545 !important;
+            /* Bootstrap danger */
             color: #ffffff !important;
             border-radius: 0.25rem !important;
             font-weight: 600 !important;
         }
-        
+
         /* Today's date - using red background with white text */
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td.today {
-            background-color: #dc3545 !important; /* red background */
-            color: #ffffff !important; /* white text */
+            background-color: #dc3545 !important;
+            /* red background */
+            color: #ffffff !important;
+            /* white text */
             border-radius: 0.25rem !important;
             font-weight: 600 !important;
         }
-        
+
         /* Previous/next month days - muted red color */
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td.old,
         .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td.new {
-            color: #dc3545 !important; /* red color */
+            color: #dc3545 !important;
+            /* red color */
             opacity: 0.3 !important;
         }
-        
+
         /* Calendar navigation buttons */
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th.prev,
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th.next {
-            background-color: #000000 !important; /* black background */
-            color: #dc3545 !important; /* red color */
+            background-color: #000000 !important;
+            /* black background */
+            color: #dc3545 !important;
+            /* red color */
             border-radius: 0.25rem !important;
             transition: all 0.2s ease !important;
         }
-        
+
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th.prev:hover,
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th.next:hover {
-            background-color: #dc3545 !important; /* red background on hover */
+            background-color: #dc3545 !important;
+            /* red background on hover */
             color: #ffffff !important;
         }
-        
+
         /* Calendar switch (month/year) */
         .bootstrap-datetimepicker-widget .datepicker-days table thead tr th.switch {
-            background-color: #000000 !important; /* black background */
-            color: #dc3545 !important; /* red color */
+            background-color: #000000 !important;
+            /* black background */
+            color: #dc3545 !important;
+            /* red color */
             font-weight: 600 !important;
             font-size: 1rem !important;
         }
-        
+
         /* Calendar footer buttons */
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th {
-            background-color: #000000 !important; /* black background */
-            color: #dc3545 !important; /* red color */
+            background-color: #000000 !important;
+            /* black background */
+            color: #dc3545 !important;
+            /* red color */
             border: none !important;
             padding: 0.5rem !important;
         }
-        
+
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th.today,
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th.clear {
-            background-color: #000000 !important; /* black background */
-            color: #dc3545 !important; /* red color */
+            background-color: #000000 !important;
+            /* black background */
+            color: #dc3545 !important;
+            /* red color */
             border-radius: 0.25rem !important;
             transition: all 0.2s ease !important;
         }
-        
+
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th.today:hover,
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th.clear:hover {
-            background-color: #dc3545 !important; /* red background on hover */
+            background-color: #dc3545 !important;
+            /* red background on hover */
             color: #ffffff !important;
         }
-        
+
         /* Hide the close button */
         .bootstrap-datetimepicker-widget .datepicker-days table tfoot tr th.close {
             display: none !important;
         }
-        
+
         /* Ensure calendar fits within the widget */
         .bootstrap-datetimepicker-widget.dropdown-menu {
             position: relative !important;
@@ -610,25 +635,24 @@ $stmt3->close();
             border: none !important;
             box-shadow: none !important;
         }
-        
+
         /* Calendar table styling */
         .bootstrap-datetimepicker-widget table {
             width: 100% !important;
             margin: 0 !important;
         }
-        
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             #calendar {
                 min-height: 250px;
             }
-            
+
             .bootstrap-datetimepicker-widget .datepicker-days table tbody tr td {
                 padding: 0.25rem !important;
                 font-size: 0.75rem !important;
             }
         }
-        
     </style>
 
     <style>
@@ -638,7 +662,7 @@ $stmt3->close();
                 display: none;
             }
         }
-        
+
         /* Ensure proper formatting for currency values */
         .currency-value {
             font-weight: bold;
@@ -647,250 +671,251 @@ $stmt3->close();
     </style>
 
 </head>
+
 <body>
     <div class="container-fluid position-relative d-flex p-0">
-        
+
         <!-- Spinner Start -->
-    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-    <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
-    </div>
-    <!-- Spinner End -->
+        <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <img src="img/Loading.gif" alt="Loading..." style="width: 200px; height: 200px;" />
+        </div>
+        <!-- Spinner End -->
 
         <!-- Sidebar Start -->
-     <!-- Sidebar Start -->
-<div class="sidebar pe-4 pb-3">
-    <nav class="navbar bg-secondary navbar-dark">
-        <a href="Admin-Dashboard.php" class="navbar-brand mx-4 mb-3">
-            <h3 class="text-primary"><i class="fa fa-user-edit me-2"></i>Cj P'House</h3>
-        </a>
-        <div class="d-flex align-items-center ms-4 mb-4">
-            <div class="position-relative">
-                <img src="<?= htmlspecialchars($profile_image) ?>" alt="" class="rounded-circle" style="width: 40px; height: 40px;">
-                <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
-            </div>
-            <div class="ms-3">
-                <h6 class="mb-0"><?= htmlspecialchars($display_name) ?></h6>
-                <span><?= htmlspecialchars($display_name) ?></span>
-            </div>
-        </div>
-        <div class="navbar-nav w-100">
-            <a href="Admin-Dashboard.php" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fa fa-users me-2"></i>Users
+        <!-- Sidebar Start -->
+        <div class="sidebar pe-4 pb-3">
+            <nav class="navbar bg-secondary navbar-dark">
+                <a href="Admin-Dashboard.php" class="navbar-brand mx-4 mb-3">
+                    <h3 class="text-primary"><i class="fa fa-user-edit me-2"></i>Cj P'House</h3>
                 </a>
-                <div class="dropdown-menu bg-transparent border-0">
-                    <a href="Admin-AddUser.php" class="dropdown-item">Add Users</a>
-                    <a href="Admin-ManageUser.php" class="dropdown-item">Manage Users</a>
+                <div class="d-flex align-items-center ms-4 mb-4">
+                    <div class="position-relative">
+                        <img src="<?= htmlspecialchars($profile_image) ?>" alt="" class="rounded-circle" style="width: 40px; height: 40px;">
+                        <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0"><?= htmlspecialchars($display_name) ?></h6>
+                        <span><?= htmlspecialchars($display_name) ?></span>
+                    </div>
                 </div>
-            </div>
+                <div class="navbar-nav w-100">
+                    <a href="Admin-Dashboard.php" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
 
-            <!-- Updated Product Dropdown -->
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fa fa-th me-2"></i>Product
-                </a>
-                <div class="dropdown-menu bg-transparent border-0">
-                    <a href="Admin-Stockmanagement.php" class="dropdown-item">Stock Management</a>
-                    <a href="Admin-buy-out-item.php" class="dropdown-item">Buy-out Item</a>
-                    <a href="Admin-ReturnedItems.php" class="dropdown-item">Returned Item</a>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fa fa-users me-2"></i>Users
+                        </a>
+                        <div class="dropdown-menu bg-transparent border-0">
+                            <a href="Admin-AddUser.php" class="dropdown-item">Add Users</a>
+                            <a href="Admin-ManageUser.php" class="dropdown-item">Manage Users</a>
+                        </div>
+                    </div>
+
+                    <!-- Updated Product Dropdown -->
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fa fa-th me-2"></i>Product
+                        </a>
+                        <div class="dropdown-menu bg-transparent border-0">
+                            <a href="Admin-Stockmanagement.php" class="dropdown-item">Stock Management</a>
+                            <a href="Admin-buy-out-item.php" class="dropdown-item">Buy-out Item</a>
+                            <a href="Admin-ReturnedItems.php" class="dropdown-item">Returned Item</a>
+                        </div>
+                    </div>
+
+                    <a href="Admin-OrderLogs.php" class="nav-item nav-link"><i class="fa fa-shopping-cart me-2"></i>Order Logs</a>
+                    <a href="Admin-SalesReport.php" class="nav-item nav-link"><i class="fa fa-file-alt me-2"></i>Sales Report</a>
+                    <a href="Admin-StaffLogs.php" class="nav-item nav-link"><i class="fa fa-user-clock me-2"></i>Staff Logs</a>
+                    <a href="Admin-RescueLogs.php" class="nav-item nav-link"><i class="fa fa-tools me-2"></i>Rescue Logs</a>
+
                 </div>
-            </div>
-
-            <a href="Admin-OrderLogs.php" class="nav-item nav-link"><i class="fa fa-shopping-cart me-2"></i>Order Logs</a>
-            <a href="Admin-SalesReport.php" class="nav-item nav-link"><i class="fa fa-file-alt me-2"></i>Sales Report</a>
-            <a href="Admin-StaffLogs.php" class="nav-item nav-link"><i class="fa fa-user-clock me-2"></i>Staff Logs</a>
-            <a href="Admin-RescueLogs.php" class="nav-item nav-link"><i class="fa fa-tools me-2"></i>Rescue Logs</a>
-
-            </div>
         </div>
-    </nav>
-</div>
-<!-- Sidebar End -->
+        </nav>
+    </div>
+    <!-- Sidebar End -->
 
-        <!--Content Start-->
-            <div class="content">
-                <!--Navbar Start-->
-                   <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top 
+    <!--Content Start-->
+    <div class="content">
+        <!--Navbar Start-->
+        <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top 
                    px-4 py-0">
-                        <a href="Admin-Dashboard.php" class="navbar-brand d-flex d-lg-none me-4">
-                            <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
-                        </a>
-                        <a href="#" class="sidebar-toggler flex-shrink-0">
-                            <i class="fa fa-bars"></i>
-                        </a>
-                      
-                        <div class="navbar-nav align-items-center ms-auto">
-                            <div class="nav-item dropdown">
-                        <div class="dropdown-menu dropdown-menu-end bg-secondary 
+            <a href="Admin-Dashboard.php" class="navbar-brand d-flex d-lg-none me-4">
+                <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
+            </a>
+            <a href="#" class="sidebar-toggler flex-shrink-0">
+                <i class="fa fa-bars"></i>
+            </a>
+
+            <div class="navbar-nav align-items-center ms-auto">
+                <div class="nav-item dropdown">
+                    <div class="dropdown-menu dropdown-menu-end bg-secondary 
                         border-0 rounded-0 rounded-bottom m-0">
                         <a href="#" class="dropdown-item">
                             <div class="d-flex aligns-items-center">
                                 <img src="img/johanns.jpg" alt="User Profile"
-                                class="rounded-circle" style="width: 40px; height: 
+                                    class="rounded-circle" style="width: 40px; height: 
                                 40px;">
                                 <div class="ms-2">
-                                    <h6 class="fw-normal mb-0">Johanns send you a 
-                                    message</h6>
+                                    <h6 class="fw-normal mb-0">Johanns send you a
+                                        message</h6>
                                     <small>5 minutes ago</small>
+                                </div>
                             </div>
-                        </div>
                         </a>
-                         <hr class="dropdown-divider">
-                         <a href="#" class="dropdown-item">
+                        <hr class="dropdown-divider">
+                        <a href="#" class="dropdown-item">
                             <div class="d-flex aligns-items-center">
                                 <img src="img/carlo.jpg" alt=""
-                                class="rounded-circle" style="width: 40px; height: 
+                                    class="rounded-circle" style="width: 40px; height: 
                                 40px;">
                                 <div class="ms-2">
-                                    <h6 class="fw-normal mb-0">Carlo send you a 
-                                    message</h6>
+                                    <h6 class="fw-normal mb-0">Carlo send you a
+                                        message</h6>
                                     <small>10 minutes ago</small>
+                                </div>
                             </div>
-                        </div>
                         </a>
                         <hr class="dropdown-divider">
                         <a href="#" class="dropdown-item">
                             <div class="d-flex aligns-items-center">
                                 <img src="img/alquin.jpg" alt=""
-                                class="rounded-circle" style="width: 40px; height: 
+                                    class="rounded-circle" style="width: 40px; height: 
                                 40px;">
                                 <div class="ms-2">
-                                    <h6 class="fw-normal mb-0">Alquin send you a 
-                                    message</h6>
+                                    <h6 class="fw-normal mb-0">Alquin send you a
+                                        message</h6>
                                     <small>15 minutes ago</small>
+                                </div>
                             </div>
-                        </div>
                         </a>
                         <hr class="dropdown-divider">
-                        <a href="#" class="dropdown-item text-center">See all 
-                        Messages</a>
+                        <a href="#" class="dropdown-item text-center">See all
+                            Messages</a>
                     </div>
                 </div>
                 <?php include 'admin_notifications.php'; ?>
                 <?php include 'admin_rescue_notifications.php'; ?>
                 <?php include 'admin_user_notifications.php'; ?>
-            <div class="nav-item dropdown">
-                <a href="" class="nav-link dropdown-toggle" 
-                data-bs-toggle="dropdown">
-                <img src="<?= htmlspecialchars($profile_image) ?>" alt="" class="rounded-circle me-lg-2" 
-                    alt="" style="width: 40px; height: 40px;">
-                <span class="d-none d-lg-inline"><?= htmlspecialchars($display_name) ?></span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end bg-dark border-0 rounded-3 shadow-lg m-0" style="min-width: 200px;">
-                    <div class="dropdown-header text-light border-bottom border-secondary">
-                        <small class="text-muted">Account</small>
+                <div class="nav-item dropdown">
+                    <a href="" class="nav-link dropdown-toggle"
+                        data-bs-toggle="dropdown">
+                        <img src="<?= htmlspecialchars($profile_image) ?>" alt="" class="rounded-circle me-lg-2"
+                            alt="" style="width: 40px; height: 40px;">
+                        <span class="d-none d-lg-inline"><?= htmlspecialchars($display_name) ?></span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-dark border-0 rounded-3 shadow-lg m-0" style="min-width: 200px;">
+                        <div class="dropdown-header text-light border-bottom border-secondary">
+                            <small class="text-muted">Account</small>
+                        </div>
+                        <a href="Admin-Profile.php" class="dropdown-item text-light d-flex align-items-center py-2">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="logout.php" class="dropdown-item text-light d-flex align-items-center py-2">
+                            <i class="fas fa-sign-out-alt me-2 text-danger"></i>
+                            <span>Log out</span>
+                        </a>
                     </div>
-                    <a href="Admin-Profile.php" class="dropdown-item text-light d-flex align-items-center py-2">
-                        <i class="fas fa-user me-2 text-primary"></i>
-                        <span>Profile</span>
-                    </a>
-                    <a href="logout.php" class="dropdown-item text-light d-flex align-items-center py-2">
-                        <i class="fas fa-sign-out-alt me-2 text-danger"></i>
-                        <span>Log out</span>
-                    </a>
-                    </div> 
                 </div>
             </div>
-         </nav>
-         <!--Navbar End-->
+        </nav>
+        <!--Navbar End-->
 
 
-         <!--Sales & Revenue start-->
-         <div class="container-fluid pt-4 px-4">
-             <div class="row g-4">
-                 <div class="col-sm-6 col-xl-3">
-                     <div class="bg-secondary rounded d-flex align-items-center
+        <!--Sales & Revenue start-->
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center
                      justify-content-between p-4" style="min-height: 200px;">
-                         <i class="fa fa-chart-line fa-3x text-primary"></i>
-                         <div class="ms-3">
-                             <p class="mb-2">Today Success Transactions</p>
-                             <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $today_orders_count; ?></h6>
-                             <small class="<?php echo $transaction_growth_percentage >= 0 ? 'text-success' : 'text-danger'; ?>">
-                                <?php echo $transaction_growth_percentage >= 0 ? '↗' : '↘'; ?> 
+                        <i class="fa fa-chart-line fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Today Success Transactions</p>
+                            <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $today_orders_count; ?></h6>
+                            <small class="<?php echo $transaction_growth_percentage >= 0 ? 'text-success' : 'text-danger'; ?>">
+                                <?php echo $transaction_growth_percentage >= 0 ? '↗' : '↘'; ?>
                                 <?php echo $transaction_growth_percentage; ?>% from yesterday
                             </small>
-                             <div class="mt-2">
-                                 <a href="Admin-OrderLogs.php" class="btn btn-danger btn-sm">View Report</a>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                 <div class="col-sm-6 col-xl-3">
-                     <div class="bg-secondary rounded d-flex align-items-center
+                            <div class="mt-2">
+                                <a href="Admin-OrderLogs.php" class="btn btn-danger btn-sm">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center
                      justify-content-between p-4" style="min-height: 200px;">
-                         <i class="fa fa-boxes fa-3x text-primary"></i>
-                         <div class="ms-3">
-                             <p class="mb-2">Low Stock Items</p>
-                             <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $low_count; ?></h6>
-                             <small class="<?php echo $low_stock_trend_percentage >= 0 ? 'text-warning' : 'text-danger'; ?>">
-                                <?php echo $low_stock_trend_percentage >= 0 ? '↗' : '↘'; ?> 
+                        <i class="fa fa-boxes fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Low Stock Items</p>
+                            <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $low_count; ?></h6>
+                            <small class="<?php echo $low_stock_trend_percentage >= 0 ? 'text-warning' : 'text-danger'; ?>">
+                                <?php echo $low_stock_trend_percentage >= 0 ? '↗' : '↘'; ?>
                                 <?php echo $low_stock_trend_percentage; ?>% from last month
                             </small>
-                             <div class="mt-2">
-                                 <a href="Admin-Stockmanagement.php?status=Low%20Stock" class="btn btn-danger btn-sm">View Report</a>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                 <div class="col-sm-6 col-xl-3">
-                     <div class="bg-secondary rounded d-flex align-items-center
+                            <div class="mt-2">
+                                <a href="Admin-Stockmanagement.php?status=Low%20Stock" class="btn btn-danger btn-sm">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center
                      justify-content-between p-4" style="min-height: 200px;">
-                         <i class="fa fa-users fa-3x text-primary"></i>
-                         <div class="ms-3">
-                             <p class="mb-2">Total Shoppers</p>
-                             <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $total_shoppers_count; ?></h6>
-                             <small class="text-success">↗ All registered users</small>
-                             <div class="mt-2">
-                                 <a href="Admin-ManageUser.php" class="btn btn-danger btn-sm">View Report</a>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                 <div class="col-sm-6 col-xl-3">
-                     <div class="bg-secondary rounded d-flex align-items-center
+                        <i class="fa fa-users fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Total Shoppers</p>
+                            <h6 class="mb-0" style="font-size: 3.5rem; font-weight: bold; color: #ffffff;"><?php echo $total_shoppers_count; ?></h6>
+                            <small class="text-success">↗ All registered users</small>
+                            <div class="mt-2">
+                                <a href="Admin-ManageUser.php" class="btn btn-danger btn-sm">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center
                      justify-content-between p-4" style="min-height: 200px;">
-                         <i class="fa fa-chart-bar fa-3x text-primary"></i>
-                         <div class="ms-3" style="flex: 1; text-align: center;">
-                             <p class="mb-1">Today's Earned</p>
-                             <h6 class="mb-0">₱<?php echo $today_orders_amount; ?></h6>
-                             <small class="<?php echo $sales_growth_percentage >= 0 ? 'text-success' : 'text-danger'; ?>">
-                                <?php echo $sales_growth_percentage >= 0 ? '↗' : '↘'; ?> 
+                        <i class="fa fa-chart-bar fa-3x text-primary"></i>
+                        <div class="ms-3" style="flex: 1; text-align: center;">
+                            <p class="mb-1">Today's Earned</p>
+                            <h6 class="mb-0">₱<?php echo $today_orders_amount; ?></h6>
+                            <small class="<?php echo $sales_growth_percentage >= 0 ? 'text-success' : 'text-danger'; ?>">
+                                <?php echo $sales_growth_percentage >= 0 ? '↗' : '↘'; ?>
                                 <?php echo $sales_growth_percentage; ?>% from yesterday
                             </small>
-                             <div class="mt-1">
-                                 <small class="text-info d-block mb-0">Inventory: ₱<?php echo $total_products_value; ?></small>
-                                 <small class="text-warning d-block">Total Earned: ₱<?php echo $total_earned; ?></small>
-                             </div>
-                             <div class="mt-2">
-                                 <a href="Admin-SalesReport.php" class="btn btn-danger btn-sm">View Report</a>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-         </div>
-         <!--Sales & Revenue End-->
+                            <div class="mt-1">
+                                <small class="text-info d-block mb-0">Inventory: ₱<?php echo $total_products_value; ?></small>
+                                <small class="text-warning d-block">Total Earned: ₱<?php echo $total_earned; ?></small>
+                            </div>
+                            <div class="mt-2">
+                                <a href="Admin-SalesReport.php" class="btn btn-danger btn-sm">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Sales & Revenue End-->
 
 
 
-             <!--Sales Chart Start-->                
-            <div class="container-fluid pt-4 px-4">
-                <div class="row g-4">
-                    <!-- Modern Products Quantity by Category Chart -->
-                    <div class="col-12 col-lg-6">
-                        <div class="bg-secondary text-center rounded p-4 h-100">
-                            <div class="d-flex align-items-center justify-content-between mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="fas fa-chart-pie text-primary fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 text-white fw-semibold">Inventory Distribution</h6>
-                                        <small class="text-muted">Products by Category</small>
-                                    </div>
+        <!--Sales Chart Start-->
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <!-- Modern Products Quantity by Category Chart -->
+                <div class="col-12 col-lg-6">
+                    <div class="bg-secondary text-center rounded p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-chart-pie text-primary fs-4"></i>
                                 </div>
+                                <div>
+                                    <h6 class="mb-0 text-white fw-semibold">Inventory Distribution</h6>
+                                    <small class="text-muted">Products by Category</small>
+                                </div>
+                            </div>
                             <div class="btn-group">
                                 <a href="Admin-Stockmanagement.php" class="btn btn-outline-light btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>View All
@@ -899,495 +924,500 @@ $stmt3->close();
                                     <i class="fas fa-expand me-1"></i>Maximize
                                 </button>
                             </div>
-                            </div>
-                            <div class="chart-container position-relative" id="chartContainer" style="height: 600px;">
-                                <div id="chartdiv" style="width: 100%; height: 100%;"></div>
-                            </div>
-                        </div>   
+                        </div>
+                        <div class="chart-container position-relative" id="chartContainer" style="height: 600px;">
+                            <div id="chartdiv" style="width: 100%; height: 100%;"></div>
+                        </div>
                     </div>
-                    <!-- Weekly Orders Overview (Right Column) -->
-                    <div class="col-12 col-lg-6">
-                        <div class="bg-secondary text-center rounded p-4 h-100">
-                            <div class="d-flex align-items-center justify-content-between mb-4">
-                                <h6 class="mb-0 text-white">Weekly Orders Overview</h6>
-                                <button class="btn btn-primary btn-sm" onclick="refreshWeeklyChart()">
-                                    <i class="fas fa-sync-alt me-1"></i>Refresh
-                                </button>
+                </div>
+                <!-- Weekly Orders Overview (Right Column) -->
+                <div class="col-12 col-lg-6">
+                    <div class="bg-secondary text-center rounded p-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h6 class="mb-0 text-white">Weekly Orders Overview</h6>
+                            <button class="btn btn-primary btn-sm" onclick="refreshWeeklyChart()">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                        </div>
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="weeklyOrdersChart"></canvas>
+                        </div>
+                        <!-- Hidden data for JavaScript -->
+                        <div id="weeklyOrdersData" style="display: none;">
+                            <?php
+                            $weeklyData = getWeeklyOrdersData($conn);
+                            echo htmlspecialchars(json_encode($weeklyData));
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Orders Table -->
+
+            </div>
+        </div>
+        <!--Sales Chart End-->
+
+
+
+        <!--widget Start-->
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="mb-0">Rescue Request</h6>
+                            <div class="d-flex align-items-center">
+                                <a href="Admin-RescueLogs.php" class="text-white">Show All</a>
                             </div>
-                            <div class="chart-container" style="position: relative; height: 400px;">
-                                <canvas id="weeklyOrdersChart"></canvas>
+                        </div>
+
+                        <!-- Help Request Statistics -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="text-center p-2 rounded" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                                    <small class="text-warning d-block">Pending</small>
+                                    <span class="text-white fw-bold" id="pendingCount">0</span>
+                                </div>
                             </div>
-                            <!-- Hidden data for JavaScript -->
-                            <div id="weeklyOrdersData" style="display: none;">
-                                <?php 
-                                $weeklyData = getWeeklyOrdersData($conn);
-                                echo htmlspecialchars(json_encode($weeklyData));
+                            <div class="col-4">
+                                <div class="text-center p-2 rounded" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3);">
+                                    <small class="text-info d-block">In Progress</small>
+                                    <span class="text-white fw-bold" id="inProgressCount">0</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-2 rounded" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3);">
+                                    <small class="text-success d-block">Completed</small>
+                                    <span class="text-white fw-bold" id="completedCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help Requests List - Scrollable -->
+                        <div id="helpRequestsList" class="rescue-requests-scrollable">
+                            <!-- Dynamic content will be loaded here -->
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p class="mb-0">Loading rescue requests...</p>
+                            </div>
+                        </div>
+
+                        <!-- No Requests Message (hidden by default) -->
+                        <div id="noRequestsMessage" class="text-center text-muted py-4" style="display: none;">
+                            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                            <p class="mb-0">No pending rescue requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h6 class="mb-0">Calendar</h6>
+                            <a href="#"></a>
+                        </div>
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h6 class="mb-0">Low Stock Alerts</h6>
+                        </div>
+                        <?php
+                        // Fetch top 8 lowest-stock products
+                        $lowStockItems = [];
+                        if (isset($conn) && $conn instanceof mysqli) {
+                            $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
+                            if ($lowRes = $conn->query($lowSql)) {
+                                while ($row = $lowRes->fetch_assoc()) {
+                                    $lowStockItems[] = $row;
+                                }
+                                $lowRes->close();
+                            }
+                        }
+                        ?>
+                        <?php if (empty($lowStockItems)): ?>
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>No low stock items
+                            </div>
+                        <?php else: ?>
+                            <div class="low-stock-list" style="max-height: 320px; overflow: auto;">
+                                <?php foreach ($lowStockItems as $item):
+                                    $qty = (int)$item['quantity'];
+                                    $badge = 'bg-success';
+                                    if ($qty <= 1) {
+                                        $badge = 'bg-danger';
+                                    } elseif ($qty <= 9) {
+                                        $badge = 'bg-warning text-dark';
+                                    } elseif ($qty <= 20) {
+                                        $badge = 'bg-info';
+                                    }
                                 ?>
+                                    <div class="d-flex align-items-center border-bottom py-2">
+                                        <div class="w-100">
+                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                <span class="text-truncate" title="<?php echo htmlspecialchars($item['ProductName']); ?>"><?php echo htmlspecialchars($item['ProductName']); ?></span>
+                                                <span class="badge <?php echo $badge; ?> ms-2">Qty: <?php echo $qty; ?></span>
+                                            </div>
+                                            <div class="small text-muted mt-1">
+                                                <a href="Admin-Stockmanagement.php?q=<?php echo urlencode($item['ProductName']); ?>" class="text-decoration-none">View in stock</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
+                        <?php endif; ?>
+                        <div class="mt-3">
+                            <a href="Admin-Stockmanagement.php" class="btn btn-sm btn-primary w-100">
+                                <i class="fa fa-boxes me-2"></i>Go to Stock Management
+                            </a>
                         </div>
                     </div>
-                    <!-- Recent Orders Table -->
-                    
                 </div>
             </div>
-<!--Sales Chart End-->     
+        </div>
+        <!--Widgets End-->
 
- 
-
-<!--widget Start-->
-<div class="container-fluid pt-4 px-4">
-    <div class="row g-4">
-        <div class="col-sm-12 col-md-6 col-xl-4">
-            <div class="h-100 bg-secondary rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h6 class="mb-0">Rescue Request</h6>
-                    <div class="d-flex align-items-center">
-                        <a href="Admin-RescueLogs.php" class="text-white">Show All</a>
+        <!--Footer Start-->
+        <div class="container-fluid pt-4 px-4">
+            <div class="bg-secondary rounded-top p-4">
+                <div class="row">
+                    <div class="col-12 col-sm-6 text-center text-sm-start">
+                        &copy; <a href="#">Cj PowerHouse</a>, All Right Reserved.
                     </div>
-                </div>
-                
-                <!-- Help Request Statistics -->
-                <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <div class="text-center p-2 rounded" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
-                            <small class="text-warning d-block">Pending</small>
-                            <span class="text-white fw-bold" id="pendingCount">0</span>
-                        </div>
+                    <div class="col-12 col-sm-6 text-center text-sm-end">
+                        Design By: <a href="">Team Jandi</a>
                     </div>
-                    <div class="col-4">
-                        <div class="text-center p-2 rounded" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3);">
-                            <small class="text-info d-block">In Progress</small>
-                            <span class="text-white fw-bold" id="inProgressCount">0</span>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-center p-2 rounded" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3);">
-                            <small class="text-success d-block">Completed</small>
-                            <span class="text-white fw-bold" id="completedCount">0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Help Requests List - Scrollable -->
-                <div id="helpRequestsList" class="rescue-requests-scrollable">
-                    <!-- Dynamic content will be loaded here -->
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
-                        <p class="mb-0">Loading rescue requests...</p>
-                    </div>
-                </div>
-                
-                <!-- No Requests Message (hidden by default) -->
-                <div id="noRequestsMessage" class="text-center text-muted py-4" style="display: none;">
-                    <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
-                    <p class="mb-0">No pending rescue requests</p>
                 </div>
             </div>
         </div>
-        <div class="col-sm-12 col-md-6 col-xl-4">
-            <div class="h-100 bg-secondary rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Calendar</h6>
-                    <a href="#"></a>
-                </div>
-                <div id="calendar"></div>
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-6 col-xl-4">
-            <div class="h-100 bg-secondary rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Low Stock Alerts</h6>
-                </div>
-                <?php
-                // Fetch top 8 lowest-stock products
-                $lowStockItems = [];
-                if (isset($conn) && $conn instanceof mysqli) {
-                    $lowSql = "SELECT ProductID, ProductName, Quantity FROM products ORDER BY quantity ASC, ProductID DESC LIMIT 8";
-                    if ($lowRes = $conn->query($lowSql)) {
-                        while ($row = $lowRes->fetch_assoc()) { $lowStockItems[] = $row; }
-                        $lowRes->close();
-                    }
-                }
-                ?>
-                <?php if (empty($lowStockItems)): ?>
-                    <div class="text-center text-muted py-3">
-                        <i class="fas fa-check-circle text-success me-2"></i>No low stock items
-                    </div>
-                <?php else: ?>
-                    <div class="low-stock-list" style="max-height: 320px; overflow: auto;">
-                    <?php foreach ($lowStockItems as $item): 
-                        $qty = (int)$item['quantity'];
-                        $badge = 'bg-success';
-                        if ($qty <= 1) { $badge = 'bg-danger'; }
-                        elseif ($qty <= 9) { $badge = 'bg-warning text-dark'; }
-                        elseif ($qty <= 20) { $badge = 'bg-info'; }
-                    ?>
-                    <div class="d-flex align-items-center border-bottom py-2">
-                        <div class="w-100">
-                            <div class="d-flex w-100 justify-content-between align-items-center">
-                                <span class="text-truncate" title="<?php echo htmlspecialchars($item['ProductName']); ?>"><?php echo htmlspecialchars($item['ProductName']); ?></span>
-                                <span class="badge <?php echo $badge; ?> ms-2">Qty: <?php echo $qty; ?></span>
-                            </div>
-                            <div class="small text-muted mt-1">
-                                <a href="Admin-Stockmanagement.php?q=<?php echo urlencode($item['ProductName']); ?>" class="text-decoration-none">View in stock</a>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-                <div class="mt-3">
-                    <a href="Admin-Stockmanagement.php" class="btn btn-sm btn-primary w-100">
-                        <i class="fa fa-boxes me-2"></i>Go to Stock Management
-                    </a>
-                </div>
-            </div>
-        </div>
+        <!--Footer End-->
     </div>
-</div>
-<!--Widgets End-->
-
-<!--Footer Start-->
-<div class="container-fluid pt-4 px-4">
-    <div class="bg-secondary rounded-top p-4">
-        <div class="row">
-            <div class="col-12 col-sm-6 text-center text-sm-start">
-                &copy; <a href="#">Cj PowerHouse</a>, All Right Reserved.
-            </div> 
-            <div class="col-12 col-sm-6 text-center text-sm-end">
-                Design By: <a href="">Team Jandi</a>
-            </div>
-        </div>
+    <!--Content End-->
     </div>
- </div>
- <!--Footer End-->
-     </div>   
-     <!--Content End-->  
- </div>
 
 
-    
 
-   <!--javascript Libraries-->
-   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="lib/chart/Chart.min.js"></script>
-   <script src="js/notification-sound.js"></script>
-   <script src="lib/easing/easing.min.js"></script>
-   <script src="lib/waypoints/waypoints.min.js"></script>
-   <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-   <script src="lib/tempusdominus/js/moment.min.js"></script>
-   <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-   <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-   
-   <!-- Calendar Initialization -->
-   <script>
-   $(document).ready(function() {
-       // Initialize calendar
-       $('#calendar').datetimepicker({
-           inline: true,
-           format: 'L',
-           sideBySide: false,
-           icons: {
-               time: 'fa fa-clock',
-               date: 'fa fa-calendar',
-               up: 'fa fa-arrow-up',
-               down: 'fa fa-arrow-down',
-               previous: 'fa fa-chevron-left',
-               next: 'fa fa-chevron-right',
-               today: 'fa fa-calendar-check',
-               clear: 'fa fa-trash',
-               close: 'fa fa-times'
-           },
-           buttons: {
-               showToday: true,
-               showClear: true,
-               showClose: false
-           },
-           dayViewHeaderFormat: 'MMMM YYYY',
-           calendarWeeks: true,
-           locale: 'en'
+
+    <!--javascript Libraries-->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/chart/Chart.min.js"></script>
+    <script src="js/notification-sound.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Calendar Initialization -->
+    <script>
+        $(document).ready(function() {
+            // Initialize calendar
+            $('#calendar').datetimepicker({
+                inline: true,
+                format: 'L',
+                sideBySide: false,
+                icons: {
+                    time: 'fa fa-clock',
+                    date: 'fa fa-calendar',
+                    up: 'fa fa-arrow-up',
+                    down: 'fa fa-arrow-down',
+                    previous: 'fa fa-chevron-left',
+                    next: 'fa fa-chevron-right',
+                    today: 'fa fa-calendar-check',
+                    clear: 'fa fa-trash',
+                    close: 'fa fa-times'
+                },
+                buttons: {
+                    showToday: true,
+                    showClear: true,
+                    showClose: false
+                },
+                dayViewHeaderFormat: 'MMMM YYYY',
+                calendarWeeks: true,
+                locale: 'en'
+            });
         });
-    });
     </script>
-    
-    
+
+
     <!-- AmCharts 4 Resources -->
-   <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
-   <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
-   <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
-   
-   
+    <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+    <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+
+
 
     <!-- Template Javascript -->
     <script src="js/main.js">
     </script>
 
-     <!-- Custom JavaScript for Dashboard -->
-     <script>
-         
-         // Function to get product image (fallback for products without ImagePath in database)
-         function getProductImage(productName, category) {
-             // Fallback to category-based images when database doesn't have ImagePath
-             var categoryImages = {
-                 'Bolts': 'uploads/hexagon.jpg',
-                 'Oil': 'uploads/oil.jfif',
-                 'Motor Chains': 'uploads/RK.jpg',
-                 'Accessories': 'uploads/HandGrip.png',
-                 'Fuel Components': 'uploads/Gasket.jpg',
-                 'Electrical Components': 'uploads/Digital Speedometer.jpg',
-                 'Batteries': 'uploads/Motolite.jpg',
-                 'Tires': 'uploads/tire.webp',
-                 'Brakes': 'uploads/brake-pad.jpg',
-                 'Engine Components': 'uploads/XRM 125 cylinder Head.jpg',
-                 'Exhaust': 'uploads/Exhaust.png'
-             };
-             
-             return categoryImages[category] || 'uploads/product/default.png';
-         }
+    <!-- Custom JavaScript for Dashboard -->
+    <script>
+        // Function to get product image (fallback for products without ImagePath in database)
+        function getProductImage(productName, category) {
+            // Fallback to category-based images when database doesn't have ImagePath
+            var categoryImages = {
+                'Bolts': 'uploads/hexagon.jpg',
+                'Oil': 'uploads/oil.jfif',
+                'Motor Chains': 'uploads/RK.jpg',
+                'Accessories': 'uploads/HandGrip.png',
+                'Fuel Components': 'uploads/Gasket.jpg',
+                'Electrical Components': 'uploads/Digital Speedometer.jpg',
+                'Batteries': 'uploads/Motolite.jpg',
+                'Tires': 'uploads/tire.webp',
+                'Brakes': 'uploads/brake-pad.jpg',
+                'Engine Components': 'uploads/XRM 125 cylinder Head.jpg',
+                'Exhaust': 'uploads/Exhaust.png'
+            };
+
+            return categoryImages[category] || 'uploads/product/default.png';
+        }
 
         // AmCharts 4 3D Pie Chart for Products Quantity by Category
         <?php if (!empty($category_labels)): ?>
-        am4core.ready(function() {
-            try {
-                // Themes begin
-                am4core.useTheme(am4themes_animated);
-                // Themes end
+            am4core.ready(function() {
+                try {
+                    // Themes begin
+                    am4core.useTheme(am4themes_animated);
+                    // Themes end
 
-                // Create chart instance
-                var chart = am4core.create("chartdiv", am4charts.PieChart3D);
-                chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+                    // Create chart instance
+                    var chart = am4core.create("chartdiv", am4charts.PieChart3D);
+                    chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 
-                // Add legend with proper text color configuration
-                chart.legend = new am4charts.Legend();
-                chart.legend.position = "bottom";
-                chart.legend.contentAlign = "center";
-                chart.legend.marginTop = 10;
-                chart.legend.marginBottom = 10;
-                
-                // Configure legend labels with white text - larger for better readability
-                chart.legend.labels.template.fill = am4core.color("#ffffff");
-                chart.legend.labels.template.fontSize = 16;
-                chart.legend.labels.template.fontWeight = "600";
-                chart.legend.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                
-                // Disable automatic value labels to prevent double percentages
-                chart.legend.valueLabels.template.disabled = true;
-                
-                // Configure legend markers to be larger
-                chart.legend.markers.template.width = 20;
-                chart.legend.markers.template.height = 20;
-                chart.legend.markers.template.marginRight = 12;
+                    // Add legend with proper text color configuration
+                    chart.legend = new am4charts.Legend();
+                    chart.legend.position = "bottom";
+                    chart.legend.contentAlign = "center";
+                    chart.legend.marginTop = 10;
+                    chart.legend.marginBottom = 10;
 
-                // Prepare data from PHP
-                var chartData = [];
-                <?php 
-                if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
-                    for ($i = 0; $i < count($category_labels); $i++) {
-                        if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
-                            echo "chartData.push({
+                    // Configure legend labels with white text - larger for better readability
+                    chart.legend.labels.template.fill = am4core.color("#ffffff");
+                    chart.legend.labels.template.fontSize = 16;
+                    chart.legend.labels.template.fontWeight = "600";
+                    chart.legend.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
+
+                    // Disable automatic value labels to prevent double percentages
+                    chart.legend.valueLabels.template.disabled = true;
+
+                    // Configure legend markers to be larger
+                    chart.legend.markers.template.width = 20;
+                    chart.legend.markers.template.height = 20;
+                    chart.legend.markers.template.marginRight = 12;
+
+                    // Prepare data from PHP
+                    var chartData = [];
+                    <?php
+                    if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
+                        for ($i = 0; $i < count($category_labels); $i++) {
+                            if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
+                                echo "chartData.push({
                                 category: " . json_encode($category_labels[$i]) . ",
                                 quantity: " . (int)$category_quantities[$i] . ",
                                 color: am4core.color(" . json_encode($category_colors[$i]) . ")
                             });";
-                        }
-                    }
-                }
-                ?>
-                
-                // Validate chart data
-                if (chartData.length === 0) {
-                    chartData = [{
-                        category: "No Data",
-                        quantity: 1,
-                        color: am4core.color("#6b7280")
-                    }];
-                }
-                
-                console.log("Chart data:", chartData); // Debug log
-                chart.data = chartData;
-
-                // Create series
-                var series = chart.series.push(new am4charts.PieSeries3D());
-                series.dataFields.value = "quantity";
-                series.dataFields.category = "category";
-                
-                // Configure series appearance
-                series.slices.template.stroke = am4core.color("#1f2937");
-                series.slices.template.strokeWidth = 2;
-                series.slices.template.strokeOpacity = 0.8;
-                
-                // Configure colors
-                series.slices.template.propertyFields.fill = "color";
-                
-                // Configure labels
-                series.labels.template.fill = am4core.color("#f9fafb");
-                series.labels.template.fontSize = 12;
-                series.labels.template.fontWeight = "600";
-                series.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                
-                // Configure tooltips
-                series.tooltip.label.fill = am4core.color("#f3f4f6");
-                series.tooltip.label.fontSize = 13;
-                series.tooltip.label.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                series.tooltip.background.fill = am4core.color("#1f2937");
-                series.tooltip.background.stroke = am4core.color("rgba(255, 255, 255, 0.1)");
-                series.tooltip.background.strokeWidth = 1;
-                series.tooltip.background.cornerRadius = 8;
-                
-                // Custom tooltip content
-                series.tooltip.label.adapter.add("text", function(labelText, target) {
-                    var dataItem = target.tooltipDataItem;
-                    var category = dataItem.category || "Unknown";
-                    var value = dataItem.value || 0;
-                    var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                    var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                    
-                    return "📦 " + category + "\n" +
-                           "Quantity: " + (value || 0).toLocaleString() + " items\n" +
-                           "Share: " + percentage + "% of total inventory\n" +
-                           "Click to see products in this category";
-                });
-
-                // Add click event for drill-down functionality
-                series.slices.template.events.on("hit", function(ev) {
-                    var dataItem = ev.target.dataItem;
-                    var category = dataItem.category;
-                    console.log("Clicked on category:", category);
-                    
-                    // Show loading state
-                    showDrillDownLoading();
-                    
-                    // Fetch products for this category
-                    fetchProductsByCategory(category);
-                });
-
-                // Configure 3D settings
-                chart.angle = 15;
-                chart.depth = 30;
-                
-                // Configure chart container
-                chart.padding(10, 10, 10, 10);
-                chart.radius = am4core.percent(95);
-                
-                // Add responsive behavior
-                chart.responsive.enabled = true;
-                chart.responsive.useDefault = false;
-                chart.responsive.rules.push({
-                    relevant: am4core.ResponsiveBreakpoints.widthS,
-                    state: function(target, stateId) {
-                        if (target instanceof am4charts.PieChart3D) {
-                            target.radius = am4core.percent(85);
-                            target.legend.position = "bottom";
-                            target.legend.labels.template.fontSize = 14;
-                            target.legend.valueLabels.template.fontSize = 14;
-                            target.legend.markers.template.width = 18;
-                            target.legend.markers.template.height = 18;
-                        }
-                    }
-                });
-
-                // Override legend labels to show category names with percentages
-                chart.legend.labels.template.adapter.add("text", function(labelText, target) {
-                    var dataItem = target.dataItem;
-                    if (dataItem && dataItem.category) {
-                        var category = dataItem.category;
-                        var value = dataItem.value || 0;
-                        var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                        var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                        return category + " " + percentage + "%";
-                    }
-                    return labelText;
-                });
-                
-                // Force legend to use custom text formatting
-                chart.legend.useDefaultMarker = false;
-
-                            console.log("Chart created successfully"); // Debug log
-                            
-                            // Store chart reference for resize functionality
-                            window.currentChart = chart;
-
-            } catch (error) {
-                console.error("Error creating AmCharts 3D pie chart:", error);
-                // Fallback: show error message in chart container
-                var chartContainer = document.getElementById("chartdiv");
-                if (chartContainer) {
-                    chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-exclamation-triangle me-2"></i>Chart could not be loaded. Please refresh the page.<br><small>Error: ' + error.message + '</small></div>';
-                }
-            }
-
-        }); // end am4core.ready()
-        <?php else: ?>
-        // No data available - show message and create test chart
-        document.addEventListener('DOMContentLoaded', function() {
-            var chartContainer = document.getElementById("chartdiv");
-            if (chartContainer) {
-                // Try to create a test chart with sample data
-                createTestChart();
-            }
-        });
-
-        function createTestChart() {
-            try {
-                var chartContainer = document.getElementById("chartdiv");
-                if (!chartContainer) {
-                    console.error("Chart container not found for test chart");
-                    return;
-                }
-                
-                // Clear the container
-                chartContainer.innerHTML = '<canvas id="testPieChart" width="400" height="400"></canvas>';
-                var canvas = document.getElementById("testPieChart");
-                if (!canvas) {
-                    console.error("Test chart canvas element not created");
-                    return;
-                }
-                var ctx = canvas.getContext('2d');
-                
-                // Create test data
-                new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: ["No Categories Found", "Add Products"],
-                        datasets: [{
-                            data: [1, 1],
-                            backgroundColor: ["#6b7280", "#ef4444"],
-                            borderColor: '#1f2937',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: 'white',
-                                    font: {
-                                        size: 12
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: 'white',
-                                bodyColor: 'white'
                             }
                         }
                     }
-                });
-                
-                console.log("Test chart created successfully");
-            } catch (error) {
-                console.error("Error creating test chart:", error);
+                    ?>
+
+                    // Validate chart data
+                    if (chartData.length === 0) {
+                        chartData = [{
+                            category: "No Data",
+                            quantity: 1,
+                            color: am4core.color("#6b7280")
+                        }];
+                    }
+
+                    console.log("Chart data:", chartData); // Debug log
+                    chart.data = chartData;
+
+                    // Create series
+                    var series = chart.series.push(new am4charts.PieSeries3D());
+                    series.dataFields.value = "quantity";
+                    series.dataFields.category = "category";
+
+                    // Configure series appearance
+                    series.slices.template.stroke = am4core.color("#1f2937");
+                    series.slices.template.strokeWidth = 2;
+                    series.slices.template.strokeOpacity = 0.8;
+
+                    // Configure colors
+                    series.slices.template.propertyFields.fill = "color";
+
+                    // Configure labels
+                    series.labels.template.fill = am4core.color("#f9fafb");
+                    series.labels.template.fontSize = 12;
+                    series.labels.template.fontWeight = "600";
+                    series.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
+
+                    // Configure tooltips
+                    series.tooltip.label.fill = am4core.color("#f3f4f6");
+                    series.tooltip.label.fontSize = 13;
+                    series.tooltip.label.fontFamily = "'Inter', 'Segoe UI', sans-serif";
+                    series.tooltip.background.fill = am4core.color("#1f2937");
+                    series.tooltip.background.stroke = am4core.color("rgba(255, 255, 255, 0.1)");
+                    series.tooltip.background.strokeWidth = 1;
+                    series.tooltip.background.cornerRadius = 8;
+
+                    // Custom tooltip content
+                    series.tooltip.label.adapter.add("text", function(labelText, target) {
+                        var dataItem = target.tooltipDataItem;
+                        var category = dataItem.category || "Unknown";
+                        var value = dataItem.value || 0;
+                        var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                        var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+
+                        return "📦 " + category + "\n" +
+                            "Quantity: " + (value || 0).toLocaleString() + " items\n" +
+                            "Share: " + percentage + "% of total inventory\n" +
+                            "Click to see products in this category";
+                    });
+
+                    // Add click event for drill-down functionality
+                    series.slices.template.events.on("hit", function(ev) {
+                        var dataItem = ev.target.dataItem;
+                        var category = dataItem.category;
+                        console.log("Clicked on category:", category);
+
+                        // Show loading state
+                        showDrillDownLoading();
+
+                        // Fetch products for this category
+                        fetchProductsByCategory(category);
+                    });
+
+                    // Configure 3D settings
+                    chart.angle = 15;
+                    chart.depth = 30;
+
+                    // Configure chart container
+                    chart.padding(10, 10, 10, 10);
+                    chart.radius = am4core.percent(95);
+
+                    // Add responsive behavior
+                    chart.responsive.enabled = true;
+                    chart.responsive.useDefault = false;
+                    chart.responsive.rules.push({
+                        relevant: am4core.ResponsiveBreakpoints.widthS,
+                        state: function(target, stateId) {
+                            if (target instanceof am4charts.PieChart3D) {
+                                target.radius = am4core.percent(85);
+                                target.legend.position = "bottom";
+                                target.legend.labels.template.fontSize = 14;
+                                target.legend.valueLabels.template.fontSize = 14;
+                                target.legend.markers.template.width = 18;
+                                target.legend.markers.template.height = 18;
+                            }
+                        }
+                    });
+
+                    // Override legend labels to show category names with percentages
+                    chart.legend.labels.template.adapter.add("text", function(labelText, target) {
+                        var dataItem = target.dataItem;
+                        if (dataItem && dataItem.category) {
+                            var category = dataItem.category;
+                            var value = dataItem.value || 0;
+                            var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                            var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+                            return category + " " + percentage + "%";
+                        }
+                        return labelText;
+                    });
+
+                    // Force legend to use custom text formatting
+                    chart.legend.useDefaultMarker = false;
+
+                    console.log("Chart created successfully"); // Debug log
+
+                    // Store chart reference for resize functionality
+                    window.currentChart = chart;
+
+                } catch (error) {
+                    console.error("Error creating AmCharts 3D pie chart:", error);
+                    // Fallback: show error message in chart container
+                    var chartContainer = document.getElementById("chartdiv");
+                    if (chartContainer) {
+                        chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-exclamation-triangle me-2"></i>Chart could not be loaded. Please refresh the page.<br><small>Error: ' + error.message + '</small></div>';
+                    }
+                }
+
+            }); // end am4core.ready()
+        <?php else: ?>
+            // No data available - show message and create test chart
+            document.addEventListener('DOMContentLoaded', function() {
                 var chartContainer = document.getElementById("chartdiv");
                 if (chartContainer) {
-                    chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-pie me-2"></i>No product categories found.<br><small>Add products with categories to see the distribution chart.</small><br><small>Error: ' + error.message + '</small></div>';
+                    // Try to create a test chart with sample data
+                    createTestChart();
+                }
+            });
+
+            function createTestChart() {
+                try {
+                    var chartContainer = document.getElementById("chartdiv");
+                    if (!chartContainer) {
+                        console.error("Chart container not found for test chart");
+                        return;
+                    }
+
+                    // Clear the container
+                    chartContainer.innerHTML = '<canvas id="testPieChart" width="400" height="400"></canvas>';
+                    var canvas = document.getElementById("testPieChart");
+                    if (!canvas) {
+                        console.error("Test chart canvas element not created");
+                        return;
+                    }
+                    var ctx = canvas.getContext('2d');
+
+                    // Create test data
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ["No Categories Found", "Add Products"],
+                            datasets: [{
+                                data: [1, 1],
+                                backgroundColor: ["#6b7280", "#ef4444"],
+                                borderColor: '#1f2937',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: 'white',
+                                    bodyColor: 'white'
+                                }
+                            }
+                        }
+                    });
+
+                    console.log("Test chart created successfully");
+                } catch (error) {
+                    console.error("Error creating test chart:", error);
+                    var chartContainer = document.getElementById("chartdiv");
+                    if (chartContainer) {
+                        chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-chart-pie me-2"></i>No product categories found.<br><small>Add products with categories to see the distribution chart.</small><br><small>Error: ' + error.message + '</small></div>';
+                    }
                 }
             }
-        }
         <?php endif; ?>
 
         // Fallback Chart.js implementation if AmCharts fails
@@ -1398,7 +1428,7 @@ $stmt3->close();
                     console.error("Chart container not found");
                     return;
                 }
-                
+
                 // Clear the container
                 chartContainer.innerHTML = '<canvas id="fallbackPieChart" width="400" height="400"></canvas>';
                 var canvas = document.getElementById("fallbackPieChart");
@@ -1407,13 +1437,13 @@ $stmt3->close();
                     return;
                 }
                 var ctx = canvas.getContext('2d');
-                
+
                 // Prepare data
                 var chartData = [];
                 var chartLabels = [];
                 var chartColors = [];
-                
-                <?php 
+
+                <?php
                 if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
                     for ($i = 0; $i < count($category_labels); $i++) {
                         if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
@@ -1424,13 +1454,13 @@ $stmt3->close();
                     }
                 }
                 ?>
-                
+
                 if (chartData.length === 0) {
                     chartLabels = ["No Data"];
                     chartData = [1];
                     chartColors = ["#6b7280"];
                 }
-                
+
                 var fallbackChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
@@ -1475,17 +1505,17 @@ $stmt3->close();
                                 var elementIndex = elements[0].index;
                                 var category = chartLabels[elementIndex];
                                 console.log("Clicked on category:", category);
-                                
+
                                 // Show loading state
                                 showDrillDownLoading();
-                                
+
                                 // Fetch products for this category
                                 fetchProductsByCategory(category);
                             }
                         }
                     }
                 });
-                
+
                 console.log("Fallback Chart.js pie chart created successfully");
             } catch (error) {
                 console.error("Error creating fallback chart:", error);
@@ -1499,7 +1529,7 @@ $stmt3->close();
         // Check if AmCharts loaded successfully, if not use fallback
         document.addEventListener('DOMContentLoaded', function() {
             console.log("DOM loaded, initializing chart...");
-            
+
             // Check AmCharts status
             setTimeout(function() {
                 var amchartsStatus = document.getElementById("amchartsStatus");
@@ -1513,7 +1543,7 @@ $stmt3->close();
                     }
                 }
             }, 1000);
-            
+
             // Try to create a simple chart immediately
             setTimeout(function() {
                 console.log("Attempting to create chart...");
@@ -1530,7 +1560,7 @@ $stmt3->close();
                     console.error("Chart container not found!");
                 }
             }, 2000);
-            
+
             // Final fallback after 5 seconds
             setTimeout(function() {
                 var chartContainer = document.getElementById("chartdiv");
@@ -1550,14 +1580,14 @@ $stmt3->close();
             var chartContainer = document.getElementById("chartContainer");
             var chartSizeBtn = document.getElementById("chartSizeBtn");
             var chartDiv = document.getElementById("chartdiv");
-            
+
             if (!chartContainer || !chartSizeBtn) return;
-            
+
             if (!isMaximized) {
                 // Store original container reference
                 originalChartContainer = chartContainer;
                 originalChartDiv = chartDiv.cloneNode(true);
-                
+
                 // Create fullscreen overlay
                 var overlay = document.createElement('div');
                 overlay.id = 'chartOverlay';
@@ -1573,7 +1603,7 @@ $stmt3->close();
                     flex-direction: column;
                     padding: 20px;
                 `;
-                
+
                 // Create header with title and buttons
                 var header = document.createElement('div');
                 header.style.cssText = `
@@ -1592,7 +1622,7 @@ $stmt3->close();
                         <i class="fas fa-compress me-1"></i>Minimize
                     </button>
                 `;
-                
+
                 // Create chart container for fullscreen with side-by-side layout
                 var fullscreenContainer = document.createElement('div');
                 fullscreenContainer.id = 'fullscreenChartContainer';
@@ -1605,19 +1635,19 @@ $stmt3->close();
                     display: flex;
                     gap: 20px;
                 `;
-                
+
                 // Create chart area (left side)
                 var chartArea = document.createElement('div');
                 chartArea.style.cssText = `
                     flex: 2;
                     position: relative;
                 `;
-                
+
                 // Create a new chart div for fullscreen
                 var fullscreenChartDiv = document.createElement('div');
                 fullscreenChartDiv.id = 'fullscreenChartDiv';
                 fullscreenChartDiv.style.cssText = 'width: 100%; height: 100%;';
-                
+
                 // Create AI Insight Panel (right side - sticky note style)
                 var aiInsightPanel = document.createElement('div');
                 aiInsightPanel.id = 'aiInsightPanel';
@@ -1649,25 +1679,25 @@ $stmt3->close();
                             </div>
                     </div>
                 `;
-                
+
                 chartArea.appendChild(fullscreenChartDiv);
                 fullscreenContainer.appendChild(chartArea);
                 fullscreenContainer.appendChild(aiInsightPanel);
                 overlay.appendChild(header);
                 overlay.appendChild(fullscreenContainer);
                 document.body.appendChild(overlay);
-                
+
                 // Update button
                 chartSizeBtn.innerHTML = '<i class="fas fa-compress me-1"></i>Minimize';
                 chartSizeBtn.className = 'btn btn-outline-warning btn-sm';
-                
+
                 isMaximized = true;
-                
+
                 // Create a new chart in fullscreen mode with full functionality
                 setTimeout(() => {
                     createFullscreenChart();
                 }, 100);
-                
+
             } else {
                 // Minimize chart - restore original state
                 var overlay = document.getElementById('chartOverlay');
@@ -1675,21 +1705,21 @@ $stmt3->close();
                     // Remove overlay
                     document.body.removeChild(overlay);
                 }
-                
+
                 // Restore original chart container content
                 if (originalChartContainer && originalChartDiv) {
                     originalChartContainer.innerHTML = '<div id="chartdiv" style="width: 100%; height: 100%;"></div>';
-                    
+
                     // Recreate the chart in the original container
                     setTimeout(() => {
                         recreateMainChart();
                     }, 100);
                 }
-                
+
                 // Update button
                 chartSizeBtn.innerHTML = '<i class="fas fa-expand me-1"></i>Maximize';
                 chartSizeBtn.className = 'btn btn-outline-success btn-sm';
-                
+
                 isMaximized = false;
             }
         };
@@ -1698,7 +1728,7 @@ $stmt3->close();
         function createFullscreenChart() {
             try {
                 console.log("Creating fullscreen chart with full functionality");
-                
+
                 // Check if AmCharts is available
                 if (typeof am4core !== 'undefined' && typeof am4charts !== 'undefined') {
                     // Use AmCharts ready to ensure proper initialization
@@ -1720,11 +1750,11 @@ $stmt3->close();
                             fullscreenChart.legend.marginBottom = 20;
                             fullscreenChart.legend.marginLeft = 20;
                             fullscreenChart.legend.marginRight = 20;
-                            
+
                             // Configure legend for two-column layout
                             fullscreenChart.legend.maxWidth = am4core.percent(95);
                             fullscreenChart.legend.maxHeight = am4core.percent(25);
-                            
+
                             // Configure legend labels with larger white text for fullscreen
                             fullscreenChart.legend.labels.template.fill = am4core.color("#ffffff");
                             fullscreenChart.legend.labels.template.fontSize = 18;
@@ -1732,15 +1762,15 @@ $stmt3->close();
                             fullscreenChart.legend.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
                             fullscreenChart.legend.labels.template.paddingTop = 5;
                             fullscreenChart.legend.labels.template.paddingBottom = 5;
-                            
+
                             // Disable automatic value labels to prevent double percentages
                             fullscreenChart.legend.valueLabels.template.disabled = true;
-                            
+
                             // Configure legend markers (colored squares) to be larger
                             fullscreenChart.legend.markers.template.width = 20;
                             fullscreenChart.legend.markers.template.height = 20;
                             fullscreenChart.legend.markers.template.marginRight = 10;
-                            
+
                             // Create two-column layout by adjusting item spacing
                             fullscreenChart.legend.itemContainers.template.paddingTop = 8;
                             fullscreenChart.legend.itemContainers.template.paddingBottom = 8;
@@ -1749,7 +1779,7 @@ $stmt3->close();
 
                             // Prepare data from PHP (same as original)
                             var chartData = [];
-                            <?php 
+                            <?php
                             if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
                                 for ($i = 0; $i < count($category_labels); $i++) {
                                     if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
@@ -1762,7 +1792,7 @@ $stmt3->close();
                                 }
                             }
                             ?>
-                            
+
                             // Validate chart data
                             if (chartData.length === 0) {
                                 chartData = [{
@@ -1771,26 +1801,26 @@ $stmt3->close();
                                     color: am4core.color("#6b7280")
                                 }];
                             }
-                            
+
                             fullscreenChart.data = chartData;
 
                             // Create series
                             var series = fullscreenChart.series.push(new am4charts.PieSeries3D());
                             series.dataFields.value = "quantity";
                             series.dataFields.category = "category";
-                            
+
                             // Configure series appearance
                             series.slices.template.stroke = am4core.color("#1f2937");
                             series.slices.template.strokeWidth = 2;
                             series.slices.template.strokeOpacity = 0.8;
-                            
+
                             // Configure colors
                             series.slices.template.propertyFields.fill = "color";
-                            
+
                             // Hide labels and lines for cleaner fullscreen view
                             series.labels.template.disabled = true;
                             series.ticks.template.disabled = true;
-                            
+
                             // Configure tooltips - larger for fullscreen
                             series.tooltip.label.fill = am4core.color("#f3f4f6");
                             series.tooltip.label.fontSize = 15;
@@ -1799,7 +1829,7 @@ $stmt3->close();
                             series.tooltip.background.stroke = am4core.color("rgba(255, 255, 255, 0.1)");
                             series.tooltip.background.strokeWidth = 1;
                             series.tooltip.background.cornerRadius = 8;
-                            
+
                             // Custom tooltip content
                             series.tooltip.label.adapter.add("text", function(labelText, target) {
                                 var dataItem = target.tooltipDataItem;
@@ -1807,10 +1837,10 @@ $stmt3->close();
                                 var value = dataItem.value || 0;
                                 var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
                                 var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                                
+
                                 return "📦 " + category + "\n" +
-                                       "Quantity: " + (value || 0).toLocaleString() + " items\n" +
-                                       "Share: " + percentage + "% of total inventory";
+                                    "Quantity: " + (value || 0).toLocaleString() + " items\n" +
+                                    "Share: " + percentage + "% of total inventory";
                             });
 
                             // Add click event for AI insights and drill-down functionality
@@ -1819,13 +1849,13 @@ $stmt3->close();
                                 var category = dataItem.category;
                                 var quantity = dataItem.value;
                                 console.log("Clicked on category in fullscreen:", category);
-                                
+
                                 // Show AI insights for the clicked category
                                 showCategoryInsights(category, quantity, chartData);
-                                
+
                                 // Also show loading state for drill-down
                                 showDrillDownLoading();
-                                
+
                                 // Fetch products for this category
                                 fetchProductsByCategory(category);
                             });
@@ -1835,7 +1865,7 @@ $stmt3->close();
                             fullscreenChart.depth = 30;
                             fullscreenChart.padding(20, 20, 20, 20);
                             fullscreenChart.radius = am4core.percent(90);
-                            
+
                             // Add responsive behavior
                             fullscreenChart.responsive.enabled = true;
                             fullscreenChart.responsive.useDefault = false;
@@ -1866,19 +1896,19 @@ $stmt3->close();
                                 }
                                 return labelText;
                             });
-                            
+
                             // Force legend to use custom text formatting
                             fullscreenChart.legend.useDefaultMarker = false;
 
                             // Store chart reference for fullscreen
                             window.currentChart = fullscreenChart;
                             console.log("Fullscreen chart created successfully with full functionality");
-                            
+
                             // Show initial category insights
                             setTimeout(() => {
                                 showInitialCategoryInsights();
                             }, 500);
-                            
+
                         } catch (error) {
                             console.error("Error creating fullscreen AmCharts chart:", error);
                             // Fallback to Chart.js for fullscreen
@@ -1903,7 +1933,7 @@ $stmt3->close();
                     console.error("Fullscreen chart container not found");
                     return;
                 }
-                
+
                 // Clear the container
                 fullscreenContainer.innerHTML = '<canvas id="fullscreenFallbackChart" width="800" height="600"></canvas>';
                 var canvas = document.getElementById("fullscreenFallbackChart");
@@ -1912,13 +1942,13 @@ $stmt3->close();
                     return;
                 }
                 var ctx = canvas.getContext('2d');
-                
+
                 // Prepare data from PHP
                 var chartLabels = [];
                 var chartData = [];
                 var chartColors = [];
-                
-                <?php 
+
+                <?php
                 if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
                     for ($i = 0; $i < count($category_labels); $i++) {
                         if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
@@ -1929,14 +1959,14 @@ $stmt3->close();
                     }
                 }
                 ?>
-                
+
                 // Validate data
                 if (chartLabels.length === 0) {
                     chartLabels = ["No Data"];
                     chartData = [1];
                     chartColors = ["#6b7280"];
                 }
-                
+
                 var fullscreenFallbackChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
@@ -1986,25 +2016,25 @@ $stmt3->close();
                                 var category = chartLabels[elementIndex];
                                 var quantity = chartData[elementIndex];
                                 console.log("Clicked on category in fullscreen fallback:", category);
-                                
+
                                 // Show AI insights for the clicked category
                                 showCategoryInsights(category, quantity, chartLabels.map((label, index) => ({
                                     category: label,
                                     quantity: chartData[index]
                                 })));
-                                
+
                                 // Show loading state
                                 showDrillDownLoading();
-                                
+
                                 // Fetch products for this category
                                 fetchProductsByCategory(category);
                             }
                         }
                     }
                 });
-                
+
                 console.log("Fullscreen fallback Chart.js pie chart created successfully");
-                
+
                 // Show initial category insights
                 setTimeout(() => {
                     showInitialCategoryInsights();
@@ -2018,7 +2048,7 @@ $stmt3->close();
         function showCategoryInsights(category, quantity, allData) {
             var aiInsightContent = document.getElementById("aiInsightContent");
             if (!aiInsightContent) return;
-            
+
             // Show loading state
             aiInsightContent.innerHTML = `
                 <div class="text-center">
@@ -2026,7 +2056,7 @@ $stmt3->close();
                     Analyzing ${category}...
                 </div>
             `;
-            
+
             // Generate insights after a short delay
             setTimeout(() => {
                 var insights = generateCategoryInsights(category, quantity, allData);
@@ -2039,7 +2069,7 @@ $stmt3->close();
             var percentage = ((quantity / totalItems) * 100).toFixed(1);
             var sortedData = allData.sort((a, b) => b.quantity - a.quantity);
             var categoryRank = sortedData.findIndex(item => item.category === category) + 1;
-            
+
             var insights = {
                 category: category,
                 quantity: quantity,
@@ -2048,26 +2078,26 @@ $stmt3->close();
                 totalCategories: allData.length,
                 totalItems: totalItems
             };
-            
+
             return insights;
         }
 
         function displayAIInsights(insights) {
             var aiInsightContent = document.getElementById("aiInsightContent");
             if (!aiInsightContent) return;
-            
+
             var content = '';
-            
+
             // Check if this is the initial overview or a specific category
             var isOverview = insights.title && insights.title.includes("Inventory Overview");
-            
+
             if (isOverview) {
                 // Overview header
                 content += `<div class="mb-4">
                     <h4 class="text-white fw-bold mb-2">${insights.title}</h4>
                     <span class="text-white" style="font-size: 1.2rem; opacity: 0.9;">Complete inventory analysis</span>
                 </div>`;
-                
+
                 // Overview metrics
                 content += `<div class="mb-4">
                     <div class="d-flex justify-content-between mb-3">
@@ -2083,7 +2113,7 @@ $stmt3->close();
                         <span class="fw-bold" style="font-size: 1.5rem;">${insights.topCategory} (${insights.topPercentage}%)</span>
                     </div>
                 </div>`;
-                
+
                 // AI Analysis for overview
                 content += `<div class="mb-4">
                     <h4 class="text-white fw-bold mb-3">🤖 AI Analysis</h4>
@@ -2091,7 +2121,7 @@ $stmt3->close();
                         <span style="font-size: 1.3rem;"><i class="fas fa-${insights.alertClass === 'alert-warning' ? 'exclamation-triangle' : insights.alertClass === 'alert-success' ? 'check-circle' : 'info-circle'} me-3"></i>${insights.analysis}</span>
                     </div>
                 </div>`;
-                
+
                 // Recommendations for overview
                 content += `<div class="mb-3">
                     <h4 class="text-white fw-bold mb-3">💡 Recommendations</h4>
@@ -2099,7 +2129,7 @@ $stmt3->close();
                         ${insights.recommendations.map(rec => `<li class="mb-3">• ${rec}</li>`).join('')}
                     </ul>
                 </div>`;
-                
+
                 // Quick actions for overview
                 content += `<div class="mt-4 pt-3 border-top border-light border-opacity-25">
                     <span class="text-light opacity-75" style="font-size: 1.2rem;">
@@ -2107,14 +2137,14 @@ $stmt3->close();
                         Click on any category to see detailed analysis
                     </span>
                 </div>`;
-                
+
             } else {
                 // Category header
                 content += `<div class="mb-4">
                     <h4 class="text-white fw-bold mb-2">${insights.category}</h4>
                     <span class="text-white" style="font-size: 1.2rem; opacity: 0.9;">Rank #${insights.rank} of ${insights.totalCategories} categories</span>
                 </div>`;
-                
+
                 // Key metrics
                 content += `<div class="mb-4">
                     <div class="d-flex justify-content-between mb-3">
@@ -2130,11 +2160,11 @@ $stmt3->close();
                         <span class="fw-bold" style="font-size: 1.5rem;">${insights.totalItems.toLocaleString()}</span>
                     </div>
                 </div>`;
-                
+
                 // AI Analysis
                 content += `<div class="mb-4">
                     <h4 class="text-white fw-bold mb-3">🤖 AI Analysis</h4>`;
-                
+
                 if (parseFloat(insights.percentage) > 50) {
                     content += `<div class="alert alert-warning p-4 mb-3" style="background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.3);">
                         <span style="font-size: 1.3rem;"><i class="fas fa-exclamation-triangle me-3"></i><strong>High Concentration:</strong> This category dominates your inventory. Consider diversifying.</span>
@@ -2152,11 +2182,11 @@ $stmt3->close();
                         <span style="font-size: 1.3rem;"><i class="fas fa-info-circle me-3"></i><strong>Niche Category:</strong> Small but important part of your inventory.</span>
                     </div>`;
                 }
-                
+
                 // Recommendations
                 content += `<div class="mb-3">
                     <h4 class="text-white fw-bold mb-3">💡 Recommendations</h4>`;
-                
+
                 if (parseFloat(insights.percentage) > 50) {
                     content += `<ul class="list-unstyled mb-0" style="font-size: 1.2rem;">
                         <li class="mb-3">• Monitor stock levels closely</li>
@@ -2182,9 +2212,9 @@ $stmt3->close();
                         <li class="mb-3">• Evaluate category importance</li>
                     </ul>`;
                 }
-                
+
                 content += `</div></div>`;
-                
+
                 // Quick actions
                 content += `<div class="mt-4 pt-3 border-top border-light border-opacity-25">
                     <span class="text-light opacity-75" style="font-size: 1.2rem;">
@@ -2193,14 +2223,14 @@ $stmt3->close();
                     </span>
                 </div>`;
             }
-            
+
             aiInsightContent.innerHTML = content;
         }
 
         function generateFullscreenInitialAnalysis() {
             // Get chart data for analysis
             var chartData = [];
-            <?php 
+            <?php
             if (!empty($category_labels) && !empty($category_quantities)) {
                 for ($i = 0; $i < count($category_labels); $i++) {
                     if (isset($category_labels[$i]) && isset($category_quantities[$i])) {
@@ -2212,7 +2242,7 @@ $stmt3->close();
                 }
             }
             ?>
-            
+
             // Generate AI analysis
             var analysis = generateInventoryAnalysis(chartData);
             displayFullscreenAIResponse(analysis);
@@ -2226,49 +2256,49 @@ $stmt3->close();
             // Sort data by quantity
             var sortedData = data.sort((a, b) => b.quantity - a.quantity);
             var totalItems = data.reduce((sum, item) => sum + item.quantity, 0);
-            
+
             var analysis = "📊 **Inventory Distribution Analysis**\n\n";
-            
+
             // Top category analysis
             var topCategory = sortedData[0];
             var topPercentage = ((topCategory.quantity / totalItems) * 100).toFixed(1);
-            
+
             analysis += `🎯 **Key Insight**: ${topCategory.category} dominates your inventory at ${topPercentage}% (${topCategory.quantity.toLocaleString()} items).\n\n`;
-            
+
             // Category distribution analysis
             analysis += "📈 **Category Breakdown**:\n";
             sortedData.slice(0, 5).forEach((item, index) => {
                 var percentage = ((item.quantity / totalItems) * 100).toFixed(1);
                 analysis += `${index + 1}. ${item.category}: ${percentage}% (${item.quantity.toLocaleString()} items)\n`;
             });
-            
+
             // Recommendations
             analysis += "\n💡 **Recommendations**:\n";
-            
+
             if (topPercentage > 50) {
                 analysis += `• Consider diversifying inventory - ${topCategory.category} is over 50% of stock\n`;
             }
-            
+
             var lowStockCategories = sortedData.filter(item => {
                 var percentage = (item.quantity / totalItems) * 100;
                 return percentage < 2;
             });
-            
+
             if (lowStockCategories.length > 0) {
                 analysis += `• Low stock categories need attention: ${lowStockCategories.map(c => c.category).join(', ')}\n`;
             }
-            
+
             var balancedCategories = sortedData.filter(item => {
                 var percentage = (item.quantity / totalItems) * 100;
                 return percentage >= 2 && percentage <= 10;
             });
-            
+
             if (balancedCategories.length > 0) {
                 analysis += `• Well-balanced categories: ${balancedCategories.map(c => c.category).join(', ')}\n`;
             }
-            
+
             analysis += "\n❓ **Ask me anything** about your inventory distribution!";
-            
+
             return analysis;
         }
 
@@ -2281,7 +2311,7 @@ $stmt3->close();
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br>')
                     .replace(/•/g, '&bull;');
-                
+
                 aiResponse.innerHTML = formattedResponse;
             }
         }
@@ -2290,20 +2320,20 @@ $stmt3->close();
             var question = document.getElementById("fullscreenAIQuestion");
             var aiResponse = document.getElementById("fullscreenAIResponse");
             var aiAskBtn = document.getElementById("fullscreenAIAskBtn");
-            
+
             if (!question || !aiResponse || !aiAskBtn) return;
-            
+
             var userQuestion = question.value.trim();
             if (!userQuestion) return;
-            
+
             // Show loading state
             aiAskBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             aiAskBtn.disabled = true;
             aiResponse.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Thinking...</div>';
-            
+
             // Get chart data for context
             var chartData = [];
-            <?php 
+            <?php
             if (!empty($category_labels) && !empty($category_quantities)) {
                 for ($i = 0; $i < count($category_labels); $i++) {
                     if (isset($category_labels[$i]) && isset($category_quantities[$i])) {
@@ -2315,12 +2345,12 @@ $stmt3->close();
                 }
             }
             ?>
-            
+
             // Generate AI response based on question
             setTimeout(() => {
                 var response = generateAIResponse(userQuestion, chartData);
                 displayFullscreenAIResponse(response);
-                
+
                 // Reset button
                 aiAskBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 aiAskBtn.disabled = false;
@@ -2331,73 +2361,73 @@ $stmt3->close();
         function generateAIResponse(question, data) {
             var totalItems = data.reduce((sum, item) => sum + item.quantity, 0);
             var sortedData = data.sort((a, b) => b.quantity - a.quantity);
-            
+
             var lowerQuestion = question.toLowerCase();
-            
+
             if (lowerQuestion.includes('focus') || lowerQuestion.includes('priority') || lowerQuestion.includes('important')) {
                 var topCategory = sortedData[0];
                 var topPercentage = ((topCategory.quantity / totalItems) * 100).toFixed(1);
-                
+
                 return `🎯 **Focus Recommendation**:\n\nYour top priority should be **${topCategory.category}** (${topPercentage}% of inventory).\n\n` +
-                       `This category represents ${topCategory.quantity.toLocaleString()} items and is your main revenue driver. ` +
-                       `Consider optimizing stock levels and ensuring consistent availability.\n\n` +
-                       `Also monitor low-stock categories that might need restocking.`;
-                       
+                    `This category represents ${topCategory.quantity.toLocaleString()} items and is your main revenue driver. ` +
+                    `Consider optimizing stock levels and ensuring consistent availability.\n\n` +
+                    `Also monitor low-stock categories that might need restocking.`;
+
             } else if (lowerQuestion.includes('low') || lowerQuestion.includes('stock') || lowerQuestion.includes('restock')) {
                 var lowStockCategories = sortedData.filter(item => {
                     var percentage = (item.quantity / totalItems) * 100;
                     return percentage < 2;
                 });
-                
+
                 if (lowStockCategories.length > 0) {
                     return `⚠️ **Low Stock Alert**:\n\nThese categories need attention:\n\n` +
-                           lowStockCategories.map(item => {
-                               var percentage = ((item.quantity / totalItems) * 100).toFixed(1);
-                               return `• ${item.category}: ${percentage}% (${item.quantity} items)`;
-                           }).join('\n') +
-                           `\n\nConsider restocking these categories to maintain product availability.`;
+                        lowStockCategories.map(item => {
+                            var percentage = ((item.quantity / totalItems) * 100).toFixed(1);
+                            return `• ${item.category}: ${percentage}% (${item.quantity} items)`;
+                        }).join('\n') +
+                        `\n\nConsider restocking these categories to maintain product availability.`;
                 } else {
                     return `✅ **Stock Levels Look Good**:\n\nAll categories have adequate stock levels (above 2% of total inventory). ` +
-                           `Continue monitoring to maintain this balance.`;
+                        `Continue monitoring to maintain this balance.`;
                 }
-                
+
             } else if (lowerQuestion.includes('balance') || lowerQuestion.includes('diversify') || lowerQuestion.includes('distribution')) {
                 var topCategory = sortedData[0];
                 var topPercentage = ((topCategory.quantity / totalItems) * 100).toFixed(1);
-                
+
                 if (topPercentage > 50) {
                     return `⚖️ **Inventory Balance Analysis**:\n\nYour inventory is **heavily concentrated** in ${topCategory.category} (${topPercentage}%).\n\n` +
-                           `**Recommendation**: Consider diversifying your inventory to reduce risk and capture more market segments. ` +
-                           `Aim for a more balanced distribution across categories.`;
+                        `**Recommendation**: Consider diversifying your inventory to reduce risk and capture more market segments. ` +
+                        `Aim for a more balanced distribution across categories.`;
                 } else {
                     return `✅ **Well-Balanced Inventory**:\n\nYour inventory distribution looks healthy with good diversification across categories. ` +
-                           `The top category (${topCategory.category}) represents ${topPercentage}% of total stock, which is within a reasonable range.`;
+                        `The top category (${topCategory.category}) represents ${topPercentage}% of total stock, which is within a reasonable range.`;
                 }
-                
+
             } else if (lowerQuestion.includes('trend') || lowerQuestion.includes('pattern') || lowerQuestion.includes('insight')) {
                 var top3 = sortedData.slice(0, 3);
                 var top3Total = top3.reduce((sum, item) => sum + item.quantity, 0);
                 var top3Percentage = ((top3Total / totalItems) * 100).toFixed(1);
-                
+
                 return `📈 **Inventory Trends & Insights**:\n\n` +
-                       `**Top 3 Categories** (${top3Percentage}% of total inventory):\n` +
-                       top3.map((item, index) => {
-                           var percentage = ((item.quantity / totalItems) * 100).toFixed(1);
-                           return `${index + 1}. ${item.category}: ${percentage}%`;
-                       }).join('\n') +
-                       `\n\n**Key Insight**: Your inventory is concentrated in core categories, which suggests a focused product strategy. ` +
-                       `This can be efficient but consider monitoring for diversification opportunities.`;
-                       
+                    `**Top 3 Categories** (${top3Percentage}% of total inventory):\n` +
+                    top3.map((item, index) => {
+                        var percentage = ((item.quantity / totalItems) * 100).toFixed(1);
+                        return `${index + 1}. ${item.category}: ${percentage}%`;
+                    }).join('\n') +
+                    `\n\n**Key Insight**: Your inventory is concentrated in core categories, which suggests a focused product strategy. ` +
+                    `This can be efficient but consider monitoring for diversification opportunities.`;
+
             } else {
                 return `🤖 **AI Analysis**:\n\nI can help you understand your inventory distribution better. Here's what I see:\n\n` +
-                       `• Total items: ${totalItems.toLocaleString()}\n` +
-                       `• Categories: ${data.length}\n` +
-                       `• Top category: ${sortedData[0].category} (${((sortedData[0].quantity / totalItems) * 100).toFixed(1)}%)\n\n` +
-                       `Try asking me about:\n` +
-                       `• "What should I focus on?"\n` +
-                       `• "Which categories need attention?"\n` +
-                       `• "How balanced is my inventory?"\n` +
-                       `• "What trends do you see?"`;
+                    `• Total items: ${totalItems.toLocaleString()}\n` +
+                    `• Categories: ${data.length}\n` +
+                    `• Top category: ${sortedData[0].category} (${((sortedData[0].quantity / totalItems) * 100).toFixed(1)}%)\n\n` +
+                    `Try asking me about:\n` +
+                    `• "What should I focus on?"\n` +
+                    `• "Which categories need attention?"\n` +
+                    `• "How balanced is my inventory?"\n` +
+                    `• "What trends do you see?"`;
             }
         }
 
@@ -2415,7 +2445,7 @@ $stmt3->close();
             // Check if we're in fullscreen mode
             var fullscreenContainer = document.getElementById("fullscreenChartDiv");
             var normalContainer = document.getElementById("chartdiv");
-            
+
             if (fullscreenContainer) {
                 // We're in fullscreen mode
                 fullscreenContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p class="mb-0">Loading products...</p></div>';
@@ -2448,7 +2478,7 @@ $stmt3->close();
                 var fullscreenContainer = document.getElementById("fullscreenChartDiv");
                 var normalContainer = document.getElementById("chartdiv");
                 var chartContainer = fullscreenContainer || normalContainer;
-                
+
                 if (!chartContainer) return;
 
                 // Store current chart for back navigation
@@ -2458,7 +2488,7 @@ $stmt3->close();
 
                 // Clear container and create new chart
                 chartContainer.innerHTML = '<div id="drillDownChart" style="width: 100%; height: 100%;"></div>';
-                
+
                 // Add back button - position differently for fullscreen vs normal
                 var backButton = document.createElement('div');
                 backButton.id = 'drillDownBackButton';
@@ -2467,7 +2497,7 @@ $stmt3->close();
                 backButton.style.top = '10px';
                 backButton.style.left = '10px';
                 backButton.style.zIndex = '1000';
-                
+
                 // If in fullscreen, add to the fullscreen container's parent
                 if (fullscreenContainer) {
                     var fullscreenParent = fullscreenContainer.parentElement;
@@ -2507,10 +2537,10 @@ $stmt3->close();
                 drillChart.legend.labels.template.fontSize = 16;
                 drillChart.legend.labels.template.fontWeight = "600";
                 drillChart.legend.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                
+
                 // Disable automatic value labels to prevent double percentages
                 drillChart.legend.valueLabels.template.disabled = true;
-                
+
                 // Configure legend markers to be larger
                 drillChart.legend.markers.template.width = 20;
                 drillChart.legend.markers.template.height = 20;
@@ -2543,17 +2573,17 @@ $stmt3->close();
                     var quantity = dataItem.value || 0;
                     var total = productData.reduce((sum, item) => sum + (item.quantity || 0), 0);
                     var percentage = total > 0 ? ((quantity / total) * 100).toFixed(1) : "0.0";
-                    
+
                     // Get product image from the data or fallback to category image
                     var productDataItem = productData.find(item => item.product === product);
                     var productImage = productDataItem ? productDataItem.imagePath : getProductImage(product, category);
-                    
+
                     return '<div style="padding: 12px; text-align: center; min-width: 200px;">' +
-                           '<img src="' + productImage + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; border: 2px solid #4b5563;" onerror="this.src=\'uploads/product/default.png\'">' +
-                           '<div style="color: #f3f4f6; font-size: 14px; font-weight: bold;">📦 ' + product + '</div>' +
-                           '<div style="color: #d1d5db; font-size: 12px; margin-top: 4px;">Quantity: ' + quantity.toLocaleString() + ' items</div>' +
-                           '<div style="color: #d1d5db; font-size: 12px;">Share: ' + percentage + '% of ' + category + '</div>' +
-                           '</div>';
+                        '<img src="' + productImage + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; border: 2px solid #4b5563;" onerror="this.src=\'uploads/product/default.png\'">' +
+                        '<div style="color: #f3f4f6; font-size: 14px; font-weight: bold;">📦 ' + product + '</div>' +
+                        '<div style="color: #d1d5db; font-size: 12px; margin-top: 4px;">Quantity: ' + quantity.toLocaleString() + ' items</div>' +
+                        '<div style="color: #d1d5db; font-size: 12px;">Share: ' + percentage + '% of ' + category + '</div>' +
+                        '</div>';
                 });
 
                 // Override legend labels to show product names with percentages
@@ -2589,7 +2619,7 @@ $stmt3->close();
             var fullscreenContainer = document.getElementById("fullscreenChartDiv");
             var normalContainer = document.getElementById("chartdiv");
             var chartContainer = fullscreenContainer || normalContainer;
-            
+
             if (chartContainer) {
                 chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-exclamation-triangle me-2"></i>' + message + '<br><button onclick="goBackToMainChart()" class="btn btn-outline-light btn-sm mt-2"><i class="fas fa-arrow-left me-1"></i>Back</button></div>';
             }
@@ -2597,26 +2627,26 @@ $stmt3->close();
 
         window.goBackToMainChart = function() {
             console.log("Going back to main chart");
-            
+
             // Check if we're in fullscreen mode or normal mode
             var fullscreenContainer = document.getElementById("fullscreenChartDiv");
             var normalContainer = document.getElementById("chartdiv");
             var chartContainer = fullscreenContainer || normalContainer;
-            
+
             if (!chartContainer) return;
-            
+
             // Remove the back button
             var backButton = document.getElementById('drillDownBackButton');
             if (backButton) {
                 backButton.remove();
             }
-            
+
             // Reset AI assistant to default state
             resetAIAssistant();
-            
+
             // Show loading state
             chartContainer.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><p class="mb-0">Loading categories...</p></div>';
-            
+
             // Recreate the main chart without page reload
             setTimeout(() => {
                 if (fullscreenContainer) {
@@ -2643,7 +2673,7 @@ $stmt3->close();
 
             // Get the current chart data
             var chartData = [];
-            <?php 
+            <?php
             if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
                 for ($i = 0; $i < count($category_labels); $i++) {
                     if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
@@ -2675,23 +2705,23 @@ $stmt3->close();
             // Sort categories by quantity
             var sortedData = chartData.slice().sort((a, b) => b.quantity - a.quantity);
             var totalItems = chartData.reduce((sum, item) => sum + item.quantity, 0);
-            
+
             // Find top category
             var topCategory = sortedData[0];
             var topPercentage = ((topCategory.quantity / totalItems) * 100).toFixed(1);
-            
+
             // Find bottom categories (less than 2%)
-            var lowStockCategories = sortedData.filter(item => 
+            var lowStockCategories = sortedData.filter(item =>
                 ((item.quantity / totalItems) * 100) < 2.0
             );
-            
+
             // Calculate diversity score
             var diversityScore = sortedData.length;
             var concentrationScore = parseFloat(topPercentage);
-            
+
             var analysis = "";
             var alertClass = "alert-info";
-            
+
             if (concentrationScore > 60) {
                 analysis = "High Concentration: One category dominates your inventory. Consider diversifying to reduce risk.";
                 alertClass = "alert-warning";
@@ -2704,7 +2734,7 @@ $stmt3->close();
             }
 
             var recommendations = [];
-            
+
             if (concentrationScore > 60) {
                 recommendations.push("Consider expanding underperforming categories");
                 recommendations.push("Monitor supply chain for dominant category");
@@ -2745,11 +2775,11 @@ $stmt3->close();
 
                 // Clear container and recreate the div
                 chartContainer.innerHTML = '<div id="chartdiv" style="width: 100%; height: 100%;"></div>';
-                
+
                 // Check if AmCharts is available and recreate the chart
                 if (typeof am4core !== 'undefined' && typeof am4charts !== 'undefined') {
                     console.log("AmCharts available, recreating 3D pie chart");
-                    
+
                     // Use AmCharts ready to ensure proper initialization
                     am4core.ready(function() {
                         try {
@@ -2767,19 +2797,19 @@ $stmt3->close();
                             chart.legend.contentAlign = "center";
                             chart.legend.marginTop = 10;
                             chart.legend.marginBottom = 10;
-                            
+
                             // Configure legend labels with white text
                             chart.legend.labels.template.fill = am4core.color("#ffffff");
                             chart.legend.labels.template.fontSize = 12;
                             chart.legend.labels.template.fontWeight = "500";
                             chart.legend.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                            
+
                             // Disable automatic value labels to prevent double percentages
                             chart.legend.valueLabels.template.disabled = true;
 
                             // Prepare data from PHP (same as original)
                             var chartData = [];
-                            <?php 
+                            <?php
                             if (!empty($category_labels) && !empty($category_quantities) && !empty($category_colors)) {
                                 for ($i = 0; $i < count($category_labels); $i++) {
                                     if (isset($category_labels[$i]) && isset($category_quantities[$i]) && isset($category_colors[$i])) {
@@ -2792,7 +2822,7 @@ $stmt3->close();
                                 }
                             }
                             ?>
-                            
+
                             // Validate chart data
                             if (chartData.length === 0) {
                                 chartData = [{
@@ -2801,28 +2831,28 @@ $stmt3->close();
                                     color: am4core.color("#6b7280")
                                 }];
                             }
-                            
+
                             chart.data = chartData;
 
                             // Create series
                             var series = chart.series.push(new am4charts.PieSeries3D());
                             series.dataFields.value = "quantity";
                             series.dataFields.category = "category";
-                            
+
                             // Configure series appearance
                             series.slices.template.stroke = am4core.color("#1f2937");
                             series.slices.template.strokeWidth = 2;
                             series.slices.template.strokeOpacity = 0.8;
-                            
+
                             // Configure colors
                             series.slices.template.propertyFields.fill = "color";
-                            
+
                             // Configure labels
                             series.labels.template.fill = am4core.color("#f9fafb");
                             series.labels.template.fontSize = 12;
                             series.labels.template.fontWeight = "600";
                             series.labels.template.fontFamily = "'Inter', 'Segoe UI', sans-serif";
-                            
+
                             // Configure tooltips
                             series.tooltip.label.fill = am4core.color("#f3f4f6");
                             series.tooltip.label.fontSize = 13;
@@ -2831,7 +2861,7 @@ $stmt3->close();
                             series.tooltip.background.stroke = am4core.color("rgba(255, 255, 255, 0.1)");
                             series.tooltip.background.strokeWidth = 1;
                             series.tooltip.background.cornerRadius = 8;
-                            
+
                             // Custom tooltip content
                             series.tooltip.label.adapter.add("text", function(labelText, target) {
                                 var dataItem = target.tooltipDataItem;
@@ -2839,21 +2869,21 @@ $stmt3->close();
                                 var value = dataItem.value || 0;
                                 var total = chartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
                                 var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                                
+
                                 return "📦 " + category + "\n" +
-                                       "Quantity: " + (value || 0).toLocaleString() + " items\n" +
-                                       "Share: " + percentage + "% of total inventory\n" +
-                                       "Click to see products in this category";
+                                    "Quantity: " + (value || 0).toLocaleString() + " items\n" +
+                                    "Share: " + percentage + "% of total inventory\n" +
+                                    "Click to see products in this category";
                             });
 
                             // Override click for THIS panel only: toggle slice (no drill-down)
                             series.slices.template.events.off("hit");
-                            series.slices.template.events.on("hit", function(ev){
+                            series.slices.template.events.on("hit", function(ev) {
                                 try {
                                     if (ev && ev.event && typeof ev.event.stopImmediatePropagation === 'function') {
                                         ev.event.stopImmediatePropagation();
                                     }
-                                } catch(e) {}
+                                } catch (e) {}
                                 // Toggle slice pull-out
                                 var slice = ev.target;
                                 slice.isActive = !slice.isActive;
@@ -2867,7 +2897,7 @@ $stmt3->close();
                             chart.depth = 30;
                             chart.padding(10, 10, 10, 10);
                             chart.radius = am4core.percent(95);
-                            
+
                             // Add responsive behavior
                             chart.responsive.enabled = true;
                             chart.responsive.useDefault = false;
@@ -2894,15 +2924,15 @@ $stmt3->close();
                                 }
                                 return labelText;
                             });
-                            
+
                             // Force legend to use custom text formatting
                             chart.legend.useDefaultMarker = false;
 
                             console.log("Main chart recreated successfully");
-                            
+
                             // Store chart reference for resize functionality
                             window.currentChart = chart;
-                            
+
                         } catch (error) {
                             console.error("Error recreating AmCharts chart:", error);
                             createFallbackPieChart();
@@ -2924,24 +2954,24 @@ $stmt3->close();
         function initDashboardSSE() {
             try {
                 const eventSource = new EventSource('sse_dashboard_metrics.php');
-                
+
                 eventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
                         updateDashboardMetrics(data);
-                        
+
                         // Play notification sound for important updates
                         const currentTime = Date.now();
                         const isPageVisible = !document.hidden;
                         const hasNewNotifications = data.notification_count > lastNotificationCount;
-                        
-                        if (hasNewNotifications && !isInitialLoad && notificationSound && 
+
+                        if (hasNewNotifications && !isInitialLoad && notificationSound &&
                             (currentTime - lastSoundPlayTime) > SOUND_DEBOUNCE_TIME && isPageVisible) {
                             console.log('Admin Dashboard: Playing notification sound - new notification detected');
                             notificationSound.play();
                             lastSoundPlayTime = currentTime;
                         }
-                        
+
                         // Update tracking
                         lastNotificationCount = data.notification_count;
                         isInitialLoad = false;
@@ -2949,11 +2979,11 @@ $stmt3->close();
                         console.error('Error parsing SSE message:', error);
                     }
                 };
-                
+
                 eventSource.onerror = function(event) {
                     console.error('SSE Error:', event);
                     eventSource.close();
-                    
+
                     // Retry connection after 5 seconds
                     setTimeout(() => {
                         initDashboardSSE();
@@ -3006,7 +3036,9 @@ $stmt3->close();
                 if (salesCard) {
                     const valueElement = salesCard.querySelector('h6.mb-0');
                     const trendElement = salesCard.querySelector('small.text-success');
-                    if (valueElement) valueElement.textContent = '₱' + parseFloat(data.today_sales.amount).toLocaleString('en-US', {minimumFractionDigits: 2});
+                    if (valueElement) valueElement.textContent = '₱' + parseFloat(data.today_sales.amount).toLocaleString('en-US', {
+                        minimumFractionDigits: 2
+                    });
                     if (trendElement) trendElement.textContent = `↗ ${data.today_sales.growth}% from yesterday`;
                 }
             }
@@ -3018,11 +3050,15 @@ $stmt3->close();
                 if (salesCard) {
                     if (data.all_products_value !== undefined) {
                         const inventoryElement = salesCard.querySelector('small.text-info');
-                        if (inventoryElement) inventoryElement.textContent = 'Inventory: ₱' + parseFloat(data.all_products_value).toLocaleString('en-US', {minimumFractionDigits: 2});
+                        if (inventoryElement) inventoryElement.textContent = 'Inventory: ₱' + parseFloat(data.all_products_value).toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
                     }
                     if (data.total_earned !== undefined) {
                         const earnedElement = salesCard.querySelector('small.text-warning');
-                        if (earnedElement) earnedElement.textContent = 'Total Earned: ₱' + parseFloat(data.total_earned).toLocaleString('en-US', {minimumFractionDigits: 2});
+                        if (earnedElement) earnedElement.textContent = 'Total Earned: ₱' + parseFloat(data.total_earned).toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
                     }
                 }
             }
@@ -3047,9 +3083,9 @@ $stmt3->close();
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             // Auto-remove after 3 seconds
             setTimeout(() => {
                 if (notification.parentNode) {
@@ -3064,7 +3100,7 @@ $stmt3->close();
         let isInitialLoad = true;
         let lastSoundPlayTime = 0;
         const SOUND_DEBOUNCE_TIME = 2000; // 2 seconds between sounds
-        
+
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize notification sound
@@ -3075,22 +3111,22 @@ $stmt3->close();
                 enableTest: true,
                 storageKey: 'adminNotificationSoundSettings'
             });
-            
+
             // Reset tracking on page load
             lastNotificationCount = 0;
             isInitialLoad = true;
             lastSoundPlayTime = 0;
-            
+
             initDashboardSSE();
-            
+
             // Initialize weekly orders chart
             initWeeklyOrdersChart();
-            
+
             // Real-time revenue removed
-            
+
             // Initialize real-time help requests
             initHelpRequestsSSE();
-            
+
             // Update every 15 seconds as fallback
             setInterval(() => {
                 fetch('get_dashboard_metrics.php')
@@ -3099,28 +3135,27 @@ $stmt3->close();
                     .catch(error => console.error('Fallback update failed:', error));
             }, 15000);
         });
-        
+
         // Weekly Orders Chart Functions
         let weeklyOrdersChart = null;
-        
+
         function initWeeklyOrdersChart() {
             const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
             createWeeklyChart(chartData);
         }
-        
+
         function createWeeklyChart(data) {
             const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
-            
+
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
-            
+
             weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
-                    datasets: [
-                        {
+                    datasets: [{
                             label: 'Completed Orders',
                             data: data.map(item => item.completed_count),
                             backgroundColor: 'rgba(40, 167, 69, 0.8)',
@@ -3160,28 +3195,28 @@ $stmt3->close();
                             bodyColor: 'white',
                             borderColor: 'rgba(220, 53, 69, 1)',
                             borderWidth: 1,
-                                                            callbacks: {
-                                    label: function(context) {
-                                        const dataIndex = context.dataIndex;
-                                        const orderCount = context.parsed.y;
-                                        const datasetLabel = context.dataset.label;
-                                        
-                                        if (datasetLabel === 'Completed Orders') {
-                                            const totalAmount = data[dataIndex].completed_amount;
-                                            return [
-                                                `Completed Orders: ${orderCount}`,
-                                                `Total: ₱${totalAmount.toFixed(2)}`
-                                            ];
-                                        } else if (datasetLabel === 'Returned Orders') {
-                                            const totalAmount = data[dataIndex].returned_amount;
-                                            return [
-                                                `Returned Orders: ${orderCount}`,
-                                                `Total: ₱${totalAmount.toFixed(2)}`
-                                            ];
-                                        }
-                                        return `${datasetLabel}: ${orderCount}`;
+                            callbacks: {
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const orderCount = context.parsed.y;
+                                    const datasetLabel = context.dataset.label;
+
+                                    if (datasetLabel === 'Completed Orders') {
+                                        const totalAmount = data[dataIndex].completed_amount;
+                                        return [
+                                            `Completed Orders: ${orderCount}`,
+                                            `Total: ₱${totalAmount.toFixed(2)}`
+                                        ];
+                                    } else if (datasetLabel === 'Returned Orders') {
+                                        const totalAmount = data[dataIndex].returned_amount;
+                                        return [
+                                            `Returned Orders: ${orderCount}`,
+                                            `Total: ₱${totalAmount.toFixed(2)}`
+                                        ];
                                     }
+                                    return `${datasetLabel}: ${orderCount}`;
                                 }
+                            }
                         }
                     },
                     scales: {
@@ -3222,7 +3257,7 @@ $stmt3->close();
                 }
             });
         }
-        
+
         function refreshWeeklyChart() {
             // Fetch fresh data from server
             fetch('get_weekly_orders.php')
@@ -3238,30 +3273,30 @@ $stmt3->close();
                     console.error('Error refreshing chart:', error);
                 });
         }
-        
+
         // Real-Time Revenue Chart Functions
         let revenueChart = null;
         let revenueData = [];
-        
+
         function initRevenueChart() {
             // Initialize with empty data
             createRevenueChart();
-            
+
             // Start real-time updates
             startRevenueUpdates();
         }
-        
+
         function createRevenueChart() {
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            
+
             if (revenueChart) {
                 revenueChart.destroy();
             }
-            
+
             // Load real revenue data from database
             loadHourlyRevenueData();
         }
-        
+
         function loadHourlyRevenueData() {
             fetch('get_hourly_revenue.php')
                 .then(response => response.json())
@@ -3269,7 +3304,7 @@ $stmt3->close();
                     if (data.success) {
                         // Update chart with real data
                         updateRevenueChartWithRealData(data.labels, data.data);
-                        
+
                         // Update summary cards
                         updateRevenueSummaryWithRealData(data.current_hour_revenue, data.today_total);
                     } else {
@@ -3284,61 +3319,61 @@ $stmt3->close();
                     createEmptyRevenueChart();
                 });
         }
-        
+
         function createEmptyRevenueChart() {
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            
+
             // Initialize with empty data structure
             const labels = [];
             const data = [];
             const now = new Date();
-            
+
             for (let i = 23; i >= 0; i--) {
                 const time = new Date(now.getTime() - (i * 60 * 60 * 1000));
-                
+
                 let timeLabel;
                 const isToday = time.toDateString() === now.toDateString();
                 const isYesterday = time.toDateString() === new Date(now.getTime() - 24 * 60 * 60 * 1000).toDateString();
-                
+
                 if (isToday) {
-                    timeLabel = time.toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
+                    timeLabel = time.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
                         minute: '2-digit',
-                        hour12: true 
+                        hour12: true
                     });
                 } else if (isYesterday) {
-                    timeLabel = time.toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
+                    timeLabel = time.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
                         minute: '2-digit',
-                        hour12: true 
+                        hour12: true
                     }) + ' (Yesterday)';
                 } else {
-                    timeLabel = time.toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
+                    timeLabel = time.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
                         minute: '2-digit',
-                        hour12: true 
-                    }) + ' (' + time.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
+                        hour12: true
+                    }) + ' (' + time.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
                     }) + ')';
                 }
-                
+
                 labels.push(timeLabel);
                 data.push(0);
             }
-            
+
             revenueData = data;
             createChartInstance(labels, data);
         }
-        
+
         function updateRevenueChartWithRealData(labels, data) {
             revenueData = data;
             createChartInstance(labels, data);
         }
-        
+
         function createChartInstance(labels, data) {
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            
+
             revenueChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -3420,44 +3455,44 @@ $stmt3->close();
                 }
             });
         }
-        
+
         function startRevenueUpdates() {
             // Update chart every 30 seconds with new data
             setInterval(() => {
                 updateRevenueChart();
             }, 30000);
         }
-        
+
         function updateRevenueChart() {
             if (!revenueChart) return;
-            
+
             // Refresh real data from database every 30 seconds
             loadHourlyRevenueData();
         }
-        
+
         function updateRevenueSummary() {
             // This function is now handled by updateRevenueSummaryWithRealData
             // Keep for backward compatibility
         }
-        
+
         function updateRevenueSummaryWithRealData(currentHourRevenue, todayTotal) {
             // Update hourly revenue
             document.getElementById('hourlyRevenue').textContent = '₱' + currentHourRevenue.toFixed(2);
-            
+
             // Update today's revenue
             document.getElementById('todayRevenue').textContent = '₱' + todayTotal.toFixed(2);
-            
+
             // Update last transaction info
             const now = new Date();
             document.getElementById('lastTransactionInfo').textContent = 'Revenue data updated';
             document.getElementById('lastTransactionTime').textContent = now.toLocaleTimeString();
-            
+
             // Pulse the live status if there's revenue
             if (currentHourRevenue > 0) {
                 pulseRevenueStatus();
             }
         }
-        
+
         function pulseRevenueStatus() {
             const statusBadge = document.getElementById('revenueStatus');
             statusBadge.style.animation = 'pulse 1s ease-in-out';
@@ -3465,7 +3500,7 @@ $stmt3->close();
                 statusBadge.style.animation = '';
             }, 1000);
         }
-        
+
         // Add CSS animation for pulse effect
         const pulseStyle = document.createElement('style');
         pulseStyle.textContent = `
@@ -3476,25 +3511,25 @@ $stmt3->close();
             }
         `;
         document.head.appendChild(pulseStyle);
-        
+
         // Real-Time Help Requests Functions
         let helpRequestsEventSource = null;
-        
+
         function initHelpRequestsSSE() {
             try {
                 // Initialize with current data
                 loadHelpRequests();
-                
+
                 // Start SSE connection for real-time updates
                 startHelpRequestsSSE();
-                
+
             } catch (error) {
                 console.error('Error initializing help requests:', error);
                 // Fallback: load data every 30 seconds
                 setInterval(loadHelpRequests, 30000);
             }
         }
-        
+
         function loadHelpRequests() {
             fetch('get_help_requests.php')
                 .then(response => response.json())
@@ -3511,11 +3546,11 @@ $stmt3->close();
                     showHelpRequestsError('Error loading rescue requests');
                 });
         }
-        
+
         function startHelpRequestsSSE() {
             try {
                 helpRequestsEventSource = new EventSource('sse_help_requests.php');
-                
+
                 helpRequestsEventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
@@ -3524,48 +3559,48 @@ $stmt3->close();
                         console.error('Error parsing help requests SSE message:', error);
                     }
                 };
-                
+
                 helpRequestsEventSource.onerror = function(event) {
                     console.error('Help Requests SSE Error:', event);
                     helpRequestsEventSource.close();
-                    
+
                     // Retry connection after 5 seconds
                     setTimeout(() => {
                         startHelpRequestsSSE();
                     }, 5000);
                 };
-                
+
             } catch (error) {
                 console.error('Error starting help requests SSE:', error);
                 // Fallback to polling
                 setInterval(loadHelpRequests, 30000);
             }
         }
-        
+
         function handleHelpRequestsSSE(data) {
             switch (data.type) {
                 case 'connection':
                     console.log('Help Requests SSE connected:', data.message);
                     break;
-                    
+
                 case 'update':
                     updateHelpRequestsDisplay(data.help_requests, data.stats);
                     pulseRescueStatus();
                     break;
-                    
+
                 case 'heartbeat':
                     // Keep connection alive
                     break;
-                    
+
                 case 'error':
                     console.error('Help Requests SSE Error:', data.message);
                     break;
-                    
+
                 default:
                     console.log('Unknown SSE message type:', data.type);
             }
         }
-        
+
         function updateHelpRequestsDisplay(helpRequests, stats) {
             // Update statistics
             if (stats) {
@@ -3573,26 +3608,26 @@ $stmt3->close();
                 document.getElementById('inProgressCount').textContent = stats.in_progress_count || 0;
                 document.getElementById('completedCount').textContent = stats.completed_count || 0;
             }
-            
+
             // Update help requests list
             const container = document.getElementById('helpRequestsList');
             const noRequestsMessage = document.getElementById('noRequestsMessage');
-            
+
             if (!helpRequests || helpRequests.length === 0) {
                 container.style.display = 'none';
                 noRequestsMessage.style.display = 'block';
                 return;
             }
-            
+
             container.style.display = 'block';
             noRequestsMessage.style.display = 'none';
-            
+
             // Generate HTML for help requests
             let html = '';
             helpRequests.forEach(request => {
                 const statusClass = request.status === 'Pending' ? 'text-warning' : 'text-info';
                 const statusIcon = request.status === 'Pending' ? 'fa-clock' : 'fa-tools';
-                
+
                 html += `
                     <div class="d-flex align-items-center border-bottom py-3">
                         <img src="${request.user_image}" alt="${request.name}" class="rounded-circle flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;">
@@ -3617,10 +3652,10 @@ $stmt3->close();
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
-        
+
         function showHelpRequestsError(message) {
             const container = document.getElementById('helpRequestsList');
             container.innerHTML = `
@@ -3633,7 +3668,7 @@ $stmt3->close();
                 </div>
             `;
         }
-        
+
         function pulseRescueStatus() {
             const statusBadge = document.getElementById('rescueStatus');
             statusBadge.style.animation = 'pulse 1s ease-in-out';
@@ -3641,7 +3676,7 @@ $stmt3->close();
                 statusBadge.style.animation = '';
             }, 1000);
         }
-        
+
         // Cleanup SSE connection when page unloads
         window.addEventListener('beforeunload', function() {
             if (helpRequestsEventSource) {
@@ -3650,7 +3685,7 @@ $stmt3->close();
         });
     </script>
     <script src="js/script.js"></script>
-    
+
     <!-- Force logout to work properly -->
     <script>
         // Override any logout link behavior to ensure it works
@@ -3660,12 +3695,23 @@ $stmt3->close();
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     // Force immediate redirect to logout.php
                     window.location.replace('logout.php');
                 });
             });
         });
     </script>
+    <script>
+        // Hide spinner when page is fully loaded
+        window.addEventListener("load", function() {
+            const spinner = document.getElementById("spinner");
+            if (spinner) {
+                spinner.classList.remove("show"); // Removes display class
+                spinner.style.display = "none"; // Fully hides it
+            }
+        });
+    </script>
 </body>
-</html> 
+
+</html>
