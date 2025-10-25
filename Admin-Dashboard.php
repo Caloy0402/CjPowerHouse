@@ -1068,7 +1068,7 @@ $stmt3->close();
    <!--javascript Libraries-->
    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="lib/chart/Chart.min.js"></script>
+   <script src="lib/chart/chart.min.js"></script>
    <script src="js/notification-sound.js"></script>
    <script src="lib/easing/easing.min.js"></script>
    <script src="lib/waypoints/waypoints.min.js"></script>
@@ -3101,18 +3101,56 @@ $stmt3->close();
         let weeklyOrdersChart = null;
         
         function initWeeklyOrdersChart() {
-            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
-            createWeeklyChart(chartData);
+            console.log('DOM loaded, initializing chart...');
+            
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded. Please check the script tag.');
+                return;
+            }
+            
+            console.log('Chart.js is available');
+            
+            // Check if data element exists
+            const dataElement = document.getElementById('weeklyOrdersData');
+            if (!dataElement) {
+                console.error('Weekly orders data element not found');
+                return;
+            }
+            
+            try {
+                const chartData = JSON.parse(dataElement.textContent);
+                console.log('Chart data:', chartData);
+                createWeeklyChart(chartData);
+            } catch (error) {
+                console.error('Error parsing chart data:', error);
+            }
         }
         
         function createWeeklyChart(data) {
-            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
+            console.log('Attempting to create chart...');
+            
+            const canvas = document.getElementById('weeklyOrdersChart');
+            if (!canvas) {
+                console.error('Chart canvas not found');
+                return;
+            }
+            
+            console.log('Chart container found, checking content...');
+            console.log('Chart container has content:', canvas.innerHTML);
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get 2D context from canvas');
+                return;
+            }
             
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
             
-            weeklyOrdersChart = new Chart(ctx, {
+            try {
+                weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3218,6 +3256,11 @@ $stmt3->close();
                     }
                 }
             });
+            
+            console.log('Chart created successfully');
+        } catch (error) {
+            console.error('Error creating chart:', error);
+        }
         }
         
         function refreshWeeklyChart() {
