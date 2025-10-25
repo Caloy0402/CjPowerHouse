@@ -1141,13 +1141,16 @@ $stmt3->close();
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/lib/chart/chart.min.js"></script>
+    
+    <!-- Chart.js from CDN (reliable and always available) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         // Verify Chart.js loaded
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js failed to load!');
+            console.error('❌ Chart.js failed to load from CDN!');
+            alert('Chart library failed to load. Charts will not be displayed.');
         } else {
-            console.log('Chart.js loaded successfully, version:', Chart.version);
+            console.log('✅ Chart.js loaded successfully from CDN, version:', Chart.version);
         }
     </script>
     <script src="/js/notification-sound.js"></script>
