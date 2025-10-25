@@ -3103,29 +3103,59 @@ $stmt3->close();
 
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize notification sound
-            notificationSound = new NotificationSound({
-                soundFile: 'uploads/NofiticationCash.mp3',
-                volume: 1.0,
-                enableMute: true,
-                enableTest: true,
-                storageKey: 'adminNotificationSoundSettings'
-            });
+            console.log('DOMContentLoaded fired - initializing dashboard...');
+            
+            // HIDE SPINNER FIRST - Move to top to ensure it always executes
+            setTimeout(() => {
+                const spinner = document.getElementById("spinner");
+                if (spinner) {
+                    spinner.classList.remove("show");
+                    console.log('Spinner hidden successfully');
+                }
+            }, 100);
+            
+            // Initialize notification sound with error handling
+            try {
+                notificationSound = new NotificationSound({
+                    soundFile: 'uploads/NofiticationCash.mp3',
+                    volume: 1.0,
+                    enableMute: true,
+                    enableTest: true,
+                    storageKey: 'adminNotificationSoundSettings'
+                });
+                console.log('Notification sound initialized');
+            } catch (error) {
+                console.error('Error initializing notification sound:', error);
+            }
 
             // Reset tracking on page load
             lastNotificationCount = 0;
             isInitialLoad = true;
             lastSoundPlayTime = 0;
 
-            initDashboardSSE();
+            // Initialize SSE with error handling
+            try {
+                initDashboardSSE();
+                console.log('Dashboard SSE initialized');
+            } catch (error) {
+                console.error('Error initializing Dashboard SSE:', error);
+            }
 
-            // Initialize weekly orders chart
-            initWeeklyOrdersChart();
+            // Initialize weekly orders chart with error handling
+            try {
+                initWeeklyOrdersChart();
+                console.log('Weekly orders chart initialized');
+            } catch (error) {
+                console.error('Error initializing weekly chart:', error);
+            }
 
-            // Real-time revenue removed
-
-            // Initialize real-time help requests
-            initHelpRequestsSSE();
+            // Initialize real-time help requests with error handling
+            try {
+                initHelpRequestsSSE();
+                console.log('Help requests SSE initialized');
+            } catch (error) {
+                console.error('Error initializing help requests SSE:', error);
+            }
 
             // Update every 15 seconds as fallback
             setInterval(() => {
@@ -3134,14 +3164,6 @@ $stmt3->close();
                     .then(data => updateDashboardMetrics(data))
                     .catch(error => console.error('Fallback update failed:', error));
             }, 15000);
-
-            // Hide spinner after page loads
-            setTimeout(() => {
-                const spinner = document.getElementById("spinner");
-                if (spinner) {
-                    spinner.classList.remove("show");
-                }
-            }, 500);
         });
 
         // Weekly Orders Chart Functions
@@ -3692,14 +3714,14 @@ $stmt3->close();
             }
         });
 
-        // Fallback: Hide spinner when window fully loads
+        // Fallback: Hide spinner when window fully loads - IMMEDIATE
         window.addEventListener('load', function() {
-            setTimeout(() => {
-                const spinner = document.getElementById("spinner");
-                if (spinner) {
-                    spinner.classList.remove("show");
-                }
-            }, 100);
+            console.log('Window load event fired');
+            const spinner = document.getElementById("spinner");
+            if (spinner && spinner.classList.contains('show')) {
+                spinner.classList.remove("show");
+                console.log('Spinner hidden via window.load fallback');
+            }
         });
     </script>
     <script src="js/script.js"></script>
