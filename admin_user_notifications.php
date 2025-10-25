@@ -47,48 +47,6 @@ function getTotalUserCODFailCount(mysqli $conn) {
     return $total;
 }
 
-// Function to output CSS styles for user notifications
-function outputUserNotificationCSS() {
-    echo '<style>
-.notification-badge { 
-    position: absolute; 
-    top: -5px; 
-    right: -5px; 
-    padding: 2px 6px; 
-    border-radius: 50%; 
-    background-color: #dc3545; 
-    color: #fff; 
-    font-size: 10px; 
-    font-weight: bold; 
-    min-width: 18px; 
-    text-align: center; 
-}
-.notification-item { 
-    cursor: pointer; 
-    transition: background-color .2s; 
-    border-bottom: 1px solid #495057; 
-}
-.notification-item:hover { 
-    background-color: #495057; 
-}
-.notification-item:last-child { 
-    border-bottom: none; 
-}
-.notification-item h6 { 
-    font-size: .9rem; 
-    margin-bottom: 2px; 
-}
-.notification-item p { 
-    font-size: .8rem; 
-    margin-bottom: 0; 
-    color: #adb5bd; 
-}
-.notification-item .badge { 
-    font-size: .7rem; 
-}
-</style>';
-}
-
 // Function to output JavaScript for user notifications
 function outputUserNotificationJS() {
     echo '<script>
