@@ -65,7 +65,21 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mechanic Profile</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <!-- Favicon for better browser compatibility -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <style>
+        .logo-fallback {
+            display: none;
+            color: #530707;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?= $baseURL ?>css/mechanic-responsive.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -295,13 +309,20 @@ $conn->close();
     </style>
 </head>
 <body>
+    <!-- Header with Logo -->
+    <div style="background-color: #530707; color: white; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="<?= $baseURL ?>image/logo.png" alt="CJ Powerhouse Logo" style="width: 50px; height: 40px; object-fit: contain; background: white; border-radius: 4px; padding: 2px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div style="display:none; color:white; font-weight:bold; font-size:14px;">CJ Powerhouse</div>
+            <span style="font-weight: bold; font-size: 1.1em;">Mechanic Profile</span>
+        </div>
+        <button style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'">
+            ×
+        </button>
+    </div>
+
     <div class="profile-container">
         <div class="profile-inner">
-        <div class="profile-header">
-            <button class="close-button" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'">
-                ×
-            </button>
-        </div>
 
         <div class="profile-title">
             Profile
@@ -367,10 +388,6 @@ $conn->close();
             </div>
         </div>
 
-        <button class="logout-button" onclick="logout()">
-    <span class="material-icons">logout</span>
-    <span>Logout</span>
-</button>
         </div>
     </div>
 

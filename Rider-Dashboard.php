@@ -234,7 +234,12 @@ $stmt_order_history->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="<?= $baseURL ?>css/rider-styles.css"> <!-- New file for rider styles -->
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <!-- Favicon for better browser compatibility -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png">
+    <link rel="shortcut icon" href="/favicon.ico">
     <style>
         /* Add your custom styles here */
         .header {

@@ -159,7 +159,12 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mechanic Dashboard</title>
-    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
+    <!-- Favicon for better browser compatibility -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png">
+    <link rel="shortcut icon" href="/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="<?= $baseURL ?>css/mechanic-responsive.css" rel="stylesheet">
@@ -209,9 +214,13 @@ $conn->close();
         
         .powerhouse-logo { 
             width: 70px; 
-            height: auto; 
+            height: 50px; 
             cursor: pointer; 
             flex-shrink: 0;
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+            padding: 2px;
         }
         
         .header-welcome { 
@@ -234,6 +243,7 @@ $conn->close();
             }
             .powerhouse-logo {
                 width: 60px;
+                height: 40px;
             }
             .header-welcome {
                 font-size: 1em;
@@ -250,6 +260,7 @@ $conn->close();
             }
             .powerhouse-logo {
                 width: 80px;
+                height: 60px;
             }
             .header-welcome {
                 font-size: 1.2em;
@@ -489,7 +500,15 @@ $conn->close();
         }
         .sidebar.active { transform: translateX(0); }
         .sidebar-header { display: flex; align-items: center; padding: 18px; border-bottom: 1px solid #ffffff22; }
-        .sidebar-logo { width: 50px; margin-right: auto; }
+        .sidebar-logo { 
+            width: 50px; 
+            height: 40px; 
+            margin-right: auto; 
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+            padding: 2px;
+        }
         .close-btn { font-size: 2rem; cursor: pointer; color: #fff; background: none; border: none; }
         .sidebar-links { list-style: none; padding: 0; margin: 30px 0; }
         .sidebar-links a { color: #fff; text-decoration: none; font-size: 1.1rem; display: flex; align-items: center; padding: 12px 24px; transition: background 0.2s; }
@@ -1029,7 +1048,8 @@ $conn->close();
 
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <img src="<?= $baseURL ?>image/logo.png" alt="Powerhouse Logo" class="sidebar-logo">
+            <img src="<?= $baseURL ?>image/logo.png" alt="CJ Powerhouse Logo" class="sidebar-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div style="display:none; color:white; font-weight:bold; font-size:14px;">CJ Powerhouse</div>
             <button class="close-btn" onclick="toggleSidebar()">×</button>
         </div>
         <ul class="sidebar-links">
@@ -1059,7 +1079,8 @@ $conn->close();
                 <i class="material-icons">notifications</i>
                 <span id="notificationBadge" class="notif-badge" style="<?= $pendingRequestCount > 0 ? '' : 'display: none;' ?>"><?= $pendingRequestCount ?></span>
             </span>
-            <img src="<?= $baseURL ?>image/logo.png" alt="Powerhouse Logo" class="powerhouse-logo app-logo" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'">
+            <img src="<?= $baseURL ?>image/logo.png" alt="CJ Powerhouse Logo" class="powerhouse-logo app-logo" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div style="display:none; color:white; font-weight:bold; font-size:12px; text-align:center; line-height:1.2;">CJ<br>Powerhouse</div>
         </div>
     </div>
 
