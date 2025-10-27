@@ -31,8 +31,8 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'Customer') {
             
             $insertStmt = $conn->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, login_time, last_activity, is_active) VALUES (?, ?, ?, ?, NOW(), NOW(), ?)");
             if ($insertStmt) {
-                $is_active = true;
-                $insertStmt->bind_param("isssb", $user_id, $session_id, $ip_address, $user_agent, $is_active);
+                $is_active = 1;
+                $insertStmt->bind_param("isssi", $user_id, $session_id, $ip_address, $user_agent, $is_active);
                 $insertStmt->execute();
                 $insertStmt->close();
             }
