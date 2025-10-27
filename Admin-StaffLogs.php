@@ -186,6 +186,72 @@ if ($countStmt) {
 }
 
 $totalPages = ceil($totalRecords / $itemsPerPage);
+
+// Calculate total duty hours and working days for pay computation
+function calculateTotalDutyHours($conn, $from, $to, $roleFilter) {
+    $where = "WHERE DATE(l.time_in) BETWEEN ? AND ? AND l.role NOT IN ('Admin', 'Customer') AND l.time_out IS NOT NULL";
+    if ($roleFilter !== '') { $where .= " AND l.role = ?"; }
+    
+    $sql = "SELECT SUM(l.duty_duration_minutes) AS total_minutes 
+            FROM staff_logs l $where";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        if ($roleFilter === '') {
+            $stmt->bind_param('ss', $from, $to);
+        } else {
+            $stmt->bind_param('sss', $from, $to, $roleFilter);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $totalMinutes = (int)($row['total_minutes'] ?? 0);
+        $stmt->close();
+        return $totalMinutes / 60; // Convert to hours
+    }
+    return 0;
+}
+
+// Calculate working days (excluding Sundays)
+function calculateWorkingDays($from, $to) {
+    $startDate = new DateTime($from);
+    $endDate = new DateTime($to);
+    $endDate->modify('+1 day'); // Include end date
+    
+    $workingDays = 0;
+    $current = clone $startDate;
+    
+    while ($current < $endDate) {
+        // Check if day is not Sunday (0 = Sunday)
+        if ($current->format('w') != '0') {
+            $workingDays++;
+        }
+        $current->modify('+1 day');
+    }
+    
+    return $workingDays;
+}
+
+// Fetch pay calculation data
+$totalDutyHours = calculateTotalDutyHours($conn, $from, $to, $roleFilter);
+$workingDays = calculateWorkingDays($from, $to);
+
+// Fetch all staff for dropdown (excluding Admin and Customer)
+$allStaff = [];
+$staffSql = "
+    SELECT DISTINCT l.staff_id, l.role,
+           COALESCE(r.first_name, m.first_name, cj.first_name, '') AS first_name,
+           COALESCE(r.last_name, m.last_name, cj.last_name, '') AS last_name
+    FROM staff_logs l
+    LEFT JOIN riders r ON l.role='Rider' AND r.id=l.staff_id
+    LEFT JOIN mechanics m ON l.role='Mechanic' AND m.id=l.staff_id
+    LEFT JOIN cjusers cj ON (l.role='Admin' OR l.role='Cashier') AND cj.id=l.staff_id
+    WHERE l.role NOT IN ('Admin', 'Customer')
+    ORDER BY l.role, first_name, last_name";
+$staffResult = $conn->query($staffSql);
+while ($row = $staffResult->fetch_assoc()) {
+    $allStaff[] = $row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -373,6 +439,106 @@ $totalPages = ceil($totalRecords / $itemsPerPage);
             </nav>
 
             <div class="container-fluid pt-4 px-4">
+                <!-- Staff Pay Calculator Section -->
+                <div class="bg-secondary rounded p-4 mb-4">
+                    <h6 class="mb-4 text-white">Staff Pay Calculator</h6>
+                    <form id="payCalculatorForm" class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label text-white">Select Staff</label>
+                            <select id="selectedStaff" name="selectedStaff" class="form-select">
+                                <option value="all">All Staff</option>
+                                <?php foreach ($allStaff as $staff): ?>
+                                    <option value="<?= $staff['staff_id'] ?>|<?= htmlspecialchars($staff['role']) ?>">
+                                        <?= htmlspecialchars($staff['first_name'] . ' ' . $staff['last_name']) ?> - <?= htmlspecialchars($staff['role']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-white">Pay Type</label>
+                            <select id="payType" name="payType" class="form-select">
+                                <option value="Hourly">Hourly (₱43.75/hr)</option>
+                                <option value="Fifteen Days">Fifteen Days (₱4,550)</option>
+                                <option value="Monthly">Monthly (₱9,100)</option>
+                            </select>
+                            <input type="hidden" id="hourlyRate" value="43.75">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-white">From</label>
+                            <div class="input-group">
+                                <input type="date" id="calcFrom" name="calcFrom" class="form-control date-input" value="<?= htmlspecialchars(date('Y-m-d', strtotime('-7 days'))) ?>">
+                                <span class="input-group-text calendar-icon" onclick="document.getElementById('calcFrom').showPicker()">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-white">To</label>
+                            <div class="input-group">
+                                <input type="date" id="calcTo" name="calcTo" class="form-control date-input" value="<?= htmlspecialchars(date('Y-m-d')) ?>">
+                                <span class="input-group-text calendar-icon" onclick="document.getElementById('calcTo').showPicker()">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="d-grid gap-2 w-100">
+                                <button type="button" class="btn btn-success btn-sm" id="calculateBtn">
+                                    <i class="fas fa-calculator me-1"></i>Calculate
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" id="generateReportBtn">
+                                    <i class="fas fa-file-export me-1"></i>Generate Pay Report
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Pay Summary Display -->
+                    <div id="paySummary" class="mt-4" style="display: none;">
+                        <div class="bg-dark rounded p-3">
+                            <h6 class="text-primary mb-3">Pay Summary</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <p class="mb-0 text-white"><strong>Selected Staff:</strong> <span id="displayStaffName" class="text-info">-</span></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2 text-white"><strong>Total Duty Hours:</strong> <span id="totalHours" class="text-success">0 hrs</span></p>
+                                    <p class="mb-2 text-white"><strong>Pay Type:</strong> <span id="displayPayType" class="text-info">-</span></p>
+                                    <p class="mb-2 text-white"><strong>Hourly Rate:</strong> ₱<span id="displayHourlyRate">0.00</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2 text-white"><strong>Working Days:</strong> <span id="workingDays" class="text-info">0</span></p>
+                                    <p class="mb-2 text-white"><strong>Average Hours/Day:</strong> <span id="avgHoursPerDay" class="text-info">0 hrs</span></p>
+                                </div>
+                            </div>
+                            <div class="row mt-3" id="regularPaySection" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="border border-success border-2 rounded p-3 text-center bg-dark bg-opacity-50">
+                                        <p class="mb-1 text-white"><strong class="text-success">Regular Pay:</strong></p>
+                                        <p class="mb-0"><span class="text-white fw-bold fs-4">₱</span><span id="regularPay" class="text-success fw-bold fs-4">0.00</span></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border border-warning border-2 rounded p-3 text-center bg-dark bg-opacity-50">
+                                        <p class="mb-1 text-white"><strong class="text-warning">Overtime Hours:</strong> <span id="overtimeHours" class="text-warning fw-bold">0.00 hrs</span></p>
+                                        <p class="mb-0"><strong class="text-warning">Overtime Pay:</strong> ₱<span id="overtimePay" class="text-warning fw-bold fs-4">0.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div class="border border-primary border-3 rounded p-4 text-center bg-dark bg-opacity-50">
+                                        <p class="mb-1 text-white"><strong class="text-info fs-5">Employee's Current Pay:</strong></p>
+                                        <p class="mb-0"><span class="text-white fw-bold" style="font-size: 2rem;">₱</span><span id="totalPay" class="text-success fw-bold" style="font-size: 2rem;">0.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-secondary text-center rounded p-4">
                                             <div class="d-flex align-items-center justify-content-between mb-4">
                             <h6 class="mb-0">Staff Logs</h6>
@@ -905,6 +1071,284 @@ $totalPages = ceil($totalRecords / $itemsPerPage);
             // Initialize date validation on page load
             validateDateRange();
             
+            // Staff Pay Calculator Logic
+            let currentPayData = {
+                totalHours: <?= number_format($totalDutyHours, 2) ?>,
+                workingDays: <?= $workingDays ?>
+            };
+            
+            // Initialize hourly rate on page load (always 43.75)
+            const initializeRate = function() {
+                $('#hourlyRate').val('43.75');
+            };
+            
+            // Initialize on page load
+            initializeRate();
+            
+            // Calculate button handler
+            $('#calculateBtn').on('click', function() {
+                calculatePay();
+            });
+            
+            // Auto-recalculate when pay type changes
+            $('#payType').on('change', function() {
+                // Keep hourly rate constant at 43.75
+                $('#hourlyRate').val('43.75');
+                
+                // Auto-calculate if summary is visible
+                if ($('#paySummary').is(':visible')) {
+                    calculatePay();
+                }
+            });
+            
+            // Calculate pay based on pay type
+            function calculatePay() {
+                const payType = $('#payType').val();
+                const hourlyRate = parseFloat($('#hourlyRate').val()) || 43.75;
+                const from = $('#calcFrom').val();
+                const to = $('#calcTo').val();
+                const selectedStaff = $('#selectedStaff').val();
+                
+                if (!from || !to) {
+                    alert('Please select a date range');
+                    return;
+                }
+                
+                // Parse staff selection
+                let staffId = '';
+                let staffRole = '';
+                let staffName = '';
+                
+                if (selectedStaff !== 'all') {
+                    const staffParts = selectedStaff.split('|');
+                    staffId = staffParts[0];
+                    staffRole = staffParts[1];
+                    
+                    // Get staff name from dropdown text
+                    const optionText = $('#selectedStaff option:selected').text();
+                    staffName = optionText;
+                } else {
+                    staffName = 'All Staff';
+                }
+                
+                // Fetch updated data from server
+                $.ajax({
+                    url: 'get_staff_pay_data.php',
+                    method: 'POST',
+                    data: {
+                        from: from,
+                        to: to,
+                        hourlyRate: hourlyRate,
+                        payType: payType,
+                        staffId: staffId,
+                        staffRole: staffRole
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            currentPayData = response.data;
+                            displayPaySummary(response.data, payType, hourlyRate, staffName);
+                        } else {
+                            alert('Error calculating pay: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching pay data:', error);
+                        console.error('Status:', status);
+                        console.error('Response Text:', xhr.responseText);
+                        let errorMsg = 'Error fetching pay data';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch (e) {
+                            errorMsg = xhr.responseText.substring(0, 100);
+                        }
+                        alert(errorMsg);
+                    }
+                });
+            }
+            
+            // Display pay summary
+            function displayPaySummary(data, payType, hourlyRate, staffName) {
+                const totalHours = data.totalHours || 0;
+                const workingDays = data.workingDays || 0;
+                let totalPay = 0;
+                
+                // Calculate total pay based on pay type with overtime handling
+                let regularPay = 0;
+                let overtimePay = 0;
+                let overtimeHours = 0;
+                
+                if (payType === 'Hourly') {
+                    // For hourly pay: multiply total hours by hourly rate (43.75)
+                    regularPay = totalHours * hourlyRate;
+                    totalPay = regularPay;
+                } else if (payType === 'Fifteen Days') {
+                    // For fifteen days: Simple proportional calculation
+                    // Full fifteen days (15 working days) pays ₱4,550
+                    const fullPeriodDays = 15;
+                    const actualDays = workingDays;
+                    const fifteenDaySalary = 4550;
+                    
+                    // Calculate based on actual working days
+                    // If worked more than expected hours, use hourly rate
+                    const expectedHoursForActualDays = actualDays * 8;
+                    
+                    if (totalHours > expectedHoursForActualDays) {
+                        // They worked overtime - pay hourly rate for all hours
+                        regularPay = totalHours * hourlyRate; // ₱43.75
+                        overtimeHours = 0; // Already included in regular pay
+                        overtimePay = 0;
+                        totalPay = regularPay;
+                    } else {
+                        // Proportional pay based on actual working days
+                        regularPay = (actualDays / fullPeriodDays) * fifteenDaySalary;
+                        totalPay = regularPay;
+                    }
+                } else if (payType === 'Monthly') {
+                    // For monthly: Simple proportional calculation
+                    // Full month (30 working days) pays ₱9,100
+                    const fullPeriodDays = 30;
+                    const actualDays = workingDays;
+                    const monthlySalary = 9100;
+                    
+                    // Calculate based on actual working days
+                    const expectedHoursForActualDays = actualDays * 8;
+                    
+                    if (totalHours > expectedHoursForActualDays) {
+                        // Overtime calculation
+                        overtimeHours = totalHours - expectedHoursForActualDays;
+                        // Regular pay for expected hours
+                        regularPay = (actualDays / fullPeriodDays) * monthlySalary;
+                        // Overtime pay at hourly rate
+                        overtimePay = overtimeHours * hourlyRate; // ₱43.75
+                        totalPay = regularPay + overtimePay;
+                    } else {
+                        // Proportional pay based on actual working days
+                        regularPay = (actualDays / fullPeriodDays) * monthlySalary;
+                        totalPay = regularPay;
+                    }
+                }
+                
+                // Store overtime data for display
+                currentPayData.overtimeHours = overtimeHours;
+                currentPayData.regularPay = regularPay;
+                currentPayData.overtimePay = overtimePay;
+                
+                // Update display
+                $('#displayStaffName').text(staffName);
+                $('#totalHours').text(totalHours.toFixed(2) + ' hrs');
+                $('#displayPayType').text(payType);
+                // Always display 43.75 as the hourly rate
+                $('#displayHourlyRate').text('43.75');
+                $('#workingDays').text(workingDays);
+                
+                // Calculate and display average hours per day
+                const avgHours = workingDays > 0 ? totalHours / workingDays : 0;
+                $('#avgHoursPerDay').text(avgHours.toFixed(2) + ' hrs');
+                
+                // Display regular pay and overtime if applicable
+                $('#regularPay').text(regularPay.toFixed(2));
+                $('#overtimeHours').text(overtimeHours.toFixed(2) + ' hrs');
+                $('#overtimePay').text(overtimePay.toFixed(2));
+                
+                // Show/hide overtime section
+                if (overtimeHours > 0) {
+                    $('#regularPaySection').show();
+                } else {
+                    $('#regularPaySection').hide();
+                }
+                
+                // Display total pay with proper formatting (with currency symbol)
+                $('#totalPay').text(totalPay.toFixed(2));
+                
+                // Show summary
+                $('#paySummary').slideDown();
+            }
+            
+            // Helper function to calculate working days in a month (excluding Sundays)
+            function getMonthWorkingDays(fromDate, toDate) {
+                const start = new Date(fromDate);
+                const end = new Date(toDate);
+                
+                let workingDays = 0;
+                const current = new Date(start);
+                
+                while (current <= end) {
+                    const dayOfWeek = current.getDay();
+                    if (dayOfWeek !== 0) { // 0 is Sunday
+                        workingDays++;
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+                
+                return workingDays;
+            }
+            
+            // Generate report button handler
+            $('#generateReportBtn').on('click', function() {
+                if (!$('#paySummary').is(':visible')) {
+                    alert('Please calculate pay first');
+                    return;
+                }
+                
+                const payType = $('#payType').val();
+                const hourlyRate = $('#hourlyRate').val();
+                const from = $('#calcFrom').val();
+                const to = $('#calcTo').val();
+                const staffName = $('#displayStaffName').text();
+                
+                // Generate CSV report
+                const reportData = {
+                    from: from,
+                    to: to,
+                    payType: payType,
+                    hourlyRate: hourlyRate,
+                    totalHours: currentPayData.totalHours,
+                    workingDays: currentPayData.workingDays,
+                    totalPay: $('#totalPay').text(),
+                    staffName: staffName
+                };
+                
+                // Export to CSV
+                exportPayReportToCSV(reportData);
+            });
+            
+            // Export pay report to CSV
+            function exportPayReportToCSV(data) {
+                const avgHoursPerDay = data.workingDays > 0 ? (data.totalHours / data.workingDays).toFixed(2) : '0.00';
+                
+                const csvContent = 
+                    'Staff Pay Report\n' +
+                    'CJ PowerHouse\n\n' +
+                    'Report Details:\n' +
+                    '─────────────────────────────\n' +
+                    'Staff Member: ' + data.staffName + '\n' +
+                    'Date Range: ' + data.from + ' to ' + data.to + '\n' +
+                    'Pay Type: ' + data.payType + '\n' +
+                    'Hourly Rate: ₱' + parseFloat(data.hourlyRate).toFixed(2) + '\n\n' +
+                    'Work Summary:\n' +
+                    '─────────────────────────────\n' +
+                    'Total Duty Hours: ' + parseFloat(data.totalHours).toFixed(2) + ' hrs\n' +
+                    'Working Days: ' + data.workingDays + '\n' +
+                    'Average Hours/Day: ' + avgHoursPerDay + ' hrs\n\n' +
+                    'Pay Calculation:\n' +
+                    '─────────────────────────────\n' +
+                    'Total Pay: ₱' + data.totalPay + '\n\n' +
+                    'Report Generated: ' + new Date().toLocaleString() + '\n' +
+                    'Generated By: ' + '<?= htmlspecialchars($user_data["first_name"] . " " . $user_data["last_name"]) ?>';
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                const staffNameForFilename = data.staffName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'pay_report_' + staffNameForFilename + '_' + data.from + '_to_' + data.to + '.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
 
         });
     </script>

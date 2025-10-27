@@ -34,6 +34,7 @@ $stmt->close();
 
 // Function to count orders for a given status and payment method
 function getOrderCount($conn, $status, $paymentMethod, $date = null) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(*) FROM orders WHERE order_status = ? AND payment_method = ?";
     $params = [$status, $paymentMethod];
     $types = "ss";
@@ -61,6 +62,7 @@ function getOrderCount($conn, $status, $paymentMethod, $date = null) {
 
 // Modified function to count READY TO SHIP GCASH orders from a specific barangay
 function getBarangayReadyToShipGCASHOrderCount($conn, $barangayId) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(o.id)
             FROM orders o
             JOIN users u ON o.user_id = u.id
@@ -1164,7 +1166,7 @@ $selectFareFallback = ",
                         <div style="font-size: 5mm; font-weight: 700; margin-bottom: 1.5mm;">ORDER RECEIPT</div>
                     </div>
                     <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 2mm; position: relative; z-index: 2;">
-                        <img src="/Motorshop/Image/logo.png" alt="CJ PowerHouse" style="height: 10mm;">
+                        <img src="Image/logo.png" alt="CJ PowerHouse" style="height: 10mm;">
                         <div style="text-align:right; padding-right: 2mm;">
                             <div style="font-size: 3mm;">Send Date: ${orderDate}</div>
                             <div style="font-size: 4.5mm; font-weight:700;">TRN#: ${transactionNumber}</div>

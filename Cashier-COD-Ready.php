@@ -55,6 +55,7 @@ function getOrderCount($conn, $status, $paymentMethod, $date = null) {
     if ($stmt === false) { error_log('Prepare failed: ' . $conn->error); return 'Error'; }
     $stmt->bind_param($types, ...$params);
     $stmt->execute();
+    $count = 0;
     $stmt->bind_result($count);
     $stmt->fetch();
     $stmt->close();
@@ -70,6 +71,7 @@ function getBarangayReadyToShipCODOrderCount($conn, $barangayId) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $barangayId);
     $stmt->execute();
+    $count = 0;
     $stmt->bind_result($count);
     $stmt->fetch();
     $stmt->close();
@@ -1006,7 +1008,7 @@ if ($selectedBarangayId !== null) {
                         <div style="font-size: 5mm; font-weight: 700; margin-bottom: 1.5mm;">ORDER RECEIPT</div>
                     </div>
                     <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 2mm; position: relative; z-index: 2;">
-                        <img src="/Motorshop/Image/logo.png" alt="CJ PowerHouse" style="height: 10mm;">
+                        <img src="Image/logo.png" alt="CJ PowerHouse" style="height: 10mm;">
                         <div style="text-align:right;">
                             <div style="font-size: 3mm;">Send Date: ${orderDate}</div>
                             <div style="font-size: 4.5mm; font-weight:700;">TRN#: ${transactionNumber}</div>
@@ -1061,17 +1063,6 @@ if ($selectedBarangayId !== null) {
                             <div style="font-size: 3mm;">${motorType} | ${plateNumber}</div>
                         </div>`
                     }
-                    <div class="section" style="margin-top: 1.5mm; border-top: 1px dashed #000; padding-top: 1.5mm; text-align: center; position: relative; z-index: 2;">
-                        <div style="font-weight:800; font-size: 3.2mm; margin-bottom:0.8mm; color: #d32f2f;">⚠️ IMPORTANT NOTICE</div>
-                        <div style="font-size: 2.8mm; margin-bottom:1.5mm; color: #000; font-weight:500;">Please record a video while opening this package to document the condition of items for quality assurance purposes.</div>
-                        <div style="display: flex; justify-content: center; align-items: center; gap: 2.5mm; margin-top: 1.5mm;">
-                            <div style="font-size: 2.8mm; color: #000; font-weight:500;">Any Concern or help? Scan the QR:</div>
-                            <div style="width: 16mm; height: 16mm; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; background: white;">
-                                <img src="uploads/qr_codes/contact_qr.png" alt="Contact QR Code" style="width: 14mm; height: 14mm; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                <div style="display: none; font-size: 2mm; text-align: center; color: #999;">QR Code<br/>Not Available</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 </div>
             `;

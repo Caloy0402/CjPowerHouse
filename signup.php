@@ -41,14 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     if ($stmt->execute()) {
+        $stmt->close();
+        $conn->close();
         // Redirect to success page or login page
         header('Location: signin.php');
         exit();
     } else {
+        $stmt->close();
+        $conn->close();
         die("Registration failed. Please try again.");
     }
-
-    $stmt->close();
-    $conn->close();
 }
 ?>

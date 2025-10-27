@@ -116,6 +116,7 @@ while ($row = $result_deliveries->fetch_assoc()) {
 
 // Function from cashier-COD-Delivery.php to count READY TO SHIP orders (modified for rider)
 function getRiderReadyToShipOrderCount($conn, $riderFullName, $barangayId = null) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(*) FROM orders o JOIN users u ON o.user_id = u.id WHERE o.rider_name = ? AND o.order_status = 'Ready to Ship'";
     if ($barangayId) {
         $sql .= " AND u.barangay_id = ?";
@@ -145,6 +146,7 @@ $ReadyToShipOrderCount = getRiderReadyToShipOrderCount($conn, $riderFullName, $s
 
 // Function to count READY TO SHIP orders for the rider in a specific barangay (reused)
 function getRiderBarangayReadyToShipOrderCount2($conn, $riderFullName, $barangayId) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(*) FROM orders o JOIN users u ON o.user_id = u.id WHERE o.rider_name = ? AND o.order_status = 'Ready to Ship' AND u.barangay_id = ?";
     $stmt = $conn->prepare($sql);
 
@@ -163,6 +165,7 @@ function getRiderBarangayReadyToShipOrderCount2($conn, $riderFullName, $barangay
 
 // Function to count all READY TO SHIP orders for the rider (regardless of barangay) (reused)
 function getRiderAllBarangayReadyToShipOrderCount2($conn, $riderFullName) {
+  $count = 0; // Initialize count variable
   $sql = "SELECT COUNT(*) FROM orders WHERE rider_name = ? AND order_status = 'Ready to Ship'";
   $stmt = $conn->prepare($sql);
 

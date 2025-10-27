@@ -32,6 +32,7 @@ if ($user = $result->fetch_assoc()) {
 
 $stmt->close();
 function getOrderCount($conn, $status, $paymentMethod, $date = null) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(*) FROM orders WHERE order_status = ? AND UPPER(payment_method) = UPPER(?)";
     $params = [$status, $paymentMethod];
     $types = "ss";
@@ -59,6 +60,7 @@ function getOrderCount($conn, $status, $paymentMethod, $date = null) {
 
 // Modified function to count PENDING GCASH orders from a specific barangay
 function getBarangayPendingGCASHOrderCount($conn, $barangayId) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(o.id)
             FROM orders o
             JOIN users u ON o.user_id = u.id

@@ -32,6 +32,7 @@ if ($user = $result->fetch_assoc()) {
 
 $stmt->close();
 function getOrderCount($conn, $status, $paymentMethod, $date = null) {
+    $count = 0; // Initialize count variable
     // Base query and params
     $params = [$status, $paymentMethod];
     $types = "ss";
@@ -70,6 +71,7 @@ function getOrderCount($conn, $status, $paymentMethod, $date = null) {
 
 // Modified function to count PENDING COD orders from a specific barangay
 function getBarangayPendingCODOrderCount($conn, $barangayId) {
+    $count = 0; // Initialize count variable
     $sql = "SELECT COUNT(o.id)
             FROM orders o
             JOIN users u ON o.user_id = u.id

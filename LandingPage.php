@@ -157,25 +157,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup_submit'])) {
         // Redirect to lightweight code entry page dedicated for signup flow
         header('Location: enter_verification_code.php?email=' . urlencode($email));
         exit;
+    }
 
-        // The old code path below (immediate DB insert + then verify) is left as fallback and will not run in the new flow
-        $uploadDir = 'uploads/profile_images/';
-        if (!is_dir($uploadDir)) {
-             if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-                error_log("Failed to create upload directory: " . $uploadDir);
-                 $_SESSION['signup_form_data'] = $_POST;
-                 $_SESSION['signup_errors'] = ['server_error' => 'Server error: Could not create upload directory. Registration failed.'];
-                 header('Location: ' . $_SERVER['REQUEST_URI']);
-                 exit;
-             }
+} // End of POST handling block
+
+// --- Fetch data needed for the page ---
+$barangayResult = null;
+$query_barangay = "SELECT id, barangay_name FROM barangays ORDER BY barangay_name ASC";
+$barangayResult = $conn->query($query_barangay);
+if ($barangayResult === false) { error_log("Error fetching barangays: " . $conn->error); }
+
+$productQuery = " SELECT ProductID, ProductName, Price, ImagePath, Category From products";
+$productResult = $conn->query($productQuery);
+$products = [];
+if ($productResult && $productResult->num_rows > 0) {
+    while ($row = $productResult->fetch_assoc()) {
+        if (!empty($row['ImagePath']) && strpos($row['ImagePath'], 'uploads/') !== 0) {
+             $row['ImagePath'] = 'uploads/' . ltrim($row['ImagePath'], '/');
         }
+        $products[] = $row;
+    }
+} else if ($productResult === false) { error_log("Error fetching products: " . $conn->error); }
 
-        $fileExtension = strtolower(pathinfo($_FILES['profilePicture']['name'], PATHINFO_EXTENSION));
-        $fileName = uniqid('user_', true) . '.' . $fileExtension;
-        $filePath = $uploadDir . $fileName;
+$feedbackQuery = " SELECT pf.comment, pf.rating, pf.image_path, pf.created_at, u.first_name, u.last_name, u.ImagePath AS user_image FROM product_feedback pf JOIN users u ON pf.user_id = u.id ORDER BY pf.created_at DESC LIMIT 10";
+$feedbackResult = $conn->query($feedbackQuery);
+$feedbacks = [];
+if ($feedbackResult && $feedbackResult->num_rows > 0) {
+    while ($row = $feedbackResult->fetch_assoc()) {
+         if (empty($row['user_image'])) { $row['user_image'] = 'Image/default-avatar.png'; }
+        $feedbacks[] = $row;
+    }
+} else if ($feedbackResult === false) { error_log("Error fetching feedback: " . $conn->error); }
 
-        if (move_uploaded_file($_FILES['profilePicture']['tmp_name'], $filePath)) {
-            $password_hashed = password_hash($password_raw, PASSWORD_DEFAULT);
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJ PowerHouse - Premium Motorcycle Accessories</title>
             $sql = "INSERT INTO users (password, email, first_name, middle_name, last_name, phone_number, barangay_id, purok, ImagePath)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
@@ -259,6 +280,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup_submit'])) {
         header('Location: ' . $_SERVER['REQUEST_URI']);
         exit();
     }
+        */
 
 } // End of POST handling block
 
@@ -1496,10 +1518,6 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z"
                         console.log('Login response:', data); // Debug log
                         if (data.status === 'success') { 
                             window.location.href = data.redirect; 
-                        } else if (data.status === 'existing_session') {
-                            console.log('Showing session resumption modal'); // Debug log
-                            // Show session resumption modal
-                            showSessionResumptionModal(data);
                         } else if (data.status === 'email_not_verified') {
                             // Show email verification required message
                             loginErrorMessages.innerHTML = `
@@ -2322,9 +2340,7 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z"
 </html>
 <?php
 // Close DB connection if open
-if (isset($conn) && $conn instanceof mysqli && $conn->ping()) {
+if (isset($conn) && $conn instanceof mysqli) {
     $conn->close();
 }
-?>
-
 ?>
