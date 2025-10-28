@@ -465,6 +465,12 @@ function showOrderDetails(orderId) {
                         <th>Payment Method</th>
                         <td>${paymentMethodDisplay}</td>
                     </tr>
+                    ${order.reason ? `
+                    <tr style="background-color: #fff3cd;">
+                        <th>Cancellation Reason</th>
+                        <td style="color: #856404; font-weight: 600;">${order.reason}</td>
+                    </tr>
+                    ` : ''}
                     ${order.payment_method === 'pickup' ? '' : (order.delivery_method === 'staff' ? `
                     <tr>
                         <th>Delivery Information</th>
