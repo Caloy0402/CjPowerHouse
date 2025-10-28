@@ -25,7 +25,7 @@ try {
                 oi.quantity as ordered_quantity,
                 p.ProductName as product_name,
                 p.Quantity as available_stock,
-                p.image as product_image
+                p.ImagePath as product_image
             FROM order_items oi
             JOIN products p ON oi.product_id = p.ProductID
             WHERE oi.order_id = ?";
