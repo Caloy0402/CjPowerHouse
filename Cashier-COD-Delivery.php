@@ -1237,11 +1237,17 @@ $(document).ready(function() {
             data: { order_id: orderId },
             dataType: 'json',
             success: function(response) {
-                console.log('AJAX Response:', JSON.stringify(response, null, 2));
+                console.log('=== AJAX Response Start ===');
+                console.log('Full response:', response);
+                console.log('Response success:', response.success);
                 console.log('Items count:', response.items ? response.items.length : 0);
                 if (response.items && response.items.length > 0) {
-                    console.log('First item:', JSON.stringify(response.items[0], null, 2));
+                    console.log('First item full object:', response.items[0]);
+                    console.log('First item quantity field:', response.items[0].quantity);
+                    console.log('First item quantity type:', typeof response.items[0].quantity);
                 }
+                console.log('=== AJAX Response End ===');
+                
                 if (response.success && response.items && response.items.length > 0) {
                     displayOrderItems(response.items);
                 } else {
@@ -1265,15 +1271,20 @@ $(document).ready(function() {
         itemsHtml += '<tr><th class="text-center">Image</th><th>Product Name</th><th class="text-center" style="width:110px;">Quantity</th><th class="text-end" style="width:130px;">Unit Price</th><th class="text-end" style="width:140px;">Total</th></tr>';
         itemsHtml += '</thead><tbody>';
         
-        items.forEach(function(item) {
-            console.log('Processing item:', JSON.stringify(item, null, 2));
+        items.forEach(function(item, index) {
+            console.log('=== Processing Item ' + index + ' ===');
+            console.log('Raw item object:', item);
+            console.log('item.quantity value:', item.quantity);
+            console.log('item.quantity type:', typeof item.quantity);
+            
             var quantity = item.quantity || 0;
             var price = parseFloat(item.price) || 0;
             var itemTotal = price * parseInt(quantity);
             var imageUrl = item.product_image || 'img/shifter.png';
             var productName = item.product_name || 'N/A';
             
-            console.log('Image URL:', imageUrl, 'Quantity:', quantity, 'Price:', price, 'Product:', productName);
+            console.log('Parsed values - Quantity:', quantity, 'Price:', price, 'Product:', productName, 'Image:', imageUrl);
+            console.log('HTML quantity that will render:', '<span class="badge bg-primary rounded-pill">' + quantity + '</span>');
             
             itemsHtml += '<tr>';
             // Image column with explicit styling
@@ -1282,7 +1293,7 @@ $(document).ready(function() {
             itemsHtml += '</td>';
             // Product name
             itemsHtml += '<td><strong>' + productName + '</strong></td>';
-            // Quantity badge
+            // Quantity badge - with explicit value
             itemsHtml += '<td class="text-center"><span class="badge bg-primary rounded-pill">' + quantity + '</span></td>';
             // Unit price
             itemsHtml += '<td class="text-end">₱' + price.toFixed(2) + '</td>';
@@ -1290,6 +1301,9 @@ $(document).ready(function() {
             itemsHtml += '<td class="text-end"><strong>₱' + itemTotal.toFixed(2) + '</strong></td>';
             itemsHtml += '</tr>';
         });
+        
+        console.log('=== Final HTML to be inserted ===');
+        console.log(itemsHtml);
         
         itemsHtml += '</tbody></table>';
         $('#orderItemsContainer').html(itemsHtml);

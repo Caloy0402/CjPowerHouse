@@ -32,16 +32,32 @@ try {
 
     $items = [];
     while ($row = $result->fetch_assoc()) {
+        // Ensure image path has the uploads/ prefix
+        $imagePath = $row['product_image'] ?: '';
+        if (!empty($imagePath) && strpos($imagePath, 'uploads/') !== 0 && strpos($imagePath, 'http') !== 0) {
+            $imagePath = 'uploads/' . ltrim($imagePath, '/');
+        }
+        
+        // Log the raw data for debugging
+        error_log("Order item data: product_id=" . $row['product_id'] . 
+                  ", quantity=" . $row['quantity'] . 
+                  ", price=" . $row['price'] . 
+                  ", name=" . $row['product_name'] . 
+                  ", image=" . $imagePath);
+        
         $items[] = [
-            'product_id' => $row['product_id'],
+            'product_id' => (int)$row['product_id'],
             'product_name' => $row['product_name'],
-            'quantity' => $row['quantity'],
-            'price' => $row['price'],
-            'product_image' => $row['product_image']
+            'quantity' => (int)$row['quantity'],
+            'price' => (float)$row['price'],
+            'product_image' => $imagePath
         ];
     }
     
     $stmt->close();
+    
+    // Log the final response
+    error_log("Final items response: " . json_encode($items));
     
     echo json_encode([
         'success' => true,
