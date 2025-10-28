@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 
 // Include database connection
-require_once 'config.php';
+require_once 'dbconn.php';
 
 try {
     // Get all barangays with their on-ship COD order counts
