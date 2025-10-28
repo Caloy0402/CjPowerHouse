@@ -915,30 +915,32 @@ $stmt_order_history->close();
 
           <section class="current-deliveries">
               <h2>Ready To Ship</h2>
-              <?php if (!empty($current_deliveries)): ?>
-                  <table class="delivery-table">
-                      <thead>
-                          <tr>
-                              <th>Order ID</th>
-                              <th>Date and Time</th>
-                              <th>Action</th>
-                          </tr>
-                      </thead>
-                      <tbody>
+              <table class="delivery-table" id="readyToShipTable">
+                  <thead>
+                      <tr>
+                          <th>Order ID</th>
+                          <th>Date and Time</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <?php if (!empty($current_deliveries)): ?>
                           <?php foreach ($current_deliveries as $delivery): ?>
                               <tr>
                                   <td><?= htmlspecialchars($delivery['id']) ?></td>
-                                  <td><?= date('Y-m-d h:i A', strtotime($delivery['order_date'])) ?></td> <!-- Format date and time -->
+                                  <td><?= date('Y-m-d h:i A', strtotime($delivery['order_date'])) ?></td>
                                   <td class="action-buttons">
                                       <button onclick="openModal(<?= htmlspecialchars(json_encode($delivery)) ?>)">View Details</button>
                                   </td>
                               </tr>
                           <?php endforeach; ?>
-                      </tbody>
-                  </table>
-              <?php else: ?>
-                  <p>No current deliveries assigned.</p>
-              <?php endif; ?>
+                      <?php else: ?>
+                          <tr>
+                              <td colspan="3" style="text-align: center;">No current deliveries assigned.</td>
+                          </tr>
+                      <?php endif; ?>
+                  </tbody>
+              </table>
           </section>
 
             <!-- Recent Order History Section -->
@@ -1271,18 +1273,22 @@ $stmt_order_history->close();
         let eventSource = null;
         let isConnected = false;
 
-        // Function to show notification
+        // Function to show notification with enhanced sound
         function showNotification(message = 'New orders are ready to ship!') {
             const notification = document.getElementById('orderNotification');
             const notificationText = document.getElementById('notificationText');
             
-            // Play notification sound
-            const audio = new Audio('<?= $baseURL ?>uploads/Notify.mp3');
-            audio.volume = 0.7; // Set volume to 70%
-            audio.play().catch(error => {
-                console.log('Audio playback failed:', error);
-                // Audio will fail silently if user hasn't interacted with page yet
-            });
+            // Play notification sound using NotificationSound class
+            if (typeof window.notificationSound !== 'undefined' && window.notificationSound) {
+                window.notificationSound.play();
+            } else {
+                // Fallback to simple audio if NotificationSound class not available
+                const audio = new Audio('<?= $baseURL ?>uploads/Notify.mp3');
+                audio.volume = 0.7;
+                audio.play().catch(error => {
+                    console.log('Audio playback failed:', error);
+                });
+            }
             
             // Update the notification text
             notificationText.textContent = message;
@@ -1328,9 +1334,43 @@ $stmt_order_history->close();
         // Function to update deliveries table
         function updateDeliveriesTable(deliveries) {
             console.log('updateDeliveriesTable called with:', deliveries);
-            const tbody = document.querySelector('.delivery-table tbody');
+            
+            // Try multiple selectors to find the tbody
+            let tbody = document.querySelector('#readyToShipTable tbody');
             if (!tbody) {
-                console.log('tbody not found!');
+                tbody = document.querySelector('.delivery-table tbody');
+            }
+            
+            if (!tbody) {
+                console.log('tbody not found! Attempting to create table structure...');
+                // Get the section element
+                const section = document.querySelector('.current-deliveries');
+                if (section) {
+                    // Check if table exists
+                    let table = document.querySelector('.delivery-table');
+                    if (!table) {
+                        // Create the table structure
+                        table = document.createElement('table');
+                        table.className = 'delivery-table';
+                        table.id = 'readyToShipTable';
+                        table.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date and Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        `;
+                        section.insertBefore(table, section.querySelector('h2').nextSibling);
+                    }
+                    tbody = table.querySelector('tbody');
+                }
+            }
+            
+            if (!tbody) {
+                console.error('Could not find or create tbody element');
                 return;
             }
 
@@ -1350,7 +1390,7 @@ $stmt_order_history->close();
                     </tr>
                 `).join('');
             }
-            console.log('Deliveries table updated successfully');
+            console.log('Deliveries table updated successfully with', deliveries.length, 'deliveries');
         }
 
         // Function to update barangay button counts
@@ -1639,6 +1679,18 @@ $stmt_order_history->close();
         });
     </script>
     <?php endif; ?>
+    
+    <!-- Notification Sound System -->
+    <script src="js/notification-sound.js"></script>
+    <script>
+        // Initialize notification sound when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof NotificationSound !== 'undefined') {
+                window.notificationSound = new NotificationSound();
+            }
+        });
+    </script>
+    
     <script src="js/script.js"></script>
 </body>
 </html>
