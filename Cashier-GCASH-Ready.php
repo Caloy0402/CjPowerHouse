@@ -712,7 +712,7 @@ $selectFareFallback = ",
                 <span class="badge"><?php echo $readyToShipGCASHCount; ?></span>
             <?php endif; ?>
         </a>
-        <a href="Cashier-GCASH-Onship.php" class="status-button">
+        <a href="Cashier-GCASH-OnShip.php" class="status-button">
             <i class="fa fa-truck"></i> On-Ship
             <?php if ($onShipGCASHCount > 0): ?>
                 <span class="badge"><?php echo $onShipGCASHCount; ?></span>

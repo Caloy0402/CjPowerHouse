@@ -11,6 +11,18 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Security check: Ensure only staff members can access this page
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Admin', 'Cashier', 'Rider', 'Mechanic'])) {
+    // If user is a customer, redirect to customer area
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'Customer') {
+        header("Location: Mobile-Dashboard.php");
+        exit();
+    }
+    // If no valid role, redirect to appropriate login
+    header("Location: signin.php");
+    exit();
+}
+
 // Prepare and execute the query to fetch the user profile
 $stmt = $conn->prepare("SELECT role, profile_image, first_name, last_name FROM cjusers WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -771,7 +783,7 @@ $selectFareFallback = ",
                 <span class="badge"><?php echo $readyToShipGCASHCount; ?></span>
             <?php endif; ?>
         </a>
-        <a href="Cashier-GCASH-Onship.php" class="status-button">
+        <a href="Cashier-GCASH-OnShip.php" class="status-button">
             <i class="fa fa-truck"></i> On-Ship
             <?php if ($onShipGCASHCount > 0): ?>
                 <span class="badge"><?php echo $onShipGCASHCount; ?></span>

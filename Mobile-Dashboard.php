@@ -1230,8 +1230,8 @@ $conn->close();
             <img src="<?= $baseURL ?>uploads/shopping.gif" alt="Advertisement" class="side-image">
             <div class="sale-content">
                 <h2>Quality Guaranty</h2>
-                <p></p>
-                <p class="code">100% /p>
+                <p>PALIT NA!!</p>
+                <p class="code">GENUINE PARTS</p>
             </div>
             <button class="btn">View</button>
         </div>
@@ -1241,7 +1241,7 @@ $conn->close();
             <div class="sale-content">
                 <h2>For Sale XRM 125</h2>
                 <p>For more Info</p>
-                <p class="code">Contact:
+                <p class="code">C'#:
                     09568706652</p>
             </div>
             <button class="btn">View</button>

@@ -723,7 +723,7 @@ if ($selectedBarangayId !== null) {
                         <span class="badge"><?php echo $readyToShipCODCount; ?></span>
                         <?php endif; ?>
                     </a>
-                    <a href="Cashier-COD-Onship.php" class="status-button">
+                    <a href="Cashier-COD-OnShip.php" class="status-button">
                         <i class="fa fa-truck"></i> On-Ship
                         <?php if ($onShipCODCount > 0): ?>
                         <span class="badge"><?php echo $onShipCODCount; ?></span>
@@ -1065,6 +1065,69 @@ $result = $conn->query($sql);
                     </div>
                 </div>
             </div>
+            
+            <!-- Stock Warning Modal -->
+            <div class="modal fade" id="stockWarningModal" tabindex="-1" aria-labelledby="stockWarningModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-danger">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="stockWarningModalLabel">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Insufficient Stock Warning
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                <h5 class="alert-heading"><i class="fas fa-times-circle me-2"></i>Cannot Process Order</h5>
+                                <p class="mb-0">The following item(s) have insufficient stock to fulfill this order. The order cannot be marked as "Ready to Ship".</p>
+                            </div>
+                            
+                            <div class="card border-warning mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="fas fa-box-open me-2"></i>Items with Insufficient Stock</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover mb-0">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th>Product Name</th>
+                                                    <th class="text-center">Ordered Qty</th>
+                                                    <th class="text-center">Available Stock</th>
+                                                    <th class="text-center">Short By</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="insufficientStockTableBody">
+                                                <!-- Will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Recommended Action</h6>
+                                <p class="mb-2">You should cancel this order and notify the customer about the stock shortage. The customer will receive a detailed explanation about which items are out of stock.</p>
+                                <ul class="mb-0">
+                                    <li>The order will be automatically cancelled</li>
+                                    <li>Customer will receive a detailed notification</li>
+                                    <li>No payment will be charged</li>
+                                    <li>Customer can place a new order with adjusted quantities</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-danger" id="confirmCancelOrderBtn">
+                                <i class="fas fa-ban me-1"></i>Cancel Order & Notify Customer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!---end of modal-->
         </div>
         <!--Content End-->
@@ -1325,6 +1388,9 @@ $(document).ready(function() {
         }
     });
 
+    // Store insufficient stock items globally for cancel functionality
+    var insufficientStockItems = [];
+    
     // Function to handle the "Update Order" button click
     $('#modalShippingBtn').on('click', function() {
         // Gather the data from the modal
@@ -1345,7 +1411,79 @@ $(document).ready(function() {
             return;
         }
 
-        // Make an AJAX request to update-order.php
+        // STEP 1: Check stock availability BEFORE updating order
+        console.log('Checking stock availability for order:', orderId);
+        
+        // Disable button to prevent double-clicking
+        $('#modalShippingBtn').prop('disabled', true).text('Checking stock...');
+        
+        $.ajax({
+            url: 'check_stock_availability.php',
+            method: 'POST',
+            data: {
+                order_id: orderId
+            },
+            dataType: 'json',
+            success: function(stockResponse) {
+                console.log('Stock check response:', stockResponse);
+                
+                if (stockResponse.has_insufficient_stock) {
+                    // Insufficient stock detected - show warning modal
+                    console.log('Insufficient stock detected:', stockResponse.insufficient_items);
+                    insufficientStockItems = stockResponse.insufficient_items;
+                    showStockWarningModal(stockResponse.insufficient_items);
+                    
+                    // Re-enable the update button
+                    $('#modalShippingBtn').prop('disabled', false).text('Update Order');
+                    
+                } else if (stockResponse.success) {
+                    // Stock is sufficient - proceed with order update
+                    console.log('Stock is sufficient, proceeding with order update');
+                    proceedWithOrderUpdate(orderId, riderName, riderContact, motorType, plateNumber, orderStatus);
+                    
+                } else {
+                    // Error checking stock
+                    alert('Error checking stock availability: ' + stockResponse.message);
+                    $('#modalShippingBtn').prop('disabled', false).text('Update Order');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error checking stock:', textStatus, errorThrown);
+                alert('Error checking stock availability. Please try again.');
+                $('#modalShippingBtn').prop('disabled', false).text('Update Order');
+            }
+        });
+    });
+    
+    // Function to show the stock warning modal
+    function showStockWarningModal(insufficientItems) {
+        console.log('Showing stock warning modal with items:', insufficientItems);
+        
+        // Populate the table with insufficient stock items
+        var tableBody = $('#insufficientStockTableBody');
+        tableBody.empty();
+        
+        insufficientItems.forEach(function(item) {
+            var imageUrl = item.product_image ? 'uploads/' + item.product_image : 'img/shifter.png';
+            var row = '<tr>' +
+                '<td><img src="' + imageUrl + '" alt="' + item.product_name + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" onerror="this.src=\'img/shifter.png\'"></td>' +
+                '<td><strong>' + item.product_name + '</strong></td>' +
+                '<td class="text-center"><span class="badge bg-primary">' + item.ordered_quantity + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-warning text-dark">' + item.available_stock + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-danger">' + item.shortage + '</span></td>' +
+                '</tr>';
+            tableBody.append(row);
+        });
+        
+        // Close the order details modal
+        $('#orderDetailsModal').modal('hide');
+        
+        // Show the stock warning modal
+        $('#stockWarningModal').modal('show');
+    }
+    
+    // Function to proceed with order update (after stock check passes)
+    function proceedWithOrderUpdate(orderId, riderName, riderContact, motorType, plateNumber, orderStatus) {
         $.ajax({
             url: 'update-order.php',
             method: 'POST',
@@ -1362,14 +1500,54 @@ $(document).ready(function() {
                 if (response.success) {
                     alert(response.message);
                     $('#orderDetailsModal').modal('hide'); // Close the modal
-                    location.reload(); // Reload the page to reflect changes - CONSIDER UPDATING WITH AJAX AS WELL
+                    location.reload(); // Reload the page to reflect changes
                 } else {
                     alert(response.message);
                 }
+                
+                // Re-enable the update button
+                $('#modalShippingBtn').prop('disabled', false).text('Update Order');
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error updating order:', textStatus, errorThrown);
                 alert('Error updating order. Please check the console.');
+                $('#modalShippingBtn').prop('disabled', false).text('Update Order');
+            }
+        });
+    }
+    
+    // Handle the "Cancel Order & Notify Customer" button click
+    $('#confirmCancelOrderBtn').on('click', function() {
+        var orderId = $('#modalOrderId').val();
+        
+        console.log('Canceling order due to insufficient stock:', orderId);
+        console.log('Insufficient items:', insufficientStockItems);
+        
+        // Disable button to prevent double-clicking
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Canceling...');
+        
+        $.ajax({
+            url: 'cancel_order_insufficient_stock.php',
+            method: 'POST',
+            data: {
+                order_id: orderId,
+                insufficient_items: JSON.stringify(insufficientStockItems)
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert('Order has been cancelled. The customer has been notified with detailed information about the stock shortage.');
+                    $('#stockWarningModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Error canceling order: ' + response.message);
+                    $('#confirmCancelOrderBtn').prop('disabled', false).html('<i class="fas fa-ban me-1"></i>Cancel Order & Notify Customer');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error canceling order:', textStatus, errorThrown);
+                alert('Error canceling order. Please try again.');
+                $('#confirmCancelOrderBtn').prop('disabled', false).html('<i class="fas fa-ban me-1"></i>Cancel Order & Notify Customer');
             }
         });
     });

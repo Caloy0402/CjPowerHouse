@@ -11,6 +11,18 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Security check: Ensure only staff members can access this page
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Admin', 'Cashier', 'Rider', 'Mechanic'])) {
+    // If user is a customer, redirect to customer area
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'Customer') {
+        header("Location: Mobile-Dashboard.php");
+        exit();
+    }
+    // If no valid role, redirect to appropriate login
+    header("Location: signin.php");
+    exit();
+}
+
 // Prepare and execute the query to fetch the user profile
 $stmt = $conn->prepare("SELECT role, profile_image, first_name, last_name FROM cjusers WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -763,7 +775,7 @@ if ($selectedBarangayId !== null) {
                 <span class="badge"><?php echo $readyToShipCODCount; ?></span>
             <?php endif; ?>
         </a>
-        <a href="Cashier-COD-Onship.php" class="status-button">
+        <a href="Cashier-COD-OnShip.php" class="status-button">
             <i class="fa fa-truck"></i> On-Ship
             <?php if ($onShipCODCount > 0): ?>
                 <span class="badge"><?php echo $onShipCODCount; ?></span>

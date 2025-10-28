@@ -634,7 +634,7 @@ if ($selectedBarangayId !== null) {
                 <span class="badge"><?php echo $readyToShipCODCount; ?></span>
             <?php endif; ?>
         </a>
-        <a href="Cashier-COD-Onship.php" class="status-button">
+        <a href="Cashier-COD-OnShip.php" class="status-button">
             <i class="fa fa-truck"></i> On-Ship
             <?php if ($onShipCODCount > 0): ?>
                 <span class="badge"><?php echo $onShipCODCount; ?></span>
