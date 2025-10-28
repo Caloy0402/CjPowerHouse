@@ -1484,12 +1484,24 @@ $(document).ready(function() {
         var tableBody = $('#insufficientStockTableBody');
         tableBody.empty();
         
+        if (!insufficientItems || insufficientItems.length === 0) {
+            console.error('No insufficient items provided');
+            return;
+        }
+        
         insufficientItems.forEach(function(item) {
+            console.log('Processing item:', item);
+            console.log('Product:', item.product_name, 'Ordered:', item.ordered_quantity, 'Available:', item.available_stock, 'Shortage:', item.shortage);
+            
+            var orderedQty = item.ordered_quantity || 0;
+            var availableQty = item.available_stock || 0;
+            var shortageQty = item.shortage || 0;
+            
             var row = '<tr>' +
-                '<td><strong>' + item.product_name + '</strong></td>' +
-                '<td class="text-center"><span class="badge bg-primary fs-6">' + item.ordered_quantity + '</span></td>' +
-                '<td class="text-center"><span class="badge bg-warning text-dark fs-6">' + item.available_stock + '</span></td>' +
-                '<td class="text-center"><span class="badge bg-danger fs-6">' + item.shortage + '</span></td>' +
+                '<td><strong>' + (item.product_name || 'Unknown Product') + '</strong></td>' +
+                '<td class="text-center"><span class="badge bg-primary fs-6">' + orderedQty + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-warning text-dark fs-6">' + availableQty + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-danger fs-6">' + shortageQty + '</span></td>' +
                 '</tr>';
             tableBody.append(row);
         });
