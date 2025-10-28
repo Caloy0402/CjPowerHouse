@@ -1129,12 +1129,14 @@ $(document).ready(function() {
     function displayOrderItems(items) {
         var itemsHtml = '<table class="table table-hover items-table">';
         itemsHtml += '<thead>';
-        itemsHtml += '<tr><th>Product Name</th><th class="text-center" style="width:110px;">Quantity</th><th class="text-end" style="width:130px;">Unit Price</th><th class="text-end" style="width:140px;">Total</th></tr>';
+        itemsHtml += '<tr><th class="text-center">Image</th><th>Product Name</th><th class="text-center" style="width:110px;">Quantity</th><th class="text-end" style="width:130px;">Unit Price</th><th class="text-end" style="width:140px;">Total</th></tr>';
         itemsHtml += '</thead><tbody>';
         
         items.forEach(function(item) {
             var itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+            var imageUrl = item.product_image || 'img/shifter.png';
             itemsHtml += '<tr>';
+            itemsHtml += '<td class="text-center"><img src="' + imageUrl + '" alt="' + (item.product_name || 'Product') + '" style="width:60px;height:60px;object-fit:cover;border-radius:4px;"></td>';
             itemsHtml += '<td><strong>' + (item.product_name || 'N/A') + '</strong></td>';
             itemsHtml += '<td class="text-center"><span class="badge bg-primary">' + item.quantity + '</span></td>';
             itemsHtml += '<td class="text-end">₱' + parseFloat(item.price).toFixed(2) + '</td>';

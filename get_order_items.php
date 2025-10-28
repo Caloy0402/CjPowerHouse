@@ -20,7 +20,7 @@ if ($orderId <= 0) {
 
 try {
     // Query to get order items - use correct column names based on database schema
-    $sql = "SELECT oi.product_id, oi.quantity, oi.price, p.ProductName AS product_name
+    $sql = "SELECT oi.product_id, oi.quantity, oi.price, p.ProductName AS product_name, p.ProductImage AS product_image
             FROM order_items oi
             JOIN products p ON oi.product_id = p.ProductID
             WHERE oi.order_id = ?";
@@ -36,7 +36,8 @@ try {
             'product_id' => $row['product_id'],
             'product_name' => $row['product_name'],
             'quantity' => $row['quantity'],
-            'price' => $row['price']
+            'price' => $row['price'],
+            'product_image' => $row['product_image']
         ];
     }
     
