@@ -1237,10 +1237,10 @@ $(document).ready(function() {
             data: { order_id: orderId },
             dataType: 'json',
             success: function(response) {
-                console.log('AJAX Response:', response);
+                console.log('AJAX Response:', JSON.stringify(response, null, 2));
                 console.log('Items count:', response.items ? response.items.length : 0);
                 if (response.items && response.items.length > 0) {
-                    console.log('First item:', response.items[0]);
+                    console.log('First item:', JSON.stringify(response.items[0], null, 2));
                 }
                 if (response.success && response.items && response.items.length > 0) {
                     displayOrderItems(response.items);
@@ -1266,9 +1266,10 @@ $(document).ready(function() {
         itemsHtml += '</thead><tbody>';
         
         items.forEach(function(item) {
-            console.log('Processing item:', item);
+            console.log('Processing item:', JSON.stringify(item, null, 2));
             var itemTotal = parseFloat(item.price) * parseInt(item.quantity);
             var imageUrl = item.product_image || 'img/shifter.png';
+            console.log('Image URL:', imageUrl, 'Quantity:', item.quantity, 'Price:', item.price);
             itemsHtml += '<tr>';
             itemsHtml += '<td class="text-center"><img src="' + imageUrl + '" alt="' + (item.product_name || 'Product') + '" style="width:60px;height:60px;object-fit:cover;border-radius:4px;"></td>';
             itemsHtml += '<td><strong>' + (item.product_name || 'N/A') + '</strong></td>';
