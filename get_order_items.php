@@ -19,6 +19,15 @@ if ($orderId <= 0) {
 }
 
 try {
+    // First, check what columns exist in order_items for this order
+    $testSql = "SELECT * FROM order_items WHERE order_id = $orderId LIMIT 1";
+    $testResult = $conn->query($testSql);
+    if ($testResult && $testResult->num_rows > 0) {
+        $testRow = $testResult->fetch_assoc();
+        error_log("TEST - Raw order_items row: " . json_encode($testRow));
+        error_log("TEST - Available columns: " . implode(", ", array_keys($testRow)));
+    }
+    
     // Query to get order items - use correct column names based on database schema
     $sql = "SELECT oi.product_id, oi.quantity, oi.price, p.ProductName AS product_name, p.ImagePath AS product_image
             FROM order_items oi
