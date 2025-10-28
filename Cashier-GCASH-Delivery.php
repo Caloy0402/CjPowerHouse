@@ -1390,8 +1390,12 @@ $(document).ready(function() {
                 '<td class="text-center"><span class="badge bg-warning text-dark fs-6">' + availableQty + '</span></td>' +
                 '<td class="text-center"><span class="badge bg-danger fs-6">' + shortageQty + '</span></td>' +
                 '</tr>';
+            console.log('Appending row HTML:', row);
             tableBody.append(row);
+            console.log('Row appended. Table body now has:', tableBody.find('tr').length, 'rows');
         });
+        
+        console.log('Final table HTML:', tableBody.html());
         
         // Show the stock warning section
         $('#stockWarningSection').slideDown();
