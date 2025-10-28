@@ -774,13 +774,6 @@ $stmt3->close();
                 <?php include 'admin_rescue_notifications.php'; ?>
                 <?php include 'admin_user_notifications.php'; ?>
                 
-                <!-- Real-time Updates Toggle -->
-                <div class="nav-item">
-                    <button onclick="toggleRealtimeUpdates()" class="btn btn-sm btn-outline-warning me-2" id="realtimeToggleBtnNav" title="Pause/Resume Real-time Updates">
-                        <i class="fas fa-pause me-1"></i>Pause
-                    </button>
-                </div>
-                
             <div class="nav-item dropdown">
                 <a href="" class="nav-link dropdown-toggle" 
                 data-bs-toggle="dropdown">
@@ -2935,9 +2928,6 @@ $stmt3->close();
         const MAX_DASHBOARD_SSE_RETRIES = 3;
         let dashboardEventSource = null;
         let staffEventSource = null; // Staff status SSE from admin_notifications.php
-        let isRealtimePaused = false; // Track pause state
-        let pauseStartTime = null; // Track when pause started
-        
         function initDashboardSSE() {
             try {
                 // Close existing connection if any
@@ -2945,21 +2935,10 @@ $stmt3->close();
                     dashboardEventSource.close();
                 }
                 
-                // Don't initialize if paused
-                if (isRealtimePaused) {
-                    console.log('SSE initialization skipped - paused');
-                    return;
-                }
-                
                 dashboardEventSource = new EventSource('sse_dashboard_metrics.php');
                 
                 dashboardEventSource.onmessage = function(event) {
                     try {
-                        // Don't process messages if paused
-                        if (isRealtimePaused) {
-                            return;
-                        }
-                        
                         const data = JSON.parse(event.data);
                         updateDashboardMetrics(data);
                         
@@ -3010,73 +2989,6 @@ $stmt3->close();
             }
         }
 
-        // Toggle Real-time Updates
-        function toggleRealtimeUpdates() {
-            isRealtimePaused = !isRealtimePaused;
-            
-            // Update button text and icon for navbar button
-            const btnNav = document.getElementById('realtimeToggleBtnNav');
-            
-            if (isRealtimePaused) {
-                // Pause: Close ALL SSE connections
-                if (dashboardEventSource) {
-                    dashboardEventSource.close();
-                    dashboardEventSource = null;
-                }
-                if (helpRequestsEventSource) {
-                    helpRequestsEventSource.close();
-                    helpRequestsEventSource = null;
-                }
-                // Close staff status SSE from admin_notifications.php
-                if (typeof window.staffEventSource !== 'undefined' && window.staffEventSource) {
-                    window.staffEventSource.close();
-                    window.staffEventSource = null;
-                }
-                
-                pauseStartTime = Date.now();
-                
-                // Update button text and icon
-                if (btnNav) {
-                    btnNav.innerHTML = '<i class="fas fa-play me-1"></i>Resume';
-                    btnNav.classList.remove('btn-outline-warning');
-                    btnNav.classList.add('btn-outline-success');
-                }
-                
-                console.log('Real-time updates PAUSED');
-                showToast('Real-time updates paused. Dashboard performance improved.');
-            } else {
-                // Resume: Reinitialize SSE and fetch missed data
-                const pausedDuration = pauseStartTime ? Math.floor((Date.now() - pauseStartTime) / 1000) : 0;
-                console.log(`Resuming updates (paused for ${pausedDuration} seconds)`);
-                
-                // Fetch latest data immediately to catch up
-                fetch('get_dashboard_metrics.php')
-                    .then(response => response.json())
-                    .then(data => {
-                        updateDashboardMetrics(data);
-                        console.log('Dashboard metrics refreshed after resume');
-                    })
-                    .catch(error => console.error('Error fetching dashboard metrics:', error));
-                
-                // Reinitialize SSE connections
-                initDashboardSSE();
-                startHelpRequestsSSE();
-                // Reinitialize staff status SSE (from admin_notifications.php)
-                if (typeof window.initStaffStatusSSE === 'function') {
-                    window.initStaffStatusSSE();
-                }
-                
-                // Update button text and icon
-                if (btnNav) {
-                    btnNav.innerHTML = '<i class="fas fa-pause me-1"></i>Pause';
-                    btnNav.classList.remove('btn-outline-success');
-                    btnNav.classList.add('btn-outline-warning');
-                }
-                
-                showToast(`Real-time updates resumed. Fetching data from past ${pausedDuration} seconds...`);
-            }
-        }
-        
         function updateDashboardMetrics(data) {
             // Update Today Success Transactions
             if (data.today_transactions !== undefined) {
