@@ -1510,26 +1510,26 @@ $conn->close();
                                    <div id="mapContainer" style="display:none; margin-top:10px;">
                                        <div id="leafletMap" style="width:100%;height:250px;border-radius:8px;"></div>
                                        <div class="text-muted" style="font-size:0.95em;">Drag the marker or use your current location.</div>
-                                      <div class="row g-2 mt-2">
+                                       <div class="row g-2 mt-2">
                                           <!-- Merged coordinate input field for copy-paste from Google Maps -->
                                           <div class="col-12">
                                               <label class="form-label" style="font-size:0.9em;">Coordinates (Lat, Lng)</label>
                                               <input type="text" id="mergedCoordsInput" class="form-control form-control-sm" placeholder="Paste coordinates like: 7.919867,125.092611">
                                               <small class="text-muted" style="font-size:0.75em;">Paste comma-separated coordinates from Google Maps</small>
                                           </div>
-                                          <div class="col-6">
-                                              <label class="form-label" style="font-size:0.9em;">Latitude</label>
-                                              <input type="text" id="latDisplay" class="form-control form-control-sm" readonly>
-                                          </div>
-                                          <div class="col-6">
-                                              <label class="form-label" style="font-size:0.9em;">Longitude</label>
-                                              <input type="text" id="lngDisplay" class="form-control form-control-sm" readonly>
-                                          </div>
-                                          <div class="col-12 d-flex gap-2">
-                                              <button type="button" id="copyCoordsBtn" class="btn btn-sm btn-secondary" style="flex:1;">Copy Coordinates</button>
-                                              <a id="openInGmapsLink" href="#" target="_blank" class="btn btn-sm btn-success" style="flex:1;">Open in Google Maps</a>
-                                          </div>
-                                      </div>
+                                           <div class="col-6">
+                                               <label class="form-label" style="font-size:0.9em;">Latitude</label>
+                                               <input type="text" id="latDisplay" class="form-control form-control-sm" readonly>
+                                           </div>
+                                           <div class="col-6">
+                                               <label class="form-label" style="font-size:0.9em;">Longitude</label>
+                                               <input type="text" id="lngDisplay" class="form-control form-control-sm" readonly>
+                                           </div>
+                                           <div class="col-12 d-flex gap-2">
+                                               <button type="button" id="copyCoordsBtn" class="btn btn-sm btn-secondary" style="flex:1;">Copy Coordinates</button>
+                                               <a id="openInGmapsLink" href="#" target="_blank" class="btn btn-sm btn-success" style="flex:1;">Open in Google Maps</a>
+                                           </div>
+                                       </div>
                                    </div>
                                    <input type="hidden" id="latitude" name="latitude">
                                    <input type="hidden" id="longitude" name="longitude">
