@@ -471,7 +471,7 @@ function showOrderDetails(orderId) {
                         <td style="color: #856404; font-weight: 600;">${order.reason}</td>
                     </tr>
                     ` : ''}
-                    ${order.payment_method === 'pickup' ? '' : (order.delivery_method === 'staff' ? `
+                    ${order.reason ? '' : (order.payment_method === 'pickup' ? '' : (order.delivery_method === 'staff' ? `
                     <tr>
                         <th>Delivery Information</th>
                         <td>
@@ -491,12 +491,12 @@ function showOrderDetails(orderId) {
                             <p><strong>Plate Number:</strong> ${order.rider_plate_number || 'N/A'}</p>
                         </td>
                     </tr>
-                    ` : `<tr><th>Rider Information</th><td>Rider information will be available once the order is ready for shipping.</td></tr>`)}
+                    ` : `<tr><th>Rider Information</th><td>Rider information will be available once the order is ready for shipping.</td></tr>`))}
                 </tbody>
             </table>
         </div>
 
-        ${order.payment_method === 'pickup' ? '' : `
+        ${order.reason ? '' : (order.payment_method === 'pickup' ? '' : `
         <h6 style="margin-top: 10px;">Delivery Information</h6>
         <div class="table-responsive">
             <table class="table table-bordered" style="background-color: white; color: black; font-size: 0.9rem;">
@@ -516,7 +516,7 @@ function showOrderDetails(orderId) {
                 </tbody>
             </table>
         </div>
-        `}
+        `)}
 
         <h6 style="margin-top: 10px;">Order Summary</h6>
         <div class="table-responsive">

@@ -1420,7 +1420,7 @@ $(document).ready(function() {
 
     // Store insufficient stock items globally for cancel functionality
     var insufficientStockItems = [];
-    
+
     // Function to handle the "Update Order" button click
     $('#modalShippingBtn').on('click', function() {
         // Gather the data from the modal

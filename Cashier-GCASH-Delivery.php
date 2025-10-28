@@ -280,7 +280,7 @@ $selectFareFallback = ",
         color: white;
         font-size: 12px;
     }
-    
+
     /* Exception for stock warning table badges - make them visible */
     #insufficientStockTableBody .badge {
         position: static !important;
@@ -1299,7 +1299,7 @@ $(document).ready(function() {
 
     // Store insufficient stock items globally for cancel functionality
     var insufficientStockItems = [];
-    
+
     // Function to handle the "Update Order" button click
     $('#modalShippingBtn').on('click', function() {
         // Gather the data from the modal
@@ -1323,7 +1323,7 @@ $(document).ready(function() {
         
         // Get delivery method to determine validation
         var deliveryMethod = $('#modalDeliveryMethod').text().toLowerCase();
-
+        
         // Only require rider selection for local rider delivery, not for staff delivery
         if (deliveryMethod !== 'staff' && !selectedRiderId) {
             alert('Please select a rider before updating the order.');

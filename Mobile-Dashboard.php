@@ -184,8 +184,9 @@ $conn->close();
         .header-profile-image {
             width: 40px; /* Adjust size as needed */
             height: 40px;
-            border-radius: 50%;
-            object-fit: cover; /* Ensure image fills the circle */
+            border-radius: 50% !important; /* Force circular shape */
+            object-fit: cover !important; /* Ensure image fills the circle */
+            overflow: hidden; /* Clip image to circle */
         }
         
         /* Profile Avatar Change Photo Styling */
@@ -234,18 +235,23 @@ $conn->close();
             align-items: center;
             justify-content: space-between;
             width: 100%;
+            max-width: 100%;
             padding: 10px;
+            box-sizing: border-box;
         }
         .header-logo-greeting img { /* Style for the logo */
-            max-width: 120px; /* Adjusted for smaller screens */
+            max-width: 100px; /* Smaller logo */
             height: auto;
+            flex-shrink: 0;
         }
         .header-icons {
             display: flex;
             align-items: center;
+            flex-shrink: 0;
+            gap: 10px;
         }
         .header-icons span {
-            margin-left: 15px; /* Space between icons */
+            margin-left: 0; /* No extra margin since we're using gap */
         }
 
         /* Adjusted Wishlist and Notifications Icon */
@@ -273,6 +279,8 @@ $conn->close();
             flex-direction: column; /* Stack items vertically */
             align-items: center;   /* Center items horizontally */
             margin-right: 20px;
+            flex-shrink: 0;
+            min-width: 50px;
         }
         .notification-icon {
             position: relative;
