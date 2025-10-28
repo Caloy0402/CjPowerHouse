@@ -3048,12 +3048,14 @@ $stmt3->close();
                 }
             }
 
-            // Show update notification
-            showUpdateNotification();
+            // Show update notification only on initial load to reduce visual noise
+            if (isInitialLoad) {
+                showUpdateNotification();
+            }
         }
 
         function showUpdateNotification() {
-            // Create a subtle notification that data was updated
+            // Create a subtle notification that data was updated (only on initial load)
             const notification = document.createElement('div');
             notification.className = 'position-fixed top-0 end-0 p-3';
             notification.style.zIndex = '9999';
@@ -3071,12 +3073,12 @@ $stmt3->close();
             
             document.body.appendChild(notification);
             
-            // Auto-remove after 3 seconds
+            // Auto-remove after 2 seconds (reduced from 3)
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
                 }
-            }, 3000);
+            }, 2000);
         }
 
         // Initialize notification sound system
@@ -3085,6 +3087,11 @@ $stmt3->close();
         let isInitialLoad = true;
         let lastSoundPlayTime = 0;
         const SOUND_DEBOUNCE_TIME = 2000; // 2 seconds between sounds
+        
+        // Store intervals for cleanup
+        let dashboardInterval = null;
+        let revenueInterval = null;
+        let helpRequestInterval = null;
         
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -3112,13 +3119,86 @@ $stmt3->close();
             // Initialize real-time help requests
             initHelpRequestsSSE();
             
-            // Update every 15 seconds as fallback
-            setInterval(() => {
+            // Update every 30 seconds as fallback (with stored interval for cleanup) - optimized for less lag
+            dashboardInterval = setInterval(() => {
                 fetch('get_dashboard_metrics.php')
                     .then(response => response.json())
                     .then(data => updateDashboardMetrics(data))
                     .catch(error => console.error('Fallback update failed:', error));
-            }, 15000);
+            }, 30000);
+        });
+        
+        // Cleanup function to clear all intervals and close connections when navigating away
+        function cleanupDashboardResources() {
+            console.log('Cleaning up dashboard resources...');
+            
+            // Clear all intervals
+            if (dashboardInterval) {
+                clearInterval(dashboardInterval);
+                dashboardInterval = null;
+            }
+            if (revenueInterval) {
+                clearInterval(revenueInterval);
+                revenueInterval = null;
+            }
+            if (helpRequestInterval) {
+                clearInterval(helpRequestInterval);
+                helpRequestInterval = null;
+            }
+            
+            // Close SSE connections
+            if (dashboardEventSource) {
+                dashboardEventSource.close();
+                dashboardEventSource = null;
+            }
+            if (helpRequestsEventSource) {
+                helpRequestsEventSource.close();
+                helpRequestsEventSource = null;
+            }
+            if (staffEventSource) {
+                staffEventSource.close();
+                staffEventSource = null;
+            }
+            
+            // Destroy charts
+            if (weeklyOrdersChart) {
+                weeklyOrdersChart.destroy();
+                weeklyOrdersChart = null;
+            }
+            if (revenueChart) {
+                revenueChart.destroy();
+                revenueChart = null;
+            }
+        }
+        
+        // Listen for page unload and cleanup
+        window.addEventListener('beforeunload', cleanupDashboardResources);
+        
+        // Also cleanup when page visibility changes (user switches tabs/windows)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, reduce resources
+                console.log('Page hidden, pausing updates...');
+                
+                // Close SSE connections when page is not visible
+                if (dashboardEventSource) {
+                    dashboardEventSource.close();
+                }
+                if (helpRequestsEventSource) {
+                    helpRequestsEventSource.close();
+                }
+            } else {
+                // Page is visible again, reconnect
+                console.log('Page visible, reconnecting...');
+                
+                // Reinitialize SSE connections
+                if (!dashboardEventSource) {
+                    initDashboardSSE();
+                }
+                if (!helpRequestsEventSource) {
+                    initHelpRequestsSSE();
+                }
+            }
         });
         
         // Weekly Orders Chart Functions
@@ -3726,16 +3806,7 @@ $stmt3->close();
             }
         }
         
-        // Cleanup SSE connections when page unloads
-        window.addEventListener('beforeunload', function() {
-            console.log('Page unloading - closing SSE connections');
-            if (helpRequestsEventSource) {
-                helpRequestsEventSource.close();
-            }
-            if (dashboardEventSource) {
-                dashboardEventSource.close();
-            }
-        });
+        // Old cleanup removed - using the improved cleanupDashboardResources() function above
     </script>
     <script src="js/script.js"></script>
     
