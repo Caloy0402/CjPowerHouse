@@ -1204,7 +1204,25 @@ $(document).ready(function() {
     // Function to populate the modal with data
     $('#orderDetailsModal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget); // Button that triggered the modal
+        
+        // Add error checking for button
+        if (!button || button.length === 0) {
+            console.error('Modal triggered without a valid button');
+            return;
+        }
+        
         var orderId = button.data('order-id');
+        
+        // Validate orderId
+        if (!orderId || orderId === '' || orderId === 'undefined') {
+            console.error('Invalid order ID from button:', orderId);
+            alert('Error: Unable to load order details. Please refresh the page and try again.');
+            $('#orderDetailsModal').modal('hide');
+            return;
+        }
+        
+        console.log('Modal opened with Order ID:', orderId);
+        
         var transactionNumber = button.data('transaction-number');
         var orderDate = button.data('order-date');
         var customerName = button.data('customer-name');
@@ -1395,6 +1413,16 @@ $(document).ready(function() {
     $('#modalShippingBtn').on('click', function() {
         // Gather the data from the modal
         var orderId = $('#modalOrderId').val();
+        
+        // Validate order ID first
+        if (!orderId || orderId === '' || orderId === 'undefined' || orderId <= 0) {
+            console.error('Invalid order ID in modal:', orderId);
+            alert('Error: Invalid order ID. Please close the modal and try again.');
+            return;
+        }
+        
+        console.log('Update button clicked for Order ID:', orderId);
+        
         var selectedRiderId = $('#modalRiderSelect').val();
         var riderName = $('#modalRiderName').val();
         var riderContact = $('#modalRiderContactInfo').val();
