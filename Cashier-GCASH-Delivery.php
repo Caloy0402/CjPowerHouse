@@ -919,7 +919,51 @@ $selectFareFallback = ",
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
+                                    
+                                    <!-- Stock Warning Section - Hidden by default, shown when stock is insufficient -->
+                                    <div class="stock-warning-section mb-4" id="stockWarningSection" style="display: none;">
+                                        <div class="alert alert-danger border-danger">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <i class="fas fa-exclamation-triangle me-3 fs-3 text-danger"></i>
+                                                <div>
+                                                    <h5 class="mb-1 text-danger fw-bold">⚠️ Insufficient Stock Detected!</h5>
+                                                    <p class="mb-0">The following items do not have enough stock to fulfill this order:</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="table-responsive mt-3">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Product</th>
+                                                            <th class="text-center">Ordered</th>
+                                                            <th class="text-center">Available</th>
+                                                            <th class="text-center">Short By</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="insufficientStockTableBody">
+                                                        <!-- Will be populated by JavaScript -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                            <div class="alert alert-warning mt-3 mb-0">
+                                                <h6 class="alert-heading fw-bold"><i class="fas fa-info-circle me-2"></i>Action Required</h6>
+                                                <p class="mb-2">This order cannot be fulfilled due to insufficient stock. Please cancel this order to notify the customer.</p>
+                                                <ul class="mb-2 small">
+                                                    <li>The order will be automatically cancelled with status explanation</li>
+                                                    <li>Customer will receive a detailed notification about the stock shortage</li>
+                                                    <li>GCASH payment will be refunded if already paid</li>
+                                                    <li>Customer can place a new order with adjusted quantities</li>
+                                                </ul>
+                                                <button type="button" class="btn btn-danger btn-sm mt-2" id="confirmCancelOrderBtn">
+                                                    <i class="fas fa-ban me-1"></i>Cancel Order & Notify Customer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3" id="orderStatusSection">
                                         <label for="orderStatus" class="form-label">Order Status:</label>
                                         <select class="form-select" id="orderStatus" name="order_status">
                                             
@@ -938,70 +982,6 @@ $selectFareFallback = ",
                     </div>
                 </div>
             </div>
-            
-            <!-- Stock Warning Modal -->
-            <div class="modal fade" id="stockWarningModal" tabindex="-1" aria-labelledby="stockWarningModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content border-danger">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title" id="stockWarningModalLabel">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Insufficient Stock Warning
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-danger">
-                                <h5 class="alert-heading"><i class="fas fa-times-circle me-2"></i>Cannot Process Order</h5>
-                                <p class="mb-0">The following item(s) have insufficient stock to fulfill this order. The order cannot be marked as "Ready to Ship".</p>
-                            </div>
-                            
-                            <div class="card border-warning mb-3">
-                                <div class="card-header bg-warning text-dark">
-                                    <h6 class="mb-0"><i class="fas fa-box-open me-2"></i>Items with Insufficient Stock</h6>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped table-hover mb-0">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th>Image</th>
-                                                    <th>Product Name</th>
-                                                    <th class="text-center">Ordered Qty</th>
-                                                    <th class="text-center">Available Stock</th>
-                                                    <th class="text-center">Short By</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="insufficientStockTableBody">
-                                                <!-- Will be populated by JavaScript -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="alert alert-info">
-                                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Recommended Action</h6>
-                                <p class="mb-2">You should cancel this order and notify the customer about the stock shortage. The customer will receive a detailed explanation about which items are out of stock.</p>
-                                <ul class="mb-0">
-                                    <li>The order will be automatically cancelled</li>
-                                    <li>Customer will receive a detailed notification</li>
-                                    <li>No payment will be charged (GCASH payment will be refunded if already paid)</li>
-                                    <li>Customer can place a new order with adjusted quantities</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times me-1"></i>Close
-                            </button>
-                            <button type="button" class="btn btn-danger" id="confirmCancelOrderBtn">
-                                <i class="fas fa-ban me-1"></i>Cancel Order & Notify Customer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!---end of modal-->
         </div>
         <!--Content End-->
         <!--Footer Start-->
@@ -1180,6 +1160,12 @@ $(document).ready(function() {
             $('#staffDeliveryNotice').hide();
         }
         
+        // Reset stock warning section (hide it and show normal controls)
+        $('#stockWarningSection').hide();
+        $('#orderStatusSection').show();
+        $('#modalShippingBtn').show();
+        $('#insufficientStockTableBody').empty();
+        
         // Load order items
         loadOrderItems(orderId);
     });
@@ -1350,12 +1336,12 @@ $(document).ready(function() {
                 console.log('Stock check response:', stockResponse);
                 
                 if (stockResponse.has_insufficient_stock) {
-                    // Insufficient stock detected - show warning modal
+                    // Insufficient stock detected - show inline warning
                     console.log('Insufficient stock detected:', stockResponse.insufficient_items);
                     insufficientStockItems = stockResponse.insufficient_items;
-                    showStockWarningModal(stockResponse.insufficient_items);
+                    showStockWarningInline(stockResponse.insufficient_items);
                     
-                    // Re-enable the update button
+                    // Re-enable the update button (hidden now, but reset state)
                     $('#modalShippingBtn').prop('disabled', false).text('Update Order');
                     
                 } else if (stockResponse.success) {
@@ -1378,30 +1364,29 @@ $(document).ready(function() {
     });
     
     // Function to show the stock warning modal
-    function showStockWarningModal(insufficientItems) {
-        console.log('Showing stock warning modal with items:', insufficientItems);
+    function showStockWarningInline(insufficientItems) {
+        console.log('Showing inline stock warning with items:', insufficientItems);
         
         // Populate the table with insufficient stock items
         var tableBody = $('#insufficientStockTableBody');
         tableBody.empty();
         
         insufficientItems.forEach(function(item) {
-            var imageUrl = item.product_image ? 'uploads/' + item.product_image : 'img/shifter.png';
             var row = '<tr>' +
-                '<td><img src="' + imageUrl + '" alt="' + item.product_name + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" onerror="this.src=\'img/shifter.png\'"></td>' +
                 '<td><strong>' + item.product_name + '</strong></td>' +
-                '<td class="text-center"><span class="badge bg-primary">' + item.ordered_quantity + '</span></td>' +
-                '<td class="text-center"><span class="badge bg-warning text-dark">' + item.available_stock + '</span></td>' +
-                '<td class="text-center"><span class="badge bg-danger">' + item.shortage + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-primary fs-6">' + item.ordered_quantity + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-warning text-dark fs-6">' + item.available_stock + '</span></td>' +
+                '<td class="text-center"><span class="badge bg-danger fs-6">' + item.shortage + '</span></td>' +
                 '</tr>';
             tableBody.append(row);
         });
         
-        // Close the order details modal
-        $('#orderDetailsModal').modal('hide');
+        // Show the stock warning section
+        $('#stockWarningSection').slideDown();
         
-        // Show the stock warning modal
-        $('#stockWarningModal').modal('show');
+        // Hide the order status and update button sections (can't update if stock insufficient)
+        $('#orderStatusSection').hide();
+        $('#modalShippingBtn').hide();
     }
     
     // Function to proceed with order update (after stock check passes)
@@ -1459,7 +1444,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     alert('Order has been cancelled. The customer has been notified with detailed information about the stock shortage.');
-                    $('#stockWarningModal').modal('hide');
+                    $('#orderDetailsModal').modal('hide');
                     location.reload();
                 } else {
                     alert('Error canceling order: ' + response.message);
