@@ -1229,9 +1229,9 @@ $conn->close();
             <!-- Optional Side Photo -->
             <img src="<?= $baseURL ?>uploads/shopping.gif" alt="Advertisement" class="side-image">
             <div class="sale-content">
-                <h2>Quality Guaranteed</h2>
+                <h2>Quality Guaranty</h2>
                 <p></p>
-                <p class="code">100% Promise</p>
+                <p class="code">100% /p>
             </div>
             <button class="btn">View</button>
         </div>
