@@ -320,26 +320,26 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
         }
 
         .notification-item {
-            padding: 10px;
+            padding: 6px 8px;
             background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 5px;
+            border-radius: 6px;
+            margin-bottom: 3px;
         }
 
         .notification-item h6 {
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .notification-item p {
-            margin: 5px 0;
-            font-size: 14px;
+            margin: 3px 0;
+            font-size: 13px;
             color: #666;
         }
 
         .notification-item small {
             color: #999;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         /* Banner notification styles */
@@ -1418,20 +1418,14 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
                             item.href = targetHref;
                             const orderIdLabel = (notification.order_id || '');
                             item.innerHTML = `
-                                <div class="notification-item">
-                                    ${orderIdLabel ? `<h6 class=\"fw-normal mb-0\">Order #${orderIdLabel}</h6>` : ''}
-                                    <p><strong>Items:</strong> ${notification.items}</p>
-                                    <p><strong>Subtotal:</strong> ₱${notification.total_price}</p>
-                                    <p><strong>Delivery Fee:</strong> ₱${notification.delivery_fee}</p>
-                                    <p><strong>Total Amount:</strong> ₱${notification.total_with_delivery}</p>
-                                    <p><strong>Payment Method:</strong> ${notification.payment_method}</p>
-                                    <p><strong>Delivery Method:</strong> ${notification.delivery_method}</p>
-                                    ${notification.rider_name ? `
-                                        <p><strong>Rider:</strong> ${notification.rider_name}</p>
-                                        <p><strong>Vehicle:</strong> ${notification.rider_motor_type} (${notification.rider_plate_number})</p>
-                                    ` : ''}
-                                    <p><strong>Status:</strong> ${notification.order_status}</p>
-                                    <small>${notification.order_date}</small>
+                                <div class="notification-item" style="font-size: 0.85rem; line-height: 1.2;">
+                                    ${orderIdLabel ? `<h6 class="fw-bold mb-1" style="font-size: 0.9rem;">Order #${orderIdLabel}</h6>` : ''}
+                                    <div class="text-truncate mb-1" style="max-width: 250px;" title="${notification.items}"><small>${notification.items}</small></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-${notification.payment_method === 'cod' ? 'success' : 'info'}">${notification.payment_method}</span>
+                                        <strong style="font-size: 0.9rem;">₱${notification.total_with_delivery}</strong>
+                                    </div>
+                                    <small class="text-muted">${notification.order_date}</small>
                                 </div>
                                 <hr class="dropdown-divider">
                             `;
@@ -1999,20 +1993,14 @@ $baseURL = $scheme . '://' . $host . $basePath . '/';
                             item.href = targetHref;
                             const orderIdLabel = (notification.order_id || '');
                             item.innerHTML = `
-                                <div class="notification-item">
-                                    ${orderIdLabel ? `<h6 class="fw-normal mb-0">Order #${orderIdLabel}</h6>` : ''}
-                                    <p><strong>Items:</strong> ${notification.items}</p>
-                                    <p><strong>Subtotal:</strong> ₱${notification.total_price}</p>
-                                    <p><strong>Delivery Fee:</strong> ₱${notification.delivery_fee}</p>
-                                    <p><strong>Total Amount:</strong> ₱${notification.total_with_delivery}</p>
-                                    <p><strong>Payment Method:</strong> ${notification.payment_method}</p>
-                                    <p><strong>Delivery Method:</strong> ${notification.delivery_method}</p>
-                                    ${notification.rider_name ? `
-                                        <p><strong>Rider:</strong> ${notification.rider_name}</p>
-                                        <p><strong>Vehicle:</strong> ${notification.rider_motor_type} (${notification.rider_plate_number})</p>
-                                    ` : ''}
-                                    <p><strong>Status:</strong> ${notification.order_status}</p>
-                                    <small>${notification.order_date}</small>
+                                <div class="notification-item" style="font-size: 0.85rem; line-height: 1.2;">
+                                    ${orderIdLabel ? `<h6 class="fw-bold mb-1" style="font-size: 0.9rem;">Order #${orderIdLabel}</h6>` : ''}
+                                    <div class="text-truncate mb-1" style="max-width: 250px;" title="${notification.items}"><small>${notification.items}</small></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-${notification.payment_method === 'cod' ? 'success' : 'info'}">${notification.payment_method}</span>
+                                        <strong style="font-size: 0.9rem;">₱${notification.total_with_delivery}</strong>
+                                    </div>
+                                    <small class="text-muted">${notification.order_date}</small>
                                 </div>
                                 <hr class="dropdown-divider">
                             `;
