@@ -1052,7 +1052,7 @@ $result = $conn->query($sql);
                                     
                                     <!-- Stock Warning Section - Hidden by default, shown when stock is insufficient -->
                                     <div class="stock-warning-section mb-4" id="stockWarningSection" style="display: none;">
-                                        <div class="alert alert-danger border-danger">
+                                        <div class="alert alert-danger border-danger position-relative" style="overflow: visible;">
                                             <div class="d-flex align-items-center mb-3">
                                                 <i class="fas fa-exclamation-triangle me-3 fs-3 text-danger"></i>
                                                 <div>
@@ -1061,7 +1061,7 @@ $result = $conn->query($sql);
                                                 </div>
                                             </div>
                                             
-                                            <div class="table-responsive mt-3">
+                                            <div class="table-responsive mt-3" style="overflow-x: visible;">
                                                 <table class="table table-sm table-bordered">
                                                     <thead class="table-dark">
                                                         <tr>
@@ -1511,11 +1511,25 @@ $(document).ready(function() {
         console.log('Final table HTML:', tableBody.html());
         
         // Show the stock warning section
-        $('#stockWarningSection').slideDown();
+        $('#stockWarningSection').show(); // Use show() instead of slideDown() for immediate display
         
         // Hide the order status and update button sections (can't update if stock insufficient)
         $('#orderStatusSection').hide();
         $('#modalShippingBtn').hide();
+        
+        // Scroll to the warning section so it's visible
+        setTimeout(function() {
+            $('html, body').animate({
+                scrollTop: $('#stockWarningSection').offset().top - 100
+            }, 300);
+            // Also scroll the modal body to show the warning
+            var modalBody = $('#stockWarningSection').closest('.modal-body');
+            if (modalBody.length) {
+                modalBody.animate({
+                    scrollTop: modalBody.scrollTop() + $('#stockWarningSection').offset().top - modalBody.offset().top - 50
+                }, 300);
+            }
+        }, 100);
     }
     
     // Function to proceed with order update (after stock check passes)
