@@ -1267,14 +1267,26 @@ $(document).ready(function() {
         
         items.forEach(function(item) {
             console.log('Processing item:', JSON.stringify(item, null, 2));
-            var itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+            var quantity = item.quantity || 0;
+            var price = parseFloat(item.price) || 0;
+            var itemTotal = price * parseInt(quantity);
             var imageUrl = item.product_image || 'img/shifter.png';
-            console.log('Image URL:', imageUrl, 'Quantity:', item.quantity, 'Price:', item.price);
+            var productName = item.product_name || 'N/A';
+            
+            console.log('Image URL:', imageUrl, 'Quantity:', quantity, 'Price:', price, 'Product:', productName);
+            
             itemsHtml += '<tr>';
-            itemsHtml += '<td class="text-center"><img src="' + imageUrl + '" alt="' + (item.product_name || 'Product') + '" style="width:60px;height:60px;object-fit:cover;border-radius:4px;"></td>';
-            itemsHtml += '<td><strong>' + (item.product_name || 'N/A') + '</strong></td>';
-            itemsHtml += '<td class="text-center"><span class="badge bg-primary">' + item.quantity + '</span></td>';
-            itemsHtml += '<td class="text-end">₱' + parseFloat(item.price).toFixed(2) + '</td>';
+            // Image column with explicit styling
+            itemsHtml += '<td class="text-center">';
+            itemsHtml += '<img src="' + imageUrl + '" alt="' + productName + '" style="width:60px;height:60px;object-fit:cover;border-radius:4px;" onerror="this.src=\'img/shifter.png\'">';
+            itemsHtml += '</td>';
+            // Product name
+            itemsHtml += '<td><strong>' + productName + '</strong></td>';
+            // Quantity badge
+            itemsHtml += '<td class="text-center"><span class="badge bg-primary rounded-pill">' + quantity + '</span></td>';
+            // Unit price
+            itemsHtml += '<td class="text-end">₱' + price.toFixed(2) + '</td>';
+            // Total
             itemsHtml += '<td class="text-end"><strong>₱' + itemTotal.toFixed(2) + '</strong></td>';
             itemsHtml += '</tr>';
         });
