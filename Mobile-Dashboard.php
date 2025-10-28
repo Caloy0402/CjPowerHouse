@@ -1510,20 +1510,26 @@ $conn->close();
                                    <div id="mapContainer" style="display:none; margin-top:10px;">
                                        <div id="leafletMap" style="width:100%;height:250px;border-radius:8px;"></div>
                                        <div class="text-muted" style="font-size:0.95em;">Drag the marker or use your current location.</div>
-                                       <div class="row g-2 mt-2">
-                                           <div class="col-6">
-                                               <label class="form-label" style="font-size:0.9em;">Latitude</label>
-                                               <input type="text" id="latDisplay" class="form-control form-control-sm" readonly>
-                                           </div>
-                                           <div class="col-6">
-                                               <label class="form-label" style="font-size:0.9em;">Longitude</label>
-                                               <input type="text" id="lngDisplay" class="form-control form-control-sm" readonly>
-                                           </div>
-                                           <div class="col-12 d-flex gap-2">
-                                               <button type="button" id="copyCoordsBtn" class="btn btn-sm btn-secondary" style="flex:1;">Copy Coordinates</button>
-                                               <a id="openInGmapsLink" href="#" target="_blank" class="btn btn-sm btn-success" style="flex:1;">Open in Google Maps</a>
-                                           </div>
-                                       </div>
+                                      <div class="row g-2 mt-2">
+                                          <!-- Merged coordinate input field for copy-paste from Google Maps -->
+                                          <div class="col-12">
+                                              <label class="form-label" style="font-size:0.9em;">Coordinates (Lat, Lng)</label>
+                                              <input type="text" id="mergedCoordsInput" class="form-control form-control-sm" placeholder="Paste coordinates like: 7.919867,125.092611">
+                                              <small class="text-muted" style="font-size:0.75em;">Paste comma-separated coordinates from Google Maps</small>
+                                          </div>
+                                          <div class="col-6">
+                                              <label class="form-label" style="font-size:0.9em;">Latitude</label>
+                                              <input type="text" id="latDisplay" class="form-control form-control-sm" readonly>
+                                          </div>
+                                          <div class="col-6">
+                                              <label class="form-label" style="font-size:0.9em;">Longitude</label>
+                                              <input type="text" id="lngDisplay" class="form-control form-control-sm" readonly>
+                                          </div>
+                                          <div class="col-12 d-flex gap-2">
+                                              <button type="button" id="copyCoordsBtn" class="btn btn-sm btn-secondary" style="flex:1;">Copy Coordinates</button>
+                                              <a id="openInGmapsLink" href="#" target="_blank" class="btn btn-sm btn-success" style="flex:1;">Open in Google Maps</a>
+                                          </div>
+                                      </div>
                                    </div>
                                    <input type="hidden" id="latitude" name="latitude">
                                    <input type="hidden" id="longitude" name="longitude">
@@ -2952,6 +2958,86 @@ document.addEventListener('DOMContentLoaded', function() {
                 try { document.execCommand('copy'); alert('Coordinates copied: ' + text); } catch(e) {}
                 document.body.removeChild(ta);
             });
+        });
+    }
+    
+    // Handle merged coordinate input for paste from Google Maps
+    const mergedCoordsInput = document.getElementById('mergedCoordsInput');
+    if (mergedCoordsInput && latDisplay && lngDisplay && latInput && lngInput) {
+        mergedCoordsInput.addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            if (value === '') return;
+            
+            // Try to parse "lat,lng" format
+            const parts = value.split(',').map(p => p.trim()).filter(p => p !== '');
+            
+            if (parts.length === 2) {
+                const lat = parseFloat(parts[0]);
+                const lng = parseFloat(parts[1]);
+                
+                if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                    // Update all coordinate displays
+                    latDisplay.value = lat.toFixed(6);
+                    lngDisplay.value = lng.toFixed(6);
+                    latInput.value = lat;
+                    lngInput.value = lng;
+                    
+                    // Update marker on map if it exists
+                    if (typeof leafletMap !== 'undefined' && typeof leafletMarker !== 'undefined') {
+                        leafletMarker.setLatLng([lat, lng]);
+                        leafletMap.setView([lat, lng], 15);
+                    }
+                    
+                    // Update Google Maps link
+                    const openInGmapsLink = document.getElementById('openInGmapsLink');
+                    if (openInGmapsLink) {
+                        openInGmapsLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
+                    }
+                    
+                    // Clear the merged input after parsing
+                    setTimeout(() => {
+                        e.target.value = '';
+                    }, 500);
+                }
+            }
+        });
+        
+        // Allow paste event
+        mergedCoordsInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                const value = e.target.value.trim();
+                if (value) {
+                    const parts = value.split(',').map(p => p.trim()).filter(p => p !== '');
+                    
+                    if (parts.length === 2) {
+                        const lat = parseFloat(parts[0]);
+                        const lng = parseFloat(parts[1]);
+                        
+                        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                            // Update all coordinate displays
+                            latDisplay.value = lat.toFixed(6);
+                            lngDisplay.value = lng.toFixed(6);
+                            latInput.value = lat;
+                            lngInput.value = lng;
+                            
+                            // Update marker on map if it exists
+                            if (typeof leafletMap !== 'undefined' && typeof leafletMarker !== 'undefined') {
+                                leafletMarker.setLatLng([lat, lng]);
+                                leafletMap.setView([lat, lng], 15);
+                            }
+                            
+                            // Update Google Maps link
+                            const openInGmapsLink = document.getElementById('openInGmapsLink');
+                            if (openInGmapsLink) {
+                                openInGmapsLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
+                            }
+                            
+                            // Clear the input
+                            e.target.value = '';
+                        }
+                    }
+                }
+            }, 10);
         });
     }
 });

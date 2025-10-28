@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once 'dbconn.php';
+// Load environment variables if a .env file exists
+@require_once __DIR__ . '/config/env_loader.php';
 
 header('Content-Type: application/json');
 
@@ -95,12 +97,44 @@ try {
 // --- 4. CREATE PAYMONGO PAYMENT SOURCE ---
 // Load secret key from environment first, then secrets.php (for local/dev)
 @include_once __DIR__ . '/secrets.php';
+
+// Allow configuration via multiple env vars
+$useLiveEnv = getenv('PAYMONGO_USE_LIVE');
+$useLiveFlag = null;
+if ($useLiveEnv !== false && $useLiveEnv !== '') {
+    $val = strtolower(trim($useLiveEnv));
+    $useLiveFlag = in_array($val, ['1', 'true', 'yes'], true);
+}
+// Prefer explicit env var first
 $secretKey = getenv('PAYMONGO_SECRET_KEY');
 if (!$secretKey || trim($secretKey) === '') {
-    $secretKey = isset($PAYMONGO_SECRET_KEY) ? trim($PAYMONGO_SECRET_KEY) : '';
+    // Try split env keys based on live/test
+    $envLive = getenv('PAYMONGO_SECRET_KEY_LIVE');
+    $envTest = getenv('PAYMONGO_SECRET_KEY_TEST');
+    if ($useLiveFlag === true && $envLive) {
+        $secretKey = trim($envLive);
+    } elseif ($useLiveFlag === false && $envTest) {
+        $secretKey = trim($envTest);
+    } elseif (isset($USE_LIVE_KEYS)) {
+        if ($USE_LIVE_KEYS && !empty($envLive)) {
+            $secretKey = trim($envLive);
+        } elseif (!$USE_LIVE_KEYS && !empty($envTest)) {
+            $secretKey = trim($envTest);
+        }
+    }
 }
-if ($secretKey === '') {
-    $response['message'] = 'Server misconfiguration: missing PayMongo secret key.';
+// Fallback to secrets.php variables
+if (!$secretKey || trim($secretKey) === '') {
+    if (isset($PAYMONGO_SECRET_KEY) && trim($PAYMONGO_SECRET_KEY) !== '') {
+        $secretKey = trim($PAYMONGO_SECRET_KEY);
+    } elseif (isset($USE_LIVE_KEYS) && $USE_LIVE_KEYS === true && isset($PAYMONGO_SECRET_KEY_LIVE)) {
+        $secretKey = trim($PAYMONGO_SECRET_KEY_LIVE);
+    } elseif (isset($USE_LIVE_KEYS) && $USE_LIVE_KEYS === false && isset($PAYMONGO_SECRET_KEY_TEST)) {
+        $secretKey = trim($PAYMONGO_SECRET_KEY_TEST);
+    }
+}
+if (!$secretKey || trim($secretKey) === '') {
+    $response['message'] = 'Server misconfiguration: missing PayMongo secret key. Please set PAYMONGO_SECRET_KEY in the environment or upload secrets.php.';
     echo json_encode($response);
     exit;
 }

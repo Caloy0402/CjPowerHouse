@@ -983,6 +983,23 @@ $result = $conn->query($sql);
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Order Items Section -->
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-header bg-gradient-primary text-white">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-shopping-basket me-2"></i>
+                                            <h6 class="mb-0">Order Items & Details</h6>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="orderItemsContainer" class="table-responsive">
+                                            <!-- Order items will be populated here -->
+                                            <p class="text-muted text-center">Loading items...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                     <!-- Rider Details Section - Only show for local rider delivery -->
                                     <div class="rider-details mb-4" id="riderDetailsSection" style="display: none;">
                                         <h6>Rider Details</h6>
@@ -1199,7 +1216,60 @@ $(document).ready(function() {
             $('#riderDetailsSection').show();
             $('#staffDeliveryNotice').hide();
         }
+        
+        // Load order items
+        loadOrderItems(orderId);
     });
+    
+    // Function to load order items
+    function loadOrderItems(orderId) {
+        console.log('Loading order items for order ID:', orderId);
+        
+        if (!orderId || orderId <= 0) {
+            console.error('Invalid order ID:', orderId);
+            $('#orderItemsContainer').html('<p class="text-danger text-center">Invalid order ID</p>');
+            return;
+        }
+        
+        $.ajax({
+            url: 'get_order_items.php',
+            method: 'GET',
+            data: { order_id: orderId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success && response.items && response.items.length > 0) {
+                    displayOrderItems(response.items);
+                } else {
+                    $('#orderItemsContainer').html('<p class="text-muted text-center">No items found for this order</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading items:', error);
+                $('#orderItemsContainer').html('<p class="text-danger text-center">Error loading items</p>');
+            }
+        });
+    }
+    
+    // Function to display order items
+    function displayOrderItems(items) {
+        var itemsHtml = '<table class="table table-hover items-table">';
+        itemsHtml += '<thead>';
+        itemsHtml += '<tr><th>Product Name</th><th class="text-center" style="width:110px;">Quantity</th><th class="text-end" style="width:130px;">Unit Price</th><th class="text-end" style="width:140px;">Total</th></tr>';
+        itemsHtml += '</thead><tbody>';
+        
+        items.forEach(function(item) {
+            var itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+            itemsHtml += '<tr>';
+            itemsHtml += '<td><strong>' + (item.product_name || 'N/A') + '</strong></td>';
+            itemsHtml += '<td class="text-center"><span class="badge bg-primary">' + item.quantity + '</span></td>';
+            itemsHtml += '<td class="text-end">₱' + parseFloat(item.price).toFixed(2) + '</td>';
+            itemsHtml += '<td class="text-end"><strong>₱' + itemTotal.toFixed(2) + '</strong></td>';
+            itemsHtml += '</tr>';
+        });
+        
+        itemsHtml += '</tbody></table>';
+        $('#orderItemsContainer').html(itemsHtml);
+    }
 
     // Rider selection change -> copy to readonly fields
     $(document).on('change', '#modalRiderSelect', function(){

@@ -1,5 +1,6 @@
 # Local secrets and environment files
-secrets.php
+# Note: Only unignore secrets.php if you accept the risk of committing keys.
+# To commit a non-sensitive placeholder, use secrets.example.php instead.
 .env
 .env.local
 .env.*.local

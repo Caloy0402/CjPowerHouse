@@ -1815,7 +1815,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.success && data.checkout_url) {
           window.location.href = data.checkout_url;
         } else {
-          showNotification('error', 'Payment Error', data.message || 'Unable to create payment.', 4000);
+          const msg = (data && data.message) ? data.message : 'Unable to create payment.';
+          const hint = /missing PayMongo secret key/i.test(msg)
+            ? ' Admin hint: set PAYMONGO_SECRET_KEY on the server or upload secrets.php.'
+            : '';
+          showNotification('error', 'Payment Error', msg + hint, 6000);
           placeOrderBtn.disabled = false;
           placeOrderBtn.innerHTML = '<span class="material-icons">lock_outline</span> Place Order';
         }

@@ -1079,8 +1079,6 @@ $conn->close();
                 <i class="material-icons">notifications</i>
                 <span id="notificationBadge" class="notif-badge" style="<?= $pendingRequestCount > 0 ? '' : 'display: none;' ?>"><?= $pendingRequestCount ?></span>
             </span>
-            <img src="<?= $baseURL ?>image/logo.png" alt="CJ Powerhouse Logo" class="powerhouse-logo app-logo" onclick="window.location.href='<?= $baseURL ?>Mechanic-Dashboard.php'" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div style="display:none; color:white; font-weight:bold; font-size:12px; text-align:center; line-height:1.2;">CJ<br>Powerhouse</div>
         </div>
     </div>
 
