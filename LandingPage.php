@@ -924,7 +924,7 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z"
         <div class="contact-info mb-3">
              <p><i class="fas fa-map-marker-alt me-2"></i>Location: P5 Sinayawan, Valencia City, Bukidnon</p>
              <p><i class="fas fa-phone me-2"></i>Phone: <a href="tel:09513866413" class="text-white">0951-386-6413</a></p>
-             <p><i class="fab fa-facebook me-2"></i>Facebook: <a href="https://www.facebook.com/profile.php?id=100076358041290" target="_blank" class="text-white">Visit our Page</a></p>
+             <p><i class="fab fa-facebook me-2"></i>Facebook: <a href="https://www.facebook.com/cjspowerhouse" target="_blank" class="text-white">Visit our Page</a></p>
         </div>
         <div class="map-container"> <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.6592454474054!2d125.17778847477234!3d7.920996092079601!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32547a3518d63b9b%3A0x649d02f90af95642!2sSinayawan%2C%20Valencia%20City%2C%20Bukidnon!5e0!3m2!1sen!2sph!4v1713696397868!5m2!1sen!2sph" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> </div>
     </section>

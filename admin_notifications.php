@@ -506,11 +506,12 @@ function initNotificationSoundControls() {
 }
 
 // SSE for staff status notifications
-function initStaffStatusSSE() {
+window.initStaffStatusSSE = function() {
     try {
-        const staffEventSource = new EventSource('sse_staff_status.php');
+        // Store in global scope so it can be paused/resumed
+        window.staffEventSource = new EventSource('sse_staff_status.php');
         
-        staffEventSource.onmessage = function(event) {
+        window.staffEventSource.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
                 
@@ -551,9 +552,9 @@ function initStaffStatusSSE() {
             }
         };
         
-        staffEventSource.onerror = function(event) {
+        window.staffEventSource.onerror = function(event) {
             console.error('Staff Status SSE Error:', event);
-            staffEventSource.close();
+            window.staffEventSource.close();
             
             // Retry connection after 5 seconds
             setTimeout(() => {
