@@ -1203,21 +1203,28 @@ $(document).ready(function() {
 
     // Function to populate the modal with data
     $('#orderDetailsModal').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget); // Button that triggered the modal
-        
-        // Add error checking for button
-        if (!button || button.length === 0) {
-            console.error('Modal triggered without a valid button');
+        // Check if event has relatedTarget (button that triggered modal)
+        if (!event.relatedTarget) {
+            console.warn('Modal show event triggered without relatedTarget');
+            // Check if modal already has valid data loaded
+            var existingOrderId = $('#modalOrderId').val();
+            if (existingOrderId && existingOrderId !== '' && existingOrderId !== 'undefined') {
+                console.log('Modal already has order data, skipping reload. Order ID:', existingOrderId);
+                return; // Modal already has data, don't reload
+            }
+            // No button and no existing data - this shouldn't happen, but don't crash
+            console.error('No button element and no existing order data - modal show prevented');
             return;
         }
         
+        var button = $(event.relatedTarget); // Button that triggered the modal
         var orderId = button.data('order-id');
         
         // Validate orderId
         if (!orderId || orderId === '' || orderId === 'undefined') {
             console.error('Invalid order ID from button:', orderId);
             alert('Error: Unable to load order details. Please refresh the page and try again.');
-            $('#orderDetailsModal').modal('hide');
+            event.preventDefault();
             return;
         }
         
