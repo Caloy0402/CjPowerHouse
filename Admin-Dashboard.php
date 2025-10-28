@@ -2988,7 +2988,7 @@ $stmt3->close();
                 }, 5000);
             }
         }
-
+        
         function updateDashboardMetrics(data) {
             // Update Today Success Transactions
             if (data.today_transactions !== undefined) {
@@ -3717,11 +3717,13 @@ $stmt3->close();
         }
         
         function pulseRescueStatus() {
-            const statusBadge = document.getElementById('rescueStatus');
-            statusBadge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                statusBadge.style.animation = '';
-            }, 1000);
+            const statusBadge = document.getElementById('rescueNotificationCount');
+            if (statusBadge) {
+                statusBadge.style.animation = 'pulse 1s ease-in-out';
+                setTimeout(() => {
+                    statusBadge.style.animation = '';
+                }, 1000);
+            }
         }
         
         // Cleanup SSE connections when page unloads
