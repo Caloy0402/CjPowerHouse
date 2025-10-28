@@ -325,9 +325,8 @@ $stmt3->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <!-- Cache static assets for better performance -->
+    <meta http-equiv="Cache-Control" content="public, max-age=3600, immutable">
     <title>Admin Dashboard</title>
     <!-- Favicon for better browser compatibility -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -3093,8 +3092,54 @@ $stmt3->close();
         let revenueInterval = null;
         let helpRequestInterval = null;
         
+        // Cache management for dashboard metrics
+        const CACHE_KEY = 'admin_dashboard_cache';
+        const CACHE_DURATION = 30000; // 30 seconds cache
+        
+        function getCachedMetrics() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (!cached) return null;
+                
+                const data = JSON.parse(cached);
+                const now = Date.now();
+                
+                // Check if cache is still valid (within 30 seconds)
+                if (now - data.timestamp < CACHE_DURATION) {
+                    console.log('Using cached dashboard metrics');
+                    return data.metrics;
+                }
+                
+                // Cache expired, remove it
+                localStorage.removeItem(CACHE_KEY);
+                return null;
+            } catch (error) {
+                console.error('Error reading cache:', error);
+                return null;
+            }
+        }
+        
+        function setCachedMetrics(metrics) {
+            try {
+                const cacheData = {
+                    metrics: metrics,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            } catch (error) {
+                console.error('Error writing cache:', error);
+            }
+        }
+        
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Try to load cached metrics first for instant display
+            const cachedMetrics = getCachedMetrics();
+            if (cachedMetrics) {
+                console.log('Loading cached metrics for instant display');
+                updateDashboardMetrics(cachedMetrics);
+            }
+            
             // Initialize notification sound
             notificationSound = new NotificationSound({
                 soundFile: 'uploads/NofiticationCash.mp3',
@@ -3119,11 +3164,23 @@ $stmt3->close();
             // Initialize real-time help requests
             initHelpRequestsSSE();
             
+            // Fetch fresh data and update cache
+            fetch('get_dashboard_metrics.php')
+                .then(response => response.json())
+                .then(data => {
+                    setCachedMetrics(data);
+                    updateDashboardMetrics(data);
+                })
+                .catch(error => console.error('Initial fetch failed:', error));
+            
             // Update every 30 seconds as fallback (with stored interval for cleanup) - optimized for less lag
             dashboardInterval = setInterval(() => {
                 fetch('get_dashboard_metrics.php')
                     .then(response => response.json())
-                    .then(data => updateDashboardMetrics(data))
+                    .then(data => {
+                        setCachedMetrics(data);
+                        updateDashboardMetrics(data);
+                    })
                     .catch(error => console.error('Fallback update failed:', error));
             }, 30000);
         });
@@ -3168,6 +3225,16 @@ $stmt3->close();
             if (revenueChart) {
                 revenueChart.destroy();
                 revenueChart = null;
+            }
+            
+            // Clear localStorage cache on logout/navigation
+            if (typeof Storage !== 'undefined') {
+                try {
+                    localStorage.removeItem(CACHE_KEY);
+                    console.log('Dashboard cache cleared');
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                }
             }
         }
         
