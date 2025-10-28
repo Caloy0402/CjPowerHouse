@@ -1237,14 +1237,21 @@ $(document).ready(function() {
             data: { order_id: orderId },
             dataType: 'json',
             success: function(response) {
+                console.log('AJAX Response:', response);
+                console.log('Items count:', response.items ? response.items.length : 0);
+                if (response.items && response.items.length > 0) {
+                    console.log('First item:', response.items[0]);
+                }
                 if (response.success && response.items && response.items.length > 0) {
                     displayOrderItems(response.items);
                 } else {
+                    console.error('No items found or empty response');
                     $('#orderItemsContainer').html('<p class="text-muted text-center">No items found for this order</p>');
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error loading items:', error);
+                console.error('Response text:', xhr.responseText);
                 $('#orderItemsContainer').html('<p class="text-danger text-center">Error loading items</p>');
             }
         });
@@ -1252,12 +1259,14 @@ $(document).ready(function() {
     
     // Function to display order items
     function displayOrderItems(items) {
+        console.log('Displaying items:', items);
         var itemsHtml = '<table class="table table-hover items-table">';
         itemsHtml += '<thead>';
         itemsHtml += '<tr><th class="text-center">Image</th><th>Product Name</th><th class="text-center" style="width:110px;">Quantity</th><th class="text-end" style="width:130px;">Unit Price</th><th class="text-end" style="width:140px;">Total</th></tr>';
         itemsHtml += '</thead><tbody>';
         
         items.forEach(function(item) {
+            console.log('Processing item:', item);
             var itemTotal = parseFloat(item.price) * parseInt(item.quantity);
             var imageUrl = item.product_image || 'img/shifter.png';
             itemsHtml += '<tr>';
