@@ -1293,8 +1293,8 @@ $(document).ready(function() {
             itemsHtml += '</td>';
             // Product name
             itemsHtml += '<td><strong>' + productName + '</strong></td>';
-            // Quantity badge - with explicit value and inline styling for visibility
-            itemsHtml += '<td class="text-center" style="vertical-align: middle;"><span class="badge bg-primary rounded-pill" style="font-size: 1rem; padding: 0.5rem 0.75rem; min-width: 2.5rem; display: inline-block;">' + quantity + '</span></td>';
+            // Quantity - simple text first to test visibility
+            itemsHtml += '<td class="text-center" style="vertical-align: middle; font-weight: bold; font-size: 1.2rem; color: #0d6efd;">' + quantity + '</td>';
             // Unit price
             itemsHtml += '<td class="text-end">₱' + price.toFixed(2) + '</td>';
             // Total

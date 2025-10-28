@@ -2923,14 +2923,26 @@ $stmt3->close();
 
 
         // Real-time Dashboard Updates using SSE
+        let dashboardSSERetryCount = 0;
+        const MAX_DASHBOARD_SSE_RETRIES = 3;
+        let dashboardEventSource = null;
+        
         function initDashboardSSE() {
             try {
-                const eventSource = new EventSource('sse_dashboard_metrics.php');
+                // Close existing connection if any
+                if (dashboardEventSource) {
+                    dashboardEventSource.close();
+                }
                 
-                eventSource.onmessage = function(event) {
+                dashboardEventSource = new EventSource('sse_dashboard_metrics.php');
+                
+                dashboardEventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
                         updateDashboardMetrics(data);
+                        
+                        // Reset retry count on successful message
+                        dashboardSSERetryCount = 0;
                         
                         // Play notification sound for important updates
                         const currentTime = Date.now();
@@ -2952,14 +2964,20 @@ $stmt3->close();
                     }
                 };
                 
-                eventSource.onerror = function(event) {
-                    console.error('SSE Error:', event);
-                    eventSource.close();
+                dashboardEventSource.onerror = function(event) {
+                    console.error('Dashboard SSE Error:', event);
+                    dashboardEventSource.close();
                     
-                    // Retry connection after 5 seconds
-                    setTimeout(() => {
-                        initDashboardSSE();
-                    }, 5000);
+                    // Only retry a limited number of times
+                    if (dashboardSSERetryCount < MAX_DASHBOARD_SSE_RETRIES) {
+                        dashboardSSERetryCount++;
+                        console.log(`Retrying dashboard SSE (attempt ${dashboardSSERetryCount}/${MAX_DASHBOARD_SSE_RETRIES})...`);
+                        setTimeout(() => {
+                            initDashboardSSE();
+                        }, 10000); // Increased to 10 seconds
+                    } else {
+                        console.warn('Dashboard SSE max retries reached. Using static data.');
+                    }
                 };
             } catch (error) {
                 console.error('Error initializing SSE:', error);
@@ -3557,14 +3575,24 @@ $stmt3->close();
                 });
         }
         
+        let helpRequestsSSERetryCount = 0;
+        const MAX_SSE_RETRIES = 3;
+        
         function startHelpRequestsSSE() {
             try {
+                // Close existing connection if any
+                if (helpRequestsEventSource) {
+                    helpRequestsEventSource.close();
+                }
+                
                 helpRequestsEventSource = new EventSource('sse_help_requests.php');
                 
                 helpRequestsEventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
                         handleHelpRequestsSSE(data);
+                        // Reset retry count on successful message
+                        helpRequestsSSERetryCount = 0;
                     } catch (error) {
                         console.error('Error parsing help requests SSE message:', error);
                     }
@@ -3574,10 +3602,18 @@ $stmt3->close();
                     console.error('Help Requests SSE Error:', event);
                     helpRequestsEventSource.close();
                     
-                    // Retry connection after 5 seconds
-                    setTimeout(() => {
-                        startHelpRequestsSSE();
-                    }, 5000);
+                    // Only retry a limited number of times
+                    if (helpRequestsSSERetryCount < MAX_SSE_RETRIES) {
+                        helpRequestsSSERetryCount++;
+                        console.log(`Retrying help requests SSE (attempt ${helpRequestsSSERetryCount}/${MAX_SSE_RETRIES})...`);
+                        setTimeout(() => {
+                            startHelpRequestsSSE();
+                        }, 10000); // Increased to 10 seconds
+                    } else {
+                        console.warn('Help requests SSE max retries reached. Falling back to polling.');
+                        // Fallback to polling every 30 seconds
+                        setInterval(loadHelpRequests, 30000);
+                    }
                 };
                 
             } catch (error) {
@@ -3687,10 +3723,14 @@ $stmt3->close();
             }, 1000);
         }
         
-        // Cleanup SSE connection when page unloads
+        // Cleanup SSE connections when page unloads
         window.addEventListener('beforeunload', function() {
+            console.log('Page unloading - closing SSE connections');
             if (helpRequestsEventSource) {
                 helpRequestsEventSource.close();
+            }
+            if (dashboardEventSource) {
+                dashboardEventSource.close();
             }
         });
     </script>
