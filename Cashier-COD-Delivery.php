@@ -281,6 +281,14 @@ if ($selectedBarangayId !== null) {
         padding: 0.35em 0.65em !important;
     }
     
+    /* Exception for stock warning table badges - make them larger and visible */
+    #insufficientStockTableBody .badge {
+        font-size: 1em !important;
+        padding: 0.5em 0.75em !important;
+        min-width: 40px !important;
+        display: inline-block !important;
+    }
+    
     /* Remove default table borders */
     .table.table-hover {
         border: none !important;
@@ -415,6 +423,17 @@ if ($selectedBarangayId !== null) {
         background-color: red;
         color: white;
         font-size: 12px;
+    }
+    
+    /* Exception for stock warning table badges - make them visible */
+    #insufficientStockTableBody .badge {
+        position: static !important;
+        padding: 0.5em 0.75em !important;
+        border-radius: 0.25rem !important;
+        font-size: 1em !important;
+        min-width: 40px !important;
+        display: inline-block !important;
+        margin: 2px !important;
     }
 
     /* The green line connecting the buttons */
