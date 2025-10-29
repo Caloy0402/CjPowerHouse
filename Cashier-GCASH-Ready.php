@@ -1322,7 +1322,7 @@ $selectFareFallback = ",
             var content = document.getElementById('receiptContent').innerHTML;
             var printWindow = window.open('', '', 'width=420,height=680');
             printWindow.document.write('<html><head><title>Receipt</title>');
-            printWindow.document.write('<style>@page{size:100mm 150mm;margin:2mm;} body{margin:0; padding:0;} .receipt-container{width:96mm;height:146mm;margin:0 auto;} .receipt-outer{width:100%;} img{max-width:100%; height:auto;} *{-webkit-print-color-adjust:exact; color-adjust:exact;}</style>');
+            printWindow.document.write('<style>@page{size:100mm 150mm;margin:2mm;} body{margin:0; padding:0;} .receipt-container{width:96mm;height:146mm;margin:0 auto;} .receipt-outer{width:100%;} img{max-width:100%; height:auto;} .print-only{display:block!important;} *{-webkit-print-color-adjust:exact; color-adjust:exact;}</style>');
             printWindow.document.write('</head><body>');
             printWindow.document.write(content);
             printWindow.document.write('</body></html>');

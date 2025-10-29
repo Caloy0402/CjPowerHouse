@@ -1001,6 +1001,16 @@ if ($selectedBarangayId !== null) {
 
             // Optimized receipt layout with better spacing and sizing
             var receiptHTML = `
+                <style>
+                    .print-only {
+                        display: none !important;
+                    }
+                    @media print {
+                        .print-only {
+                            display: block !important;
+                        }
+                    }
+                </style>
                 <div class="receipt-outer" style="width:100%; display:flex; justify-content:center;">
                 <div class="receipt-container" style="position: relative; width: 100mm; height: 150mm; box-sizing: border-box; padding: 4mm; border: 1px solid #000; font-family: Arial, sans-serif; color: #000;">
                     <div class="watermark" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-20deg); font-size: 15mm; color: rgba(0,0,0,0.03); font-weight: 700; letter-spacing: 1mm; user-select: none; z-index: 1;">${watermarkText}</div>
@@ -1063,6 +1073,17 @@ if ($selectedBarangayId !== null) {
                             <div style="font-size: 3mm;">${motorType} | ${plateNumber}</div>
                         </div>`
                     }
+                    <div class="section print-only" style="margin-top: 1.5mm; border-top: 1px dashed #000; padding-top: 1.5mm; text-align: center; position: relative; z-index: 2; padding-bottom: 3mm;">
+                        <div style="font-weight:800; font-size: 3.2mm; margin-bottom:0.8mm; color: #d32f2f;">⚠️ IMPORTANT NOTICE</div>
+                        <div style="font-size: 2.8mm; margin-bottom:1.5mm; color: #000; font-weight:500;">Please record a video while opening this package to document the condition of items for quality assurance purposes.</div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 2.5mm; margin-top: 1.5mm; padding: 0 2mm;">
+                            <div style="font-size: 2.8mm; color: #000; font-weight:500;">Any Concern or help? Scan the QR:</div>
+                            <div style="width: 16mm; height: 16mm; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; background: white;">
+                                <img src="uploads/qr_codes/contact_qr.png" alt="Contact QR Code" style="width: 14mm; height: 14mm; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none; font-size: 2mm; text-align: center; color: #999;">QR Code<br/>Not Available</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 </div>
             `;
@@ -1155,7 +1176,7 @@ if ($selectedBarangayId !== null) {
             var content = document.getElementById('receiptContent').innerHTML;
             var printWindow = window.open('', '', 'width=420,height=680');
             printWindow.document.write('<html><head><title>Receipt</title>');
-            printWindow.document.write('<style>@page{size:100mm 150mm;margin:2mm;} body{margin:0; padding:0;} .receipt-container{width:96mm;height:146mm;margin:0 auto;} .receipt-outer{width:100%;} img{max-width:100%; height:auto;} *{-webkit-print-color-adjust:exact; color-adjust:exact;}</style>');
+            printWindow.document.write('<style>@page{size:100mm 150mm;margin:2mm;} body{margin:0; padding:0;} .receipt-container{width:96mm;height:146mm;margin:0 auto;} .receipt-outer{width:100%;} img{max-width:100%; height:auto;} .print-only{display:block!important;} *{-webkit-print-color-adjust:exact; color-adjust:exact;}</style>');
             printWindow.document.write('</head><body>');
             printWindow.document.write(content);
             printWindow.document.write('</body></html>');
