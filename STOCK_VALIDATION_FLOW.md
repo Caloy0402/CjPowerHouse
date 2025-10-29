@@ -190,7 +190,7 @@ WHERE id = ?
 ### `products` table (READ ONLY during check)
 ```sql
 SELECT Quantity 
-FROM products 
+From products 
 WHERE ProductID = ?
 ```
 
