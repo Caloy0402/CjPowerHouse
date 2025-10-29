@@ -94,7 +94,7 @@ $total_revenue_data = $total_revenue_result->fetch_assoc();
 $total_revenue = number_format($total_revenue_data['total_revenue'] ?? 0, 2);
 
 // All Products Value (total inventory worth)
-$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value From products";
+$total_products_value_query = "SELECT SUM(Price * Quantity) as total_value FROM Products";
 $total_products_value_result = $conn->query($total_products_value_query);
 $total_products_value_data = $total_products_value_result->fetch_assoc();
 $total_products_value = number_format($total_products_value_data['total_value'] ?? 0, 2);
@@ -112,7 +112,7 @@ $stock_counts_sql = "
         SUM(CASE WHEN Quantity BETWEEN 10 AND 20 THEN 1 ELSE 0 END) AS low_count,
         SUM(CASE WHEN Quantity BETWEEN 2 AND 9 THEN 1 ELSE 0 END) AS critical_count,
         SUM(CASE WHEN Quantity <= 1 THEN 1 ELSE 0 END) AS out_count
-    From products
+    FROM Products
 ";
 $stock_counts_res = $conn->query($stock_counts_sql);
 $good_count = 0; $low_count = 0; $critical_count = 0; $out_count = 0;
@@ -132,7 +132,7 @@ $category_quantity_query = "SELECT
     Category,
     SUM(Quantity) as total_quantity,
     COUNT(*) as product_count
-From products 
+FROM Products 
 WHERE Category IS NOT NULL AND Category != ''
 GROUP BY Category 
 ORDER BY total_quantity DESC";
@@ -267,7 +267,7 @@ $last_month_low_stock_sql = "
     SELECT AVG(low_stock_count) as avg_low_stock 
     FROM (
         SELECT COUNT(*) as low_stock_count 
-        From products 
+        FROM Products 
         WHERE Quantity BETWEEN 10 AND 20 
         AND DATE_FORMAT(NOW(), '%Y-%m') = ?
         GROUP BY DATE(NOW())
@@ -325,15 +325,11 @@ $stmt3->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Cache static assets for better performance -->
-    <meta http-equiv="Cache-Control" content="public, max-age=3600, immutable">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Admin Dashboard</title>
-    <!-- Favicon for better browser compatibility -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/image/logo.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/image/logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/image/logo.png">
-    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="<?= $baseURL ?>image/logo.png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -772,7 +768,6 @@ $stmt3->close();
                 <?php include 'admin_notifications.php'; ?>
                 <?php include 'admin_rescue_notifications.php'; ?>
                 <?php include 'admin_user_notifications.php'; ?>
-                
             <div class="nav-item dropdown">
                 <a href="" class="nav-link dropdown-toggle" 
                 data-bs-toggle="dropdown">
@@ -1004,7 +999,7 @@ $stmt3->close();
                 // Fetch top 8 lowest-stock products
                 $lowStockItems = [];
                 if (isset($conn) && $conn instanceof mysqli) {
-                    $lowSql = "SELECT ProductID, ProductName, Quantity From products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
+                    $lowSql = "SELECT ProductID, ProductName, Quantity FROM Products ORDER BY Quantity ASC, ProductID DESC LIMIT 8";
                     if ($lowRes = $conn->query($lowSql)) {
                         while ($row = $lowRes->fetch_assoc()) { $lowStockItems[] = $row; }
                         $lowRes->close();
@@ -1073,7 +1068,7 @@ $stmt3->close();
    <!--javascript Libraries-->
    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="lib/chart/chart.min.js"></script>
+   <script src="lib/chart/Chart.min.js"></script>
    <script src="js/notification-sound.js"></script>
    <script src="lib/easing/easing.min.js"></script>
    <script src="lib/waypoints/waypoints.min.js"></script>
@@ -2921,73 +2916,6 @@ $stmt3->close();
         }
 
 
-
-        // Real-time Dashboard Updates using SSE
-        let dashboardSSERetryCount = 0;
-        const MAX_DASHBOARD_SSE_RETRIES = 3;
-        let dashboardEventSource = null;
-        let staffEventSource = null; // Staff status SSE from admin_notifications.php
-        function initDashboardSSE() {
-            try {
-                // Close existing connection if any
-                if (dashboardEventSource) {
-                    dashboardEventSource.close();
-                }
-                
-                dashboardEventSource = new EventSource('sse_dashboard_metrics.php');
-                
-                dashboardEventSource.onmessage = function(event) {
-                    try {
-                        const data = JSON.parse(event.data);
-                        updateDashboardMetrics(data);
-                        
-                        // Reset retry count on successful message
-                        dashboardSSERetryCount = 0;
-                        
-                        // Play notification sound for important updates
-                        const currentTime = Date.now();
-                        const isPageVisible = !document.hidden;
-                        const hasNewNotifications = data.notification_count > lastNotificationCount;
-                        
-                        if (hasNewNotifications && !isInitialLoad && notificationSound && 
-                            (currentTime - lastSoundPlayTime) > SOUND_DEBOUNCE_TIME && isPageVisible) {
-                            console.log('Admin Dashboard: Playing notification sound - new notification detected');
-                            notificationSound.play();
-                            lastSoundPlayTime = currentTime;
-                        }
-                        
-                        // Update tracking
-                        lastNotificationCount = data.notification_count;
-                        isInitialLoad = false;
-                    } catch (error) {
-                        console.error('Error parsing SSE message:', error);
-                    }
-                };
-                
-                dashboardEventSource.onerror = function(event) {
-                    console.error('Dashboard SSE Error:', event);
-                    dashboardEventSource.close();
-                    
-                    // Only retry a limited number of times
-                    if (dashboardSSERetryCount < MAX_DASHBOARD_SSE_RETRIES) {
-                        dashboardSSERetryCount++;
-                        console.log(`Retrying dashboard SSE (attempt ${dashboardSSERetryCount}/${MAX_DASHBOARD_SSE_RETRIES})...`);
-                        setTimeout(() => {
-                            initDashboardSSE();
-                        }, 10000); // Increased to 10 seconds
-                    } else {
-                        console.warn('Dashboard SSE max retries reached. Using static data.');
-                    }
-                };
-            } catch (error) {
-                console.error('Error initializing SSE:', error);
-                // Retry after 5 seconds
-                setTimeout(() => {
-                    initDashboardSSE();
-                }, 5000);
-            }
-        }
-        
         function updateDashboardMetrics(data) {
             // Update Today Success Transactions
             if (data.today_transactions !== undefined) {
@@ -3047,14 +2975,12 @@ $stmt3->close();
                 }
             }
 
-            // Show update notification only on initial load to reduce visual noise
-            if (isInitialLoad) {
-                showUpdateNotification();
-            }
+            // Show update notification
+            showUpdateNotification();
         }
 
         function showUpdateNotification() {
-            // Create a subtle notification that data was updated (only on initial load)
+            // Create a subtle notification that data was updated
             const notification = document.createElement('div');
             notification.className = 'position-fixed top-0 end-0 p-3';
             notification.style.zIndex = '9999';
@@ -3072,12 +2998,12 @@ $stmt3->close();
             
             document.body.appendChild(notification);
             
-            // Auto-remove after 2 seconds (reduced from 3)
+            // Auto-remove after 3 seconds
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
                 }
-            }, 2000);
+            }, 3000);
         }
 
         // Initialize notification sound system
@@ -3087,59 +3013,8 @@ $stmt3->close();
         let lastSoundPlayTime = 0;
         const SOUND_DEBOUNCE_TIME = 2000; // 2 seconds between sounds
         
-        // Store intervals for cleanup
-        let dashboardInterval = null;
-        let revenueInterval = null;
-        let helpRequestInterval = null;
-        
-        // Cache management for dashboard metrics
-        const CACHE_KEY = 'admin_dashboard_cache';
-        const CACHE_DURATION = 30000; // 30 seconds cache
-        
-        function getCachedMetrics() {
-            try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (!cached) return null;
-                
-                const data = JSON.parse(cached);
-                const now = Date.now();
-                
-                // Check if cache is still valid (within 30 seconds)
-                if (now - data.timestamp < CACHE_DURATION) {
-                    console.log('Using cached dashboard metrics');
-                    return data.metrics;
-                }
-                
-                // Cache expired, remove it
-                localStorage.removeItem(CACHE_KEY);
-                return null;
-            } catch (error) {
-                console.error('Error reading cache:', error);
-                return null;
-            }
-        }
-        
-        function setCachedMetrics(metrics) {
-            try {
-                const cacheData = {
-                    metrics: metrics,
-                    timestamp: Date.now()
-                };
-                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            } catch (error) {
-                console.error('Error writing cache:', error);
-            }
-        }
-        
         // Initialize real-time updates when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Try to load cached metrics first for instant display
-            const cachedMetrics = getCachedMetrics();
-            if (cachedMetrics) {
-                console.log('Loading cached metrics for instant display');
-                updateDashboardMetrics(cachedMetrics);
-            }
-            
             // Initialize notification sound
             notificationSound = new NotificationSound({
                 soundFile: 'uploads/NofiticationCash.mp3',
@@ -3154,174 +3029,29 @@ $stmt3->close();
             isInitialLoad = true;
             lastSoundPlayTime = 0;
             
-            initDashboardSSE();
-            
             // Initialize weekly orders chart
             initWeeklyOrdersChart();
             
-            // Real-time revenue removed
-            
-            // Initialize real-time help requests
-            initHelpRequestsSSE();
-            
-            // Fetch fresh data and update cache
-            fetch('get_dashboard_metrics.php')
-                .then(response => response.json())
-                .then(data => {
-                    setCachedMetrics(data);
-                    updateDashboardMetrics(data);
-                })
-                .catch(error => console.error('Initial fetch failed:', error));
-            
-            // Update every 30 seconds as fallback (with stored interval for cleanup) - optimized for less lag
-            dashboardInterval = setInterval(() => {
-                fetch('get_dashboard_metrics.php')
-                    .then(response => response.json())
-                    .then(data => {
-                        setCachedMetrics(data);
-                        updateDashboardMetrics(data);
-                    })
-                    .catch(error => console.error('Fallback update failed:', error));
-            }, 30000);
-        });
-        
-        // Cleanup function to clear all intervals and close connections when navigating away
-        function cleanupDashboardResources() {
-            console.log('Cleaning up dashboard resources...');
-            
-            // Clear all intervals
-            if (dashboardInterval) {
-                clearInterval(dashboardInterval);
-                dashboardInterval = null;
-            }
-            if (revenueInterval) {
-                clearInterval(revenueInterval);
-                revenueInterval = null;
-            }
-            if (helpRequestInterval) {
-                clearInterval(helpRequestInterval);
-                helpRequestInterval = null;
-            }
-            
-            // Close SSE connections
-            if (dashboardEventSource) {
-                dashboardEventSource.close();
-                dashboardEventSource = null;
-            }
-            if (helpRequestsEventSource) {
-                helpRequestsEventSource.close();
-                helpRequestsEventSource = null;
-            }
-            if (staffEventSource) {
-                staffEventSource.close();
-                staffEventSource = null;
-            }
-            
-            // Destroy charts
-            if (weeklyOrdersChart) {
-                weeklyOrdersChart.destroy();
-                weeklyOrdersChart = null;
-            }
-            if (revenueChart) {
-                revenueChart.destroy();
-                revenueChart = null;
-            }
-            
-            // Clear localStorage cache on logout/navigation
-            if (typeof Storage !== 'undefined') {
-                try {
-                    localStorage.removeItem(CACHE_KEY);
-                    console.log('Dashboard cache cleared');
-                } catch (error) {
-                    console.error('Error clearing cache:', error);
-                }
-            }
-        }
-        
-        // Listen for page unload and cleanup
-        window.addEventListener('beforeunload', cleanupDashboardResources);
-        
-        // Also cleanup when page visibility changes (user switches tabs/windows)
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                // Page is hidden, reduce resources
-                console.log('Page hidden, pausing updates...');
-                
-                // Close SSE connections when page is not visible
-                if (dashboardEventSource) {
-                    dashboardEventSource.close();
-                }
-                if (helpRequestsEventSource) {
-                    helpRequestsEventSource.close();
-                }
-            } else {
-                // Page is visible again, reconnect
-                console.log('Page visible, reconnecting...');
-                
-                // Reinitialize SSE connections
-                if (!dashboardEventSource) {
-                    initDashboardSSE();
-                }
-                if (!helpRequestsEventSource) {
-                    initHelpRequestsSSE();
-                }
-            }
+            // Initialize help requests (data loads once on page load only)
+            initHelpRequests();
         });
         
         // Weekly Orders Chart Functions
         let weeklyOrdersChart = null;
         
         function initWeeklyOrdersChart() {
-            console.log('DOM loaded, initializing chart...');
-            
-            // Check if Chart.js is loaded
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js is not loaded. Please check the script tag.');
-                return;
-            }
-            
-            console.log('Chart.js is available');
-            
-            // Check if data element exists
-            const dataElement = document.getElementById('weeklyOrdersData');
-            if (!dataElement) {
-                console.error('Weekly orders data element not found');
-                return;
-            }
-            
-            try {
-                const chartData = JSON.parse(dataElement.textContent);
-                console.log('Chart data:', chartData);
-                createWeeklyChart(chartData);
-            } catch (error) {
-                console.error('Error parsing chart data:', error);
-            }
+            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
+            createWeeklyChart(chartData);
         }
         
         function createWeeklyChart(data) {
-            console.log('Attempting to create chart...');
-            
-            const canvas = document.getElementById('weeklyOrdersChart');
-            if (!canvas) {
-                console.error('Chart canvas not found');
-                return;
-            }
-            
-            console.log('Chart container found, checking content...');
-            console.log('Chart container has content:', canvas.innerHTML);
-            
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                console.error('Could not get 2D context from canvas');
-                return;
-            }
+            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
             
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
             }
             
-            try {
-                weeklyOrdersChart = new Chart(ctx, {
+            weeklyOrdersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.map(item => item.day),
@@ -3427,11 +3157,6 @@ $stmt3->close();
                     }
                 }
             });
-            
-            console.log('Chart created successfully');
-        } catch (error) {
-            console.error('Error creating chart:', error);
-        }
         }
         
         function refreshWeeklyChart() {
@@ -3633,10 +3358,8 @@ $stmt3->close();
         }
         
         function startRevenueUpdates() {
-            // Update chart every 30 seconds with new data
-            setInterval(() => {
-                updateRevenueChart();
-            }, 30000);
+            // Manual refresh only - no auto-updates to prevent performance issues
+            // Users can refresh the page to see updated data
         }
         
         function updateRevenueChart() {
@@ -3688,22 +3411,10 @@ $stmt3->close();
         `;
         document.head.appendChild(pulseStyle);
         
-        // Real-Time Help Requests Functions
-        let helpRequestsEventSource = null;
-        
-        function initHelpRequestsSSE() {
-            try {
-                // Initialize with current data
-                loadHelpRequests();
-                
-                // Start SSE connection for real-time updates
-                startHelpRequestsSSE();
-                
-            } catch (error) {
-                console.error('Error initializing help requests:', error);
-                // Fallback: load data every 30 seconds
-                setInterval(loadHelpRequests, 30000);
-            }
+        // Help Requests Functions (loads once on page load only)
+        function initHelpRequests() {
+            // Load initial data
+            loadHelpRequests();
         }
         
         function loadHelpRequests() {
@@ -3712,6 +3423,7 @@ $stmt3->close();
                 .then(data => {
                     if (data.success) {
                         updateHelpRequestsDisplay(data.help_requests, data.stats);
+                        pulseRescueStatus();
                     } else {
                         console.error('Failed to load help requests:', data.message);
                         showHelpRequestsError('Failed to load rescue requests');
@@ -3721,78 +3433,6 @@ $stmt3->close();
                     console.error('Error loading help requests:', error);
                     showHelpRequestsError('Error loading rescue requests');
                 });
-        }
-        
-        let helpRequestsSSERetryCount = 0;
-        const MAX_SSE_RETRIES = 3;
-        
-        function startHelpRequestsSSE() {
-            try {
-                // Close existing connection if any
-                if (helpRequestsEventSource) {
-                    helpRequestsEventSource.close();
-                }
-                
-                helpRequestsEventSource = new EventSource('sse_help_requests.php');
-                
-                helpRequestsEventSource.onmessage = function(event) {
-                    try {
-                        const data = JSON.parse(event.data);
-                        handleHelpRequestsSSE(data);
-                        // Reset retry count on successful message
-                        helpRequestsSSERetryCount = 0;
-                    } catch (error) {
-                        console.error('Error parsing help requests SSE message:', error);
-                    }
-                };
-                
-                helpRequestsEventSource.onerror = function(event) {
-                    console.error('Help Requests SSE Error:', event);
-                    helpRequestsEventSource.close();
-                    
-                    // Only retry a limited number of times
-                    if (helpRequestsSSERetryCount < MAX_SSE_RETRIES) {
-                        helpRequestsSSERetryCount++;
-                        console.log(`Retrying help requests SSE (attempt ${helpRequestsSSERetryCount}/${MAX_SSE_RETRIES})...`);
-                        setTimeout(() => {
-                            startHelpRequestsSSE();
-                        }, 10000); // Increased to 10 seconds
-                    } else {
-                        console.warn('Help requests SSE max retries reached. Falling back to polling.');
-                        // Fallback to polling every 30 seconds
-                        setInterval(loadHelpRequests, 30000);
-                    }
-                };
-                
-            } catch (error) {
-                console.error('Error starting help requests SSE:', error);
-                // Fallback to polling
-                setInterval(loadHelpRequests, 30000);
-            }
-        }
-        
-        function handleHelpRequestsSSE(data) {
-            switch (data.type) {
-                case 'connection':
-                    console.log('Help Requests SSE connected:', data.message);
-                    break;
-                    
-                case 'update':
-                    updateHelpRequestsDisplay(data.help_requests, data.stats);
-                    pulseRescueStatus();
-                    break;
-                    
-                case 'heartbeat':
-                    // Keep connection alive
-                    break;
-                    
-                case 'error':
-                    console.error('Help Requests SSE Error:', data.message);
-                    break;
-                    
-                default:
-                    console.log('Unknown SSE message type:', data.type);
-            }
         }
         
         function updateHelpRequestsDisplay(helpRequests, stats) {
@@ -3864,16 +3504,12 @@ $stmt3->close();
         }
         
         function pulseRescueStatus() {
-            const statusBadge = document.getElementById('rescueNotificationCount');
-            if (statusBadge) {
-                statusBadge.style.animation = 'pulse 1s ease-in-out';
-                setTimeout(() => {
-                    statusBadge.style.animation = '';
-                }, 1000);
-            }
+            const statusBadge = document.getElementById('rescueStatus');
+            statusBadge.style.animation = 'pulse 1s ease-in-out';
+            setTimeout(() => {
+                statusBadge.style.animation = '';
+            }, 1000);
         }
-        
-        // Old cleanup removed - using the improved cleanupDashboardResources() function above
     </script>
     <script src="js/script.js"></script>
     
@@ -3892,30 +3528,6 @@ $stmt3->close();
                 });
             });
         });
-        
-        // Simple toast notification function
-        function showToast(message) {
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-5 bg-success text-white px-4 py-3 rounded shadow-lg';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <span>${message}</span>
-                    <button type="button" class="btn-close btn-close-white ms-3" onclick="this.parentElement.parentElement.remove()"></button>
-                </div>
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // Auto-remove after 3 seconds
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 3000);
-        }
     </script>
 </body>
 </html> 
