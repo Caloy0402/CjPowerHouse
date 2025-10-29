@@ -826,9 +826,48 @@ function refreshAllStaffTables() {
 
 // Toggle staff active/inactive status
 function toggleStaffStatus(staffId, staffType, status) {
-    if (!confirm(`Are you sure you want to ${status ? 'activate' : 'deactivate'} this staff member?`)) {
-        return;
-    }
+    // Store the action details for the modal
+    window.pendingStaffAction = {
+        staffId: staffId,
+        staffType: staffType,
+        status: status
+    };
+    
+    // Update modal content
+    const actionText = status ? 'activate' : 'deactivate';
+    const actionIcon = status ? 'check-circle' : 'ban';
+    const actionColor = status ? 'success' : 'warning';
+    const modalIcon = status ? '<i class="fas fa-check-circle text-success fa-3x mb-3"></i>' : '<i class="fas fa-ban text-warning fa-3x mb-3"></i>';
+    
+    document.getElementById('confirmModalTitle').textContent = status ? 'Activate Staff Member' : 'Deactivate Staff Member';
+    document.getElementById('confirmModalIcon').innerHTML = modalIcon;
+    document.getElementById('confirmModalMessage').innerHTML = `
+        <p class="mb-2">Are you sure you want to <strong class="text-${actionColor}">${actionText}</strong> this staff member?</p>
+        <small class="text-muted">${status ? 'This will restore their access to the system.' : 'This staff member will not be able to log in.'}</small>
+    `;
+    document.getElementById('confirmModalBtn').className = `btn btn-${actionColor}`;
+    document.getElementById('confirmModalBtn').innerHTML = `<i class="fas fa-${actionIcon} me-2"></i>Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('staffConfirmModal'));
+    modal.show();
+}
+
+// Execute the confirmed action
+function executeStaffAction() {
+    if (!window.pendingStaffAction) return;
+    
+    const { staffId, staffType, status } = window.pendingStaffAction;
+    
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('staffConfirmModal'));
+    modal.hide();
+    
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmModalBtn');
+    const originalHtml = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
     
     fetch('toggle_staff_status.php', {
         method: 'POST',
@@ -843,11 +882,14 @@ function toggleStaffStatus(staffId, staffType, status) {
     })
     .then(response => response.json())
     .then(data => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
+        
         if (data.success) {
             // Show success notification
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
             alertDiv.innerHTML = `
                 <i class="fas fa-check-circle me-2"></i>
                 <strong>Success!</strong> ${data.message}
@@ -858,12 +900,38 @@ function toggleStaffStatus(staffId, staffType, status) {
             // Reload page after 1 second
             setTimeout(() => location.reload(), 1000);
         } else {
-            alert('Error: ' + (data.message || 'Failed to update staff status'));
+            // Show error notification
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Error!</strong> ${data.message || 'Failed to update staff status'}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
         }
+        
+        // Clear pending action
+        window.pendingStaffAction = null;
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while updating staff status');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
+        
+        // Show error notification
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Error!</strong> An error occurred while updating staff status
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        window.pendingStaffAction = null;
     });
 }
 
@@ -2338,6 +2406,68 @@ document.addEventListener('DOMContentLoaded', function() {
   wrap.addEventListener('hidden.bs.modal', function(){ wrap.remove(); });
 }
  </script>
+
+    <!-- Modern Confirmation Modal for Staff Activate/Deactivate -->
+    <div class="modal fade" id="staffConfirmModal" tabindex="-1" aria-labelledby="staffConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-secondary border-0">
+                <div class="modal-header border-0 pb-2">
+                    <h5 class="modal-title text-white" id="confirmModalTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div id="confirmModalIcon" class="mb-3">
+                        <i class="fas fa-question-circle text-warning fa-3x"></i>
+                    </div>
+                    <h6 class="text-white mb-3" id="confirmModalMessage">Are you sure you want to proceed?</h6>
+                </div>
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmModalBtn" onclick="executeStaffAction()">
+                        <i class="fas fa-check me-2"></i>Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        #staffConfirmModal .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        #staffConfirmModal .modal-header {
+            background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        #staffConfirmModal .modal-footer {
+            background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            border-radius: 0 0 12px 12px;
+        }
+        
+        #staffConfirmModal .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        
+        #confirmModalIcon i {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+    </style>
  
 </body>
 </html> 
