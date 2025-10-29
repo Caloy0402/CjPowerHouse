@@ -88,6 +88,18 @@ function loadOrders(statusFilterValue = 'all') {
             `;
         });
 
+        // Add estimated time display for Ready to Ship and On-Ship statuses
+        let estimatedTimeHtml = '';
+        if ((order.status === 'Ready to Ship' || order.status === 'On-Ship') && order.estimated_time && order.estimated_date) {
+            const statusText = order.status === 'Ready to Ship' ? 'Estimated Delivery' : 'Estimated Arrival';
+            estimatedTimeHtml = `
+                <p style="color: #28a745; font-weight: 600; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e0e0e0;">
+                    <i class="fas fa-calendar-check" style="margin-right: 4px;"></i>
+                    <strong>${statusText}:</strong> ${order.estimated_date} at ${order.estimated_time}
+                </p>
+            `;
+        }
+        
         html += `
                 </div>
                 <div class="order-details">
@@ -95,6 +107,7 @@ function loadOrders(statusFilterValue = 'all') {
                    <p>Delivery Method: ${deliveryMethodText}</p>
                    <p>Barangay: ${order.barangay_name || 'N/A'} ${order.distance_km ? `- ${parseFloat(order.distance_km).toFixed(1)} km` : ''}</p>
                    <p>Delivery Fee: ₱${deliveryFee.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                   ${estimatedTimeHtml}
                 </div>
 
                 <div class="order-total" style="display: grid; gap: 6px;">

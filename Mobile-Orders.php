@@ -389,7 +389,7 @@ $conn->close();
               showOrderUpdateNotification(data);
               
               // Update the orders array and refresh display
-              updateOrderInArray(data.order_id, data.new_status);
+              updateOrderInArray(data.order_id, data.new_status, data.estimated_time, data.estimated_date);
               refreshOrdersDisplay();
             } else if (data.type === 'heartbeat') {
               console.log('Orders SSE heartbeat received');
@@ -450,11 +450,12 @@ $conn->close();
         }
 
         let estimatedHtml = '';
-        if (data.estimated_time && data.estimated_date && data.new_status === 'Ready to Ship') {
+        if (data.estimated_time && data.estimated_date && (data.new_status === 'Ready to Ship' || data.new_status === 'On-Ship')) {
+          const statusText = data.new_status === 'Ready to Ship' ? 'Estimated Delivery' : 'Estimated Arrival';
           estimatedHtml = `
             <div style="font-size: 11px; opacity: 0.9; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
               <i class="fas fa-calendar-check" style="margin-right: 4px;"></i>
-              <strong>Estimated Delivery:</strong> ${data.estimated_date} at ${data.estimated_time}
+              <strong>${statusText}:</strong> ${data.estimated_date} at ${data.estimated_time}
             </div>
           `;
         }
@@ -532,11 +533,15 @@ $conn->close();
         }
       }
 
-      function updateOrderInArray(orderId, newStatus) {
+      function updateOrderInArray(orderId, newStatus, estimatedTime = null, estimatedDate = null) {
         // Update the order status in the orders array
         for (let i = 0; i < orders.length; i++) {
           if (orders[i].id == orderId) {
             orders[i].status = newStatus;
+            if (estimatedTime && estimatedDate) {
+              orders[i].estimated_time = estimatedTime;
+              orders[i].estimated_date = estimatedDate;
+            }
             break;
           }
         }

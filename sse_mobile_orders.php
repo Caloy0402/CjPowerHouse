@@ -111,11 +111,11 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                     $message = isset($status_messages[$current_status]) ? $status_messages[$current_status] : "Your order status has been updated to: " . $current_status;
                 }
                 
-                // Calculate estimated delivery date and time for "Ready to Ship" status
+                // Calculate estimated delivery date and time for "Ready to Ship" and "On-Ship" statuses
                 $estimatedTime = null;
                 $estimatedDate = null;
                 
-                if ($current_status === 'Ready to Ship') {
+                if ($current_status === 'Ready to Ship' || $current_status === 'On-Ship') {
                     $now = new DateTime();
                     // Estimate delivery within the same day by end of day (11:59 PM)
                     $endOfDay = new DateTime();
