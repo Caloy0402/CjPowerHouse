@@ -3091,6 +3091,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                         html += `<tr><td style=\"font-weight:bold;\">Status:</td><td>${data.request.status}</td></tr>`;
                                     }
                                     
+                                    // Show estimated arrival time for In Progress status
+                                    if (data.request.status === 'In Progress' && data.request.estimated_time && data.request.estimated_date) {
+                                        html += `<tr><td style=\"font-weight:bold; color: #28a745;\">Estimated Arrival:</td><td style=\"color: #28a745; font-weight: 600;\"><i class=\"fas fa-calendar-check\" style=\"margin-right: 4px;\"></i>${data.request.estimated_date} at ${data.request.estimated_time}</td></tr>`;
+                                    }
+                                    
                                     html += `<tr><td style=\"font-weight:bold;\">Bike:</td><td>${data.request.bike_unit}</td></tr>`;
                                     html += `<tr><td style=\"font-weight:bold;\">Problem:</td><td>${data.request.problem_description}</td></tr>`;
                                     html += `<tr><td style=\"font-weight:bold;\">Barangay (Breakdown Location):</td><td>${data.request.barangay_name}</td></tr>`;

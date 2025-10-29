@@ -208,6 +208,53 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
+// Function to calculate estimated delivery time based on current time
+function calculateEstimatedDeliveryTime($orderStatus, $orderDate = null) {
+    // Only calculate for Ready to Ship and On-Ship statuses
+    if ($orderStatus !== 'Ready to Ship' && $orderStatus !== 'On-Ship') {
+        return ['time' => null, 'date' => null];
+    }
+    
+    $now = new DateTime();
+    $currentHour = (int)$now->format('H');
+    
+    // Check if current time is between 5 PM (17:00) and 5 AM (05:00) next day
+    // This covers: 5 PM today to 11:59 PM today, and 12:00 AM to 5 AM next day
+    if ($currentHour >= 17 || $currentHour < 5) {
+        // Set estimated time to 9 AM - 5 PM of next day
+        $estimatedDate = clone $now;
+        if ($currentHour >= 17) {
+            // It's between 5 PM and 11:59 PM, so next day
+            $estimatedDate->modify('+1 day');
+        } else {
+            // It's between 12 AM and 5 AM, so today is already the next day
+            // Use today's date
+        }
+        return [
+            'time' => '9:00 AM - 5:00 PM',
+            'date' => $estimatedDate->format('F j, Y')
+        ];
+    } else {
+        // Regular hours (5 AM to 5 PM), set to end of current day
+        $endOfDay = clone $now;
+        $endOfDay->setTime(23, 59, 59);
+        return [
+            'time' => $endOfDay->format('g:i A'),
+            'date' => $endOfDay->format('F j, Y')
+        ];
+    }
+}
+
+// Calculate estimated time for orders that are Ready to Ship or On-Ship
+foreach ($orders as $order_id => $order) {
+    if ($order['status'] === 'Ready to Ship' || $order['status'] === 'On-Ship') {
+        $estimated = calculateEstimatedDeliveryTime($order['status'], $order['date']);
+        $orders[$order_id]['estimated_time'] = $estimated['time'];
+        $orders[$order_id]['estimated_date'] = $estimated['date'];
+    }
+}
+
 $conn->close();
 ?>
 

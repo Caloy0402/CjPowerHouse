@@ -92,10 +92,46 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                 $notification_message = "";
                 $notification_type = "";
                 
+                // Function to calculate estimated arrival time
+                function calculateEstimatedArrivalTime() {
+                    $now = new DateTime();
+                    $currentHour = (int)$now->format('H');
+                    
+                    // Check if current time is between 5 PM (17:00) and 5 AM (05:00) next day
+                    if ($currentHour >= 17 || $currentHour < 5) {
+                        // Set estimated time to 9 AM - 5 PM of next day
+                        $estimatedDate = clone $now;
+                        if ($currentHour >= 17) {
+                            // It's between 5 PM and 11:59 PM, so next day
+                            $estimatedDate->modify('+1 day');
+                        }
+                        // else: It's between 12 AM and 5 AM, use today's date
+                        return [
+                            'time' => '9:00 AM - 5:00 PM',
+                            'date' => $estimatedDate->format('F j, Y')
+                        ];
+                    } else {
+                        // Regular hours (5 AM to 5 PM), set to end of current day
+                        $endOfDay = clone $now;
+                        $endOfDay->setTime(23, 59, 59);
+                        return [
+                            'time' => $endOfDay->format('g:i A'),
+                            'date' => $endOfDay->format('F j, Y')
+                        ];
+                    }
+                }
+                
+                $estimatedTime = null;
+                $estimatedDate = null;
+                
                 switch ($current_status) {
                     case 'In Progress':
                         $notification_message = "Your help request has been accepted! A mechanic is on the way.";
                         $notification_type = "request_accepted";
+                        // Calculate estimated arrival time
+                        $estimated = calculateEstimatedArrivalTime();
+                        $estimatedTime = $estimated['time'];
+                        $estimatedDate = $estimated['date'];
                         break;
                     case 'Completed':
                         $notification_message = "Your help request has been completed successfully!";
@@ -113,14 +149,22 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                 }
                 
                 if ($notification_message) {
-                    sendEvent([
+                    $eventData = [
                         "type" => "help_request_update",
                         "status" => $current_status,
                         "message" => $notification_message,
                         "notification_type" => $notification_type,
                         "help_request" => $current_help_request,
                         "timestamp" => date('Y-m-d H:i:s')
-                    ]);
+                    ];
+                    
+                    // Add estimated time for In Progress status
+                    if ($current_status === 'In Progress' && $estimatedTime && $estimatedDate) {
+                        $eventData['estimated_time'] = $estimatedTime;
+                        $eventData['estimated_date'] = $estimatedDate;
+                    }
+                    
+                    sendEvent($eventData);
                 }
             }
             

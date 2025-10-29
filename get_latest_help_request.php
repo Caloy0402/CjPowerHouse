@@ -17,6 +17,41 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// Function to calculate estimated arrival time based on current time
+function calculateEstimatedArrivalTime($status) {
+    // Only calculate for In Progress status
+    if ($status !== 'In Progress') {
+        return ['time' => null, 'date' => null];
+    }
+    
+    $now = new DateTime();
+    $currentHour = (int)$now->format('H');
+    
+    // Check if current time is between 5 PM (17:00) and 5 AM (05:00) next day
+    if ($currentHour >= 17 || $currentHour < 5) {
+        // Set estimated time to 9 AM - 5 PM of next day
+        $estimatedDate = clone $now;
+        if ($currentHour >= 17) {
+            // It's between 5 PM and 11:59 PM, so next day
+            $estimatedDate->modify('+1 day');
+        }
+        // else: It's between 12 AM and 5 AM, use today's date
+        return [
+            'time' => '9:00 AM - 5:00 PM',
+            'date' => $estimatedDate->format('F j, Y')
+        ];
+    } else {
+        // Regular hours (5 AM to 5 PM), set to end of current day
+        $endOfDay = clone $now;
+        $endOfDay->setTime(23, 59, 59);
+        return [
+            'time' => $endOfDay->format('g:i A'),
+            'date' => $endOfDay->format('F j, Y')
+        ];
+    }
+}
+
 if ($row = $result->fetch_assoc()) {
     $mechanic_name = ($row['mechanic_first_name'] && $row['mechanic_last_name']) ? $row['mechanic_first_name'].' '.$row['mechanic_last_name'] : null;
     $mechanic_image = $row['mechanic_image'] ? $row['mechanic_image'] : null;
@@ -27,6 +62,9 @@ if ($row = $result->fetch_assoc()) {
         $baseURL = $protocol . '://' . $host . $path . '/';
         $mechanic_image = $baseURL . $mechanic_image;
     }
+    // Calculate estimated time for In Progress status
+    $estimated = calculateEstimatedArrivalTime($row['status']);
+    
     echo json_encode([
         'success'=>true,
         'request'=>[
@@ -46,7 +84,9 @@ if ($row = $result->fetch_assoc()) {
             'mechanic_specialization'=>$row['mechanic_specialization'] ?? null,
             'decline_reason'=>$row['decline_reason'] ?? null,
             'decline_reason_text'=>$row['decline_reason_text'] ?? null,
-            'declined_at'=>$row['declined_at'] ?? null
+            'declined_at'=>$row['declined_at'] ?? null,
+            'estimated_time'=>$estimated['time'],
+            'estimated_date'=>$estimated['date']
         ]
     ]);
 } else {

@@ -117,11 +117,26 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                 
                 if ($current_status === 'Ready to Ship' || $current_status === 'On-Ship') {
                     $now = new DateTime();
-                    // Estimate delivery within the same day by end of day (11:59 PM)
-                    $endOfDay = new DateTime();
-                    $endOfDay->setTime(23, 59, 59);
-                    $estimatedTime = $endOfDay->format('g:i A');
-                    $estimatedDate = $endOfDay->format('F j, Y');
+                    $currentHour = (int)$now->format('H');
+                    
+                    // Check if current time is between 5 PM (17:00) and 5 AM (05:00) next day
+                    if ($currentHour >= 17 || $currentHour < 5) {
+                        // Set estimated time to 9 AM - 5 PM of next day
+                        $estimatedDateObj = clone $now;
+                        if ($currentHour >= 17) {
+                            // It's between 5 PM and 11:59 PM, so next day
+                            $estimatedDateObj->modify('+1 day');
+                        }
+                        // else: It's between 12 AM and 5 AM, use today's date
+                        $estimatedTime = '9:00 AM - 5:00 PM';
+                        $estimatedDate = $estimatedDateObj->format('F j, Y');
+                    } else {
+                        // Regular hours (5 AM to 5 PM), set to end of current day
+                        $endOfDay = clone $now;
+                        $endOfDay->setTime(23, 59, 59);
+                        $estimatedTime = $endOfDay->format('g:i A');
+                        $estimatedDate = $endOfDay->format('F j, Y');
+                    }
                 }
                 
                 sendEvent([
