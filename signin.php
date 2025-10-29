@@ -31,6 +31,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             INDEX idx_time_in (time_in)
         )");
         // Check ONLY the `cjusers` table for staff (Admin, Cashier, etc.)
+        // Check if is_active column exists, if not add it
+        $checkColumn = $conn->query("SHOW COLUMNS FROM `cjusers` LIKE 'is_active'");
+        if ($checkColumn->num_rows == 0) {
+            $conn->query("ALTER TABLE `cjusers` ADD COLUMN `is_active` TINYINT(1) DEFAULT 1");
+        }
+        
         $stmt = $conn->prepare("SELECT id, email, password, role, profile_image, COALESCE(is_active, 1) as is_active FROM cjusers WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -128,6 +134,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         } else {
             // Check the `riders` table
+            // Check if is_active column exists, if not add it
+            $checkColumn = $conn->query("SHOW COLUMNS FROM `riders` LIKE 'is_active'");
+            if ($checkColumn->num_rows == 0) {
+                $conn->query("ALTER TABLE `riders` ADD COLUMN `is_active` TINYINT(1) DEFAULT 1");
+            }
+            
             $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath, COALESCE(is_active, 1) as is_active FROM riders WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -213,6 +225,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             } else {
                 // Check the `mechanics` table
+                // Check if is_active column exists, if not add it
+                $checkColumn = $conn->query("SHOW COLUMNS FROM `mechanics` LIKE 'is_active'");
+                if ($checkColumn->num_rows == 0) {
+                    $conn->query("ALTER TABLE `mechanics` ADD COLUMN `is_active` TINYINT(1) DEFAULT 1");
+                }
+                
                 $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath, COALESCE(is_active, 1) as is_active FROM mechanics WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();

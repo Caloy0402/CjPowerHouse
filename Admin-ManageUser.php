@@ -8,6 +8,15 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || strtolower($_SE
     exit();
 }
 
+// Ensure is_active column exists in all staff tables
+$tables = ['cjusers', 'mechanics', 'riders'];
+foreach ($tables as $table) {
+    $checkColumn = $conn->query("SHOW COLUMNS FROM `{$table}` LIKE 'is_active'");
+    if ($checkColumn->num_rows == 0) {
+        $conn->query("ALTER TABLE `{$table}` ADD COLUMN `is_active` TINYINT(1) DEFAULT 1");
+    }
+}
+
 // Get user data for profile image
 $user_id = $_SESSION['user_id'];
 $user_query = $conn->prepare("SELECT first_name, last_name, profile_image FROM cjusers WHERE id = ?");
