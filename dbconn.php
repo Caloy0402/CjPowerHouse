@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
 $username = "user";
-$password = "Secore@123";
+$password = "local";
 $dbname = "cjpowerhouse";
 
 // Create connection with timeout settings
