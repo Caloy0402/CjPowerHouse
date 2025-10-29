@@ -107,21 +107,38 @@ if ($stmt) {
             // Calculate duty duration
             $duration = '';
             
-                         if ($log['time_out']) {
-                 // Completed duty
-                 $timeInObj = new DateTime($log['time_in']);
-                 $timeOutObj = new DateTime($log['time_out']);
-                 $diff = $timeInObj->diff($timeOutObj);
-                 
-                 $hours = $diff->h;
-                 $minutes = $diff->i;
-                 $seconds = $diff->s;
-                 
-                 $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-             } else {
-                 // Active duty
-                 $duration = '<span class="text-success">● Active</span>';
-             }
+            if ($log['time_out']) {
+                // Completed duty
+                if ($log['duty_duration_minutes'] !== null && $log['duty_duration_minutes'] !== '') {
+                    // Use stored duty duration
+                    $totalMinutes = (int)$log['duty_duration_minutes'];
+                    $hours = floor($totalMinutes / 60);
+                    $minutes = $totalMinutes % 60;
+                    $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, 0);
+                } else {
+                    // Calculate from time_in and time_out
+                    $timeInObj = new DateTime($log['time_in']);
+                    $timeOutObj = new DateTime($log['time_out']);
+                    $diff = $timeInObj->diff($timeOutObj);
+                    
+                    $hours = $diff->h + ($diff->days * 24);
+                    $minutes = $diff->i;
+                    $seconds = $diff->s;
+                    
+                    $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                }
+            } else {
+                // Active duty - calculate from time_in to now
+                $timeInObj = new DateTime($log['time_in']);
+                $nowObj = new DateTime();
+                $diff = $timeInObj->diff($nowObj);
+                
+                $hours = $diff->h + ($diff->days * 24);
+                $minutes = $diff->i;
+                $seconds = $diff->s;
+                
+                $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            }
             
             // Calculate remaining duty hours PER ROW (session-based)
             $requiredMinutes = getRequiredMinutesByRole($log['role']);
@@ -217,23 +234,41 @@ if ($stmt) {
         $duration = '';
         $formattedDuration = '';
         
-                 if ($log['time_out']) {
-             // Completed duty
-             $timeInObj = new DateTime($log['time_in']);
-             $timeOutObj = new DateTime($log['time_out']);
-             $diff = $timeInObj->diff($timeOutObj);
-             
-             $hours = $diff->h;
-             $minutes = $diff->i;
-             $seconds = $diff->s;
-             
-             $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-             $formattedDuration = $duration;
-         } else {
-             // Active duty
-             $duration = '<span class="text-success">● Active</span>';
-             $formattedDuration = '00:00:00 <span class="text-success">●</span>';
-         }
+        if ($log['time_out']) {
+            // Completed duty
+            if ($log['duty_duration_minutes'] !== null && $log['duty_duration_minutes'] !== '') {
+                // Use stored duty duration
+                $totalMinutes = (int)$log['duty_duration_minutes'];
+                $hours = floor($totalMinutes / 60);
+                $minutes = $totalMinutes % 60;
+                $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, 0);
+                $formattedDuration = $duration;
+            } else {
+                // Calculate from time_in and time_out
+                $timeInObj = new DateTime($log['time_in']);
+                $timeOutObj = new DateTime($log['time_out']);
+                $diff = $timeInObj->diff($timeOutObj);
+                
+                $hours = $diff->h + ($diff->days * 24);
+                $minutes = $diff->i;
+                $seconds = $diff->s;
+                
+                $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                $formattedDuration = $duration;
+            }
+        } else {
+            // Active duty - calculate from time_in to now
+            $timeInObj = new DateTime($log['time_in']);
+            $nowObj = new DateTime();
+            $diff = $timeInObj->diff($nowObj);
+            
+            $hours = $diff->h + ($diff->days * 24);
+            $minutes = $diff->i;
+            $seconds = $diff->s;
+            
+            $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            $formattedDuration = $duration;
+        }
         
         // Calculate remaining duty hours PER ROW (session-based)
         $requiredMinutes = getRequiredMinutesByRole($log['role']);

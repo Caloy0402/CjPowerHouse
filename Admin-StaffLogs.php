@@ -946,19 +946,14 @@ while ($row = $staffResult->fetch_assoc()) {
                     // Create new rows
                     let newRows = '';
                     logs.forEach(function(log) {
-                        // Check if this is an active session (no time_out)
-                        const isActiveSession = log.time_out === null || log.time_out === '';
-                        const durationCell = isActiveSession ? 
-                            `<td class="active-duration" data-time-in="${log.time_in}">00:00:00 <span class="text-success">●</span></td>` : 
-                            `<td>${log.formatted_duration}</td>`;
-                        
+                        // Use the formatted duration from the server
                         newRows += `
                             <tr data-log-id="${log.id}">
                                 <td>${escapeHtml(log.full_name)}</td>
                                 <td>${escapeHtml(log.role)}</td>
                                 <td>${escapeHtml(log.formatted_time_in)}</td>
                                 <td>${escapeHtml(log.formatted_time_out)}</td>
-                                ${durationCell}
+                                <td>${log.formatted_duration || '--'}</td>
                                 <td>${log.remaining_hours_html || ''}</td>
                                 <td><span class="${log.status.class}">${log.status.text}</span></td>
                             </tr>
@@ -967,36 +962,6 @@ while ($row = $staffResult->fetch_assoc()) {
 
                     // Update content without animation to prevent blinking
                     tbody.html(newRows);
-                    
-                    // Start timers for active sessions
-                    startActiveSessionTimers();
-                }
-                
-                // Start timers for active sessions
-                function startActiveSessionTimers() {
-                    $('.active-duration').each(function() {
-                        const $cell = $(this);
-                        const timeIn = $cell.data('time-in');
-                        const startTime = new Date(timeIn);
-                        
-                        function updateTimer() {
-                            const now = new Date();
-                            const diffMs = now - startTime;
-                            const diffSeconds = Math.floor(diffMs / 1000);
-                            
-                            const hours = Math.floor(diffSeconds / 3600);
-                            const minutes = Math.floor((diffSeconds % 3600) / 60);
-                            const seconds = diffSeconds % 60;
-                            
-                            const durationText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} <span class="text-success">●</span>`;
-                            
-                            $cell.html(durationText);
-                        }
-                        
-                        // Update immediately and then every second
-                        updateTimer();
-                        setInterval(updateTimer, 1000);
-                    });
                 }
             
 

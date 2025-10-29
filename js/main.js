@@ -172,30 +172,41 @@
     // User Details Modal
     document.addEventListener('DOMContentLoaded', function () {
         const userDetailsModal = document.getElementById('userDetailsModal');
-        userDetailsModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const name = button.getAttribute('data-name') || 'N/A';
-            const email = button.getAttribute('data-email') || 'N/A';
-            const address = button.getAttribute('data-address') || 'N/A';
-            const contact = button.getAttribute('data-contact') || 'N/A';
-            const status = button.getAttribute('data-status') || 'N/A';
-            const img = button.getAttribute('data-img') || 'default-user.png';
+        if (userDetailsModal) {
+            userDetailsModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const name = button.getAttribute('data-name') || 'N/A';
+                const email = button.getAttribute('data-email') || 'N/A';
+                const address = button.getAttribute('data-address') || 'N/A';
+                const contact = button.getAttribute('data-contact') || 'N/A';
+                const status = button.getAttribute('data-status') || 'N/A';
+                const img = button.getAttribute('data-img') || 'default-user.png';
 
-            document.getElementById('modalName').textContent = name;
-            document.getElementById('modalEmail').textContent = email;
-            document.getElementById('modalAddress').textContent = address;
-            document.getElementById('modalContact').textContent = contact;
-            document.getElementById('modalStatus').textContent = status;
+                const modalName = document.getElementById('modalName');
+                const modalEmail = document.getElementById('modalEmail');
+                const modalAddress = document.getElementById('modalAddress');
+                const modalContact = document.getElementById('modalContact');
+                const modalStatus = document.getElementById('modalStatus');
+                const modalImage = document.getElementById('modalImage');
 
-            const modalImage = document.getElementById('modalImage');
-            modalImage.src = img;
-            modalImage.alt = `${name}'s Profile Picture`;
-        });
+                if (modalName) modalName.textContent = name;
+                if (modalEmail) modalEmail.textContent = email;
+                if (modalAddress) modalAddress.textContent = address;
+                if (modalContact) modalContact.textContent = contact;
+                if (modalStatus) modalStatus.textContent = status;
+
+                if (modalImage) {
+                    modalImage.src = img;
+                    modalImage.alt = `${name}'s Profile Picture`;
+                }
+            });
+        }
     });
 
     // Sale Details Modal
     const saleDetailsModal = document.getElementById('saleDetailsModal');
-    saleDetailsModal.addEventListener('show.bs.modal', function (event) {
+    if (saleDetailsModal) {
+        saleDetailsModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const customer = button.getAttribute('data-customer');
         const trn = button.getAttribute('data-trn');
@@ -208,21 +219,35 @@
         const address = button.getAttribute('data-address');
         const products = button.getAttribute('data-products');
 
-        document.getElementById('modalSaleCustomer').textContent = customer;
-        document.getElementById('modalSaleTrn').textContent = trn;
-        document.getElementById('modalSaleAmount').textContent = amount;
-        document.getElementById('modalSaleStatus').textContent = status;
-        document.getElementById('modalSalePaymentMethod').textContent = paymentMethod;
-        document.getElementById('modalSaleTime').textContent = time;
-        document.getElementById('modalSaleContact').textContent = contact;
-        document.getElementById('modalSaleAddress').textContent = address;
-        document.getElementById('modalSaleProducts').textContent = products;
-        document.getElementById('modalSaleImage').src = img;
-    });
+        const modalSaleCustomer = document.getElementById('modalSaleCustomer');
+        const modalSaleTrn = document.getElementById('modalSaleTrn');
+        const modalSaleAmount = document.getElementById('modalSaleAmount');
+        const modalSaleStatus = document.getElementById('modalSaleStatus');
+        const modalSalePaymentMethod = document.getElementById('modalSalePaymentMethod');
+        const modalSaleTime = document.getElementById('modalSaleTime');
+        const modalSaleContact = document.getElementById('modalSaleContact');
+        const modalSaleAddress = document.getElementById('modalSaleAddress');
+        const modalSaleProducts = document.getElementById('modalSaleProducts');
+        const modalSaleImage = document.getElementById('modalSaleImage');
+
+        if (modalSaleCustomer) modalSaleCustomer.textContent = customer;
+        if (modalSaleTrn) modalSaleTrn.textContent = trn;
+        if (modalSaleAmount) modalSaleAmount.textContent = amount;
+        if (modalSaleStatus) modalSaleStatus.textContent = status;
+        if (modalSalePaymentMethod) modalSalePaymentMethod.textContent = paymentMethod;
+        if (modalSaleTime) modalSaleTime.textContent = time;
+        if (modalSaleContact) modalSaleContact.textContent = contact;
+        if (modalSaleAddress) modalSaleAddress.textContent = address;
+        if (modalSaleProducts) modalSaleProducts.textContent = products;
+        if (modalSaleImage) modalSaleImage.src = img;
+        });
+    }
 
     // Role Display
-    document.getElementById('role').innerText = 'Cashier';
-    document.getElementById('role').innerText = 'Admin';
+    const roleElement = document.getElementById('role');
+    if (roleElement) {
+        roleElement.innerText = 'Admin';
+    }
 
     // Search Functionality
     $(".search-barangay").on("keyup", function () {

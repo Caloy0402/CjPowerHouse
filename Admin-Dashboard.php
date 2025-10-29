@@ -3560,10 +3560,14 @@ $stmt3->close();
         
         function pulseRescueStatus() {
             const statusBadge = document.getElementById('rescueStatus');
-            statusBadge.style.animation = 'pulse 1s ease-in-out';
-            setTimeout(() => {
-                statusBadge.style.animation = '';
-            }, 1000);
+            if (statusBadge) {
+                statusBadge.style.animation = 'pulse 1s ease-in-out';
+                setTimeout(() => {
+                    if (statusBadge) {
+                        statusBadge.style.animation = '';
+                    }
+                }, 1000);
+            }
         }
     </script>
     <script src="js/script.js"></script>
