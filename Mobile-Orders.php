@@ -449,6 +449,16 @@ $conn->close();
           document.head.appendChild(style);
         }
 
+        let estimatedHtml = '';
+        if (data.estimated_time && data.estimated_date && data.new_status === 'Ready to Ship') {
+          estimatedHtml = `
+            <div style="font-size: 11px; opacity: 0.9; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+              <i class="fas fa-calendar-check" style="margin-right: 4px;"></i>
+              <strong>Estimated Delivery:</strong> ${data.estimated_date} at ${data.estimated_time}
+            </div>
+          `;
+        }
+        
         notification.innerHTML = `
           <div style="display: flex; align-items: center; margin-bottom: 8px;">
             <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite;"></div>
@@ -460,6 +470,7 @@ $conn->close();
           <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">
             Transaction: ${data.order_data.transaction_number}
           </div>
+          ${estimatedHtml}
         `;
 
         // Add pulse animation for the dot

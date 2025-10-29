@@ -111,6 +111,19 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                     $message = isset($status_messages[$current_status]) ? $status_messages[$current_status] : "Your order status has been updated to: " . $current_status;
                 }
                 
+                // Calculate estimated delivery date and time for "Ready to Ship" status
+                $estimatedTime = null;
+                $estimatedDate = null;
+                
+                if ($current_status === 'Ready to Ship') {
+                    $now = new DateTime();
+                    // Estimate delivery within the same day by end of day (11:59 PM)
+                    $endOfDay = new DateTime();
+                    $endOfDay->setTime(23, 59, 59);
+                    $estimatedTime = $endOfDay->format('g:i A');
+                    $estimatedDate = $endOfDay->format('F j, Y');
+                }
+                
                 sendEvent([
                     "type" => "order_status_update",
                     "order_id" => $order_id,
@@ -118,7 +131,9 @@ while ($counter < 1000) { // Limit to prevent infinite loops
                     "new_status" => $current_status,
                     "message" => $message,
                     "order_data" => $order,
-                    "timestamp" => date('Y-m-d H:i:s')
+                    "timestamp" => date('Y-m-d H:i:s'),
+                    "estimated_time" => $estimatedTime,
+                    "estimated_date" => $estimatedDate
                 ]);
             }
         }

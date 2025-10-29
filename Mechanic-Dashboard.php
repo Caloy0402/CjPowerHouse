@@ -1909,7 +1909,11 @@ $conn->close();
                     case 'pending_count_update':
                         updatePendingCount(data.count);
                         if (data.count > 0) {
-                            showNotification(`You have ${data.count} new help requests!`);
+                            let notificationMsg = `You have ${data.count} new help requests!`;
+                            if (data.estimated_time && data.estimated_date) {
+                                notificationMsg += ` Estimated response time: ${data.estimated_date} at ${data.estimated_time}`;
+                            }
+                            showNotification(notificationMsg);
                         }
                         break;
                         

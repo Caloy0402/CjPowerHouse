@@ -145,6 +145,13 @@ try {
                     if (!isset($last_notifications[$loginKey]) || 
                         ($currentTime - $last_notifications[$loginKey]) > 30) {
                         
+                        // Calculate estimated time within the day (end of today)
+                        $now = new DateTime();
+                        $endOfDay = new DateTime();
+                        $endOfDay->setTime(23, 59, 59);
+                        $estimatedTime = $endOfDay->format('g:i A');
+                        $estimatedDate = $endOfDay->format('F j, Y');
+                        
                         // Send login notification for all roles
                         sendEvent([
                             "type" => "staff_status_change",
@@ -155,7 +162,9 @@ try {
                             "activity" => $activity,
                             "image_path" => $current['image_path'],
                             "timestamp" => date('Y-m-d H:i:s'),
-                            "login_time" => date('g:i A', strtotime($current['time_in']))
+                            "login_time" => date('g:i A', strtotime($current['time_in'])),
+                            "estimated_time" => $estimatedTime,
+                            "estimated_date" => $estimatedDate
                         ]);
                         
                         // Record this login notification time

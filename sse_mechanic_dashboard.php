@@ -171,10 +171,19 @@ while ($counter < 1000) { // Limit to prevent infinite loops
         
         // Check if pending count changed
         if ($current_pending_count != $last_pending_count) {
+            // Calculate estimated time within the day (end of today)
+            $now = new DateTime();
+            $endOfDay = new DateTime();
+            $endOfDay->setTime(23, 59, 59);
+            $estimatedTime = $endOfDay->format('g:i A');
+            $estimatedDate = $endOfDay->format('F j, Y');
+            
             sendEvent([
                 "type" => "pending_count_update",
                 "count" => $current_pending_count,
-                "timestamp" => date('Y-m-d H:i:s')
+                "timestamp" => date('Y-m-d H:i:s'),
+                "estimated_time" => $estimatedTime,
+                "estimated_date" => $estimatedDate
             ]);
             $last_pending_count = $current_pending_count;
         }

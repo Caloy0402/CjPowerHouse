@@ -208,8 +208,13 @@ function getTimestampInfo(activity, additionalData) {
     
     if (activity === 'login' && additionalData.login_time) {
         timestampHtml = `<div class="notification-timestamp" style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; text-align: center;">
-            <i class="fas fa-clock" style="margin-right: 4px;"></i>Logged in at ${additionalData.login_time}
-        </div>`;
+            <i class="fas fa-clock" style="margin-right: 4px;"></i>Logged in at ${additionalData.login_time}`;
+        
+        if (additionalData.estimated_time && additionalData.estimated_date) {
+            timestampHtml += `<br><i class="fas fa-calendar-check" style="margin-right: 4px;"></i>Estimated: ${additionalData.estimated_date} at ${additionalData.estimated_time}`;
+        }
+        
+        timestampHtml += `</div>`;
     } else if (activity === 'logout' && additionalData.logout_time) {
         timestampHtml = `<div class="notification-timestamp" style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; text-align: center;">
             <i class="fas fa-clock" style="margin-right: 4px;"></i>Logged out at ${additionalData.logout_time}`;
