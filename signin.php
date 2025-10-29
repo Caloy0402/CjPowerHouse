@@ -31,14 +31,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             INDEX idx_time_in (time_in)
         )");
         // Check ONLY the `cjusers` table for staff (Admin, Cashier, etc.)
-        $stmt = $conn->prepare("SELECT id, email, password, role, profile_image FROM cjusers WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, email, password, role, profile_image, COALESCE(is_active, 1) as is_active FROM cjusers WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows == 1) {
             $user = $result->fetch_assoc();
-            if (password_verify($password, $user['password'])) {
+            
+            // Check if user is inactive
+            if (!$user['is_active']) {
+                $error = "This account has been deactivated. Please contact your administrator.";
+            } elseif (password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['full_name'] = "Admin User"; // Use a placeholder (cjusers table has no full_name)
                 // Normalize role spelling/case
@@ -124,14 +128,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         } else {
             // Check the `riders` table
-            $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath FROM riders WHERE email = ?");
+            $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath, COALESCE(is_active, 1) as is_active FROM riders WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $result = $stmt->get_result();
 
             if ($result->num_rows == 1) {
                 $rider = $result->fetch_assoc();
-                if (password_verify($password, $rider['password'])) {
+                
+                // Check if rider is inactive
+                if (!$rider['is_active']) {
+                    $error = "This account has been deactivated. Please contact your administrator.";
+                } elseif (password_verify($password, $rider['password'])) {
                     $_SESSION['user_id'] = $rider['id'];
                     $_SESSION['full_name'] = trim($rider['first_name'] . " " . ($rider['middle_name'] ? $rider['middle_name'] . " " : "") . $rider['last_name']);
                     $_SESSION['role'] = "Rider"; // Set role as 'Rider'
@@ -205,14 +213,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             } else {
                 // Check the `mechanics` table
-                $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath FROM mechanics WHERE email = ?");
+                $stmt = $conn->prepare("SELECT id, first_name, middle_name, last_name, email, password, ImagePath, COALESCE(is_active, 1) as is_active FROM mechanics WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
                 $result = $stmt->get_result();
 
                 if ($result->num_rows == 1) {
                     $mechanic = $result->fetch_assoc();
-                    if (password_verify($password, $mechanic['password'])) {
+                    
+                    // Check if mechanic is inactive
+                    if (!$mechanic['is_active']) {
+                        $error = "This account has been deactivated. Please contact your administrator.";
+                    } elseif (password_verify($password, $mechanic['password'])) {
                         $_SESSION['user_id'] = $mechanic['id'];
                         $_SESSION['full_name'] = trim($mechanic['first_name'] . " " . ($mechanic['middle_name'] ? $mechanic['middle_name'] . " " : "") . $mechanic['last_name']);
                         $_SESSION['role'] = "Mechanic"; // Set role as 'Mechanic'

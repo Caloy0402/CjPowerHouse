@@ -436,7 +436,7 @@ $user_data = $user_result->fetch_assoc();
                     <tbody>
                         <?php
                         // Fetch cashiers from cjusers table
-                        $cashier_sql = "SELECT id, first_name, last_name, email, profile_image FROM cjusers WHERE role = 'Cashier' ORDER BY id DESC";
+                        $cashier_sql = "SELECT id, first_name, last_name, email, profile_image, COALESCE(is_active, 1) as is_active FROM cjusers WHERE role = 'Cashier' ORDER BY id DESC";
                         $cashier_result = $conn->query($cashier_sql);
                         
                         if ($cashier_result && $cashier_result->num_rows > 0):
@@ -449,13 +449,16 @@ $user_data = $user_result->fetch_assoc();
                                     <div class="position-relative me-3">
                                         <img src="<?= $cashier['profile_image'] ? (strpos($cashier['profile_image'], 'uploads/') === 0 ? $cashier['profile_image'] : 'uploads/' . $cashier['profile_image']) : 'img/jandi.jpg' ?>" 
                                              class="rounded-circle border border-2 border-primary" style="width: 40px; height: 40px; object-fit: cover;">
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size: 0.6em;">
-                                            <i class="fas fa-check"></i>
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill <?= $cashier['is_active'] ? 'bg-success' : 'bg-danger' ?>" style="font-size: 0.6em;">
+                                            <?= $cashier['is_active'] ? '<i class="fas fa-check"></i>' : '<i class="fas fa-ban"></i>' ?>
                                         </span>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-muted"><?= htmlspecialchars(trim($cashier['first_name'].' '.$cashier['last_name'])) ?></div>
                                         <small class="text-muted">Cashier</small>
+                                        <?php if (!$cashier['is_active']): ?>
+                                            <span class="badge bg-danger ms-1">Inactive</span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </td>
@@ -473,6 +476,15 @@ $user_data = $user_result->fetch_assoc();
                                     <button class="btn btn-sm btn-outline-info" onclick="viewStaffDetails(<?= $cashier['id'] ?>, 'cashier')" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    <?php if ($cashier['is_active']): ?>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="toggleStaffStatus(<?= $cashier['id'] ?>, 'cashier', 0)" title="Deactivate Staff">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-outline-success" onclick="toggleStaffStatus(<?= $cashier['id'] ?>, 'cashier', 1)" title="Activate Staff">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -513,7 +525,7 @@ $user_data = $user_result->fetch_assoc();
                     <tbody>
                         <?php
                         // Fetch mechanics from mechanics table
-                        $mechanic_sql = "SELECT id, first_name, last_name, email, ImagePath FROM mechanics ORDER BY id DESC";
+                        $mechanic_sql = "SELECT id, first_name, last_name, email, ImagePath, COALESCE(is_active, 1) as is_active FROM mechanics ORDER BY id DESC";
                         $mechanic_result = $conn->query($mechanic_sql);
                         
                         if ($mechanic_result && $mechanic_result->num_rows > 0):
@@ -550,6 +562,15 @@ $user_data = $user_result->fetch_assoc();
                                     <button class="btn btn-sm btn-outline-info" onclick="viewStaffDetails(<?= $mechanic['id'] ?>, 'mechanic')" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    <?php if ($mechanic['is_active']): ?>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="toggleStaffStatus(<?= $mechanic['id'] ?>, 'mechanic', 0)" title="Deactivate Staff">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-outline-success" onclick="toggleStaffStatus(<?= $mechanic['id'] ?>, 'mechanic', 1)" title="Activate Staff">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -590,7 +611,7 @@ $user_data = $user_result->fetch_assoc();
                     <tbody>
                         <?php
                         // Fetch riders from riders table
-                        $rider_sql = "SELECT id, first_name, last_name, email, ImagePath FROM riders ORDER BY id DESC";
+                        $rider_sql = "SELECT id, first_name, last_name, email, ImagePath, COALESCE(is_active, 1) as is_active FROM riders ORDER BY id DESC";
                         $rider_result = $conn->query($rider_sql);
                         
                         if ($rider_result && $rider_result->num_rows > 0):
@@ -627,6 +648,15 @@ $user_data = $user_result->fetch_assoc();
                                     <button class="btn btn-sm btn-outline-info" onclick="viewStaffDetails(<?= $rider['id'] ?>, 'rider')" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    <?php if ($rider['is_active']): ?>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="toggleStaffStatus(<?= $rider['id'] ?>, 'rider', 0)" title="Deactivate Staff">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-outline-success" onclick="toggleStaffStatus(<?= $rider['id'] ?>, 'rider', 1)" title="Activate Staff">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -783,6 +813,49 @@ function refreshAllStaffTables() {
     
     // Reload the page to refresh all staff tables
     setTimeout(() => location.reload(), 1000);
+}
+
+// Toggle staff active/inactive status
+function toggleStaffStatus(staffId, staffType, status) {
+    if (!confirm(`Are you sure you want to ${status ? 'activate' : 'deactivate'} this staff member?`)) {
+        return;
+    }
+    
+    fetch('toggle_staff_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            staff_id: staffId,
+            staff_type: staffType,
+            is_active: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success notification
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Success!</strong> ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Reload page after 1 second
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            alert('Error: ' + (data.message || 'Failed to update staff status'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating staff status');
+    });
 }
 
 // Load barangays for rider dropdown
