@@ -1068,7 +1068,7 @@ $stmt3->close();
    <!--javascript Libraries-->
    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="lib/chart/Chart.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
    <script src="js/notification-sound.js"></script>
    <script src="lib/easing/easing.min.js"></script>
    <script src="lib/waypoints/waypoints.min.js"></script>
@@ -3029,26 +3029,72 @@ $stmt3->close();
             isInitialLoad = true;
             lastSoundPlayTime = 0;
             
-            // Initialize weekly orders chart
-            initWeeklyOrdersChart();
+            // Initialize weekly orders chart with retry logic
+            initChartWithRetry();
             
             // Initialize help requests (data loads once on page load only)
             initHelpRequests();
         });
         
+        function initChartWithRetry(retryCount = 0) {
+            const maxRetries = 5;
+            
+            if (typeof Chart !== 'undefined') {
+                initWeeklyOrdersChart();
+            } else {
+                if (retryCount < maxRetries) {
+                    setTimeout(() => {
+                        initChartWithRetry(retryCount + 1);
+                    }, 100); // Retry every 100ms
+                } else {
+                    console.error('Chart.js failed to load after multiple attempts');
+                }
+            }
+        }
+        
         // Weekly Orders Chart Functions
         let weeklyOrdersChart = null;
         
         function initWeeklyOrdersChart() {
-            const chartData = JSON.parse(document.getElementById('weeklyOrdersData').textContent);
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded. Please check the script tag.');
+                return;
+            }
+            
+            const weeklyOrdersDataElement = document.getElementById('weeklyOrdersData');
+            if (!weeklyOrdersDataElement) {
+                console.error('weeklyOrdersData element not found');
+                return;
+            }
+            
+            let chartData;
+            try {
+                chartData = JSON.parse(weeklyOrdersDataElement.textContent);
+            } catch (e) {
+                console.error('Error parsing weekly orders data:', e);
+                return;
+            }
+            
             createWeeklyChart(chartData);
         }
         
         function createWeeklyChart(data) {
-            const ctx = document.getElementById('weeklyOrdersChart').getContext('2d');
+            const canvasElement = document.getElementById('weeklyOrdersChart');
+            if (!canvasElement) {
+                console.error('weeklyOrdersChart element not found');
+                return;
+            }
+            
+            const ctx = canvasElement.getContext('2d');
             
             if (weeklyOrdersChart) {
                 weeklyOrdersChart.destroy();
+            }
+            
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
             }
             
             weeklyOrdersChart = new Chart(ctx, {
@@ -3492,6 +3538,11 @@ $stmt3->close();
         
         function showHelpRequestsError(message) {
             const container = document.getElementById('helpRequestsList');
+            const noRequestsMessage = document.getElementById('noRequestsMessage');
+            
+            if (!container) return;
+            
+            container.style.display = 'block';
             container.innerHTML = `
                 <div class="text-center text-danger py-4">
                     <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
@@ -3501,6 +3552,10 @@ $stmt3->close();
                     </button>
                 </div>
             `;
+            
+            if (noRequestsMessage) {
+                noRequestsMessage.style.display = 'none';
+            }
         }
         
         function pulseRescueStatus() {
